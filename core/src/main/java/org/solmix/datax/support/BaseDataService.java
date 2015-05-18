@@ -203,6 +203,9 @@ public class BaseDataService implements DataService
         }
 
         req.setRequestStarted(true);
+        if(LOG.isDebugEnabled()){
+            LOG.debug("RawValues==>>- {}",req.getRawValues());
+        }
         // 配置了invoker优先处理
         if ((!req.isInvoked()) && oi.getInvoker() != null) {
             response = DMIDataService.execute(container, req, req.getDSCall());

@@ -79,8 +79,8 @@ public class VelocityExpression
             }
             result= vContext.get(DATAX.VT_TMP_NAME);
         }
-        if(LOG.isTraceEnabled()){
-            LOG.trace("expression["+expression+"] evaluate to value:"+result);
+        if(LOG.isDebugEnabled()){
+            LOG.debug("expression["+expression+"] evaluate to value:"+result);
         }
         return result;
     }

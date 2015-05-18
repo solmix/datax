@@ -393,7 +393,11 @@ public class DSRequestImpl  implements DSRequest,Cloneable
     @Override
     public Map<String, Object> getValues() {
         Object values = getRawValues();
-        return getValuesInternal(values);
+        Map<String, Object>  result= getValuesInternal(values);
+        if(result==null){
+            result  = new HashMap<String, Object>();
+        }
+        return result;
     }
     @SuppressWarnings("unchecked")
     private Map<String, Object> getValuesInternal(Object values) {

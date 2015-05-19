@@ -69,6 +69,8 @@ public class OperationInfo
     
     protected XMLNode node;
     
+    protected List<ForwardInfo> forwards;
+    
     OperationInfo()
     {
     }
@@ -169,6 +171,10 @@ public class OperationInfo
     public InvokerInfo getInvoker() {
         return invoker;
     }
+    
+    public List<ForwardInfo> getForwards() {
+        return forwards;
+    }
 
     /**
      * 重定向Velocity表达式<br>
@@ -191,6 +197,7 @@ public class OperationInfo
         target.node=source.node;
         target.oneway=source.oneway;
         target.redirect=source.redirect;
+        target.forwards=source.forwards;
     }
     public Map<String, ParamInfo> getParams() {
         return params;
@@ -293,6 +300,7 @@ public class OperationInfo
             Boolean usedValidatedValues= node.getBooleanAttribute("usedValidatedValues");
             Map<String ,ParamInfo> params = parseParams(node.evalNode("params"), context);
             List<TransformerInfo> transformers=parseTransformers(node.evalNodes("transformer"), context);
+            List<ForwardInfo> forwards=parseForwards(node.evalNodes("forward"), context);
             BatchOperations batchOp= parseBatch(node.evalNode("batch"),context);
             InvokerInfo invoker = parseInvoker(node.evalNode("invoker"),context);
             oi.autoJoinTransactions=autoJoinTransactions;
@@ -301,6 +309,7 @@ public class OperationInfo
             oi.redirect=redirect;
             oi.batch=batchOp;
             oi.transformers=transformers;
+            oi.forwards=forwards;
             oi.invoker=invoker;
             oi.oneway=oneway;
             oi.validate=validate;
@@ -310,7 +319,18 @@ public class OperationInfo
             }
             return oi;
         }
-
+        
+        protected List<ForwardInfo> parseForwards(List<XMLNode> nodes, XmlParserContext context) {
+            if(nodes==null||nodes.isEmpty()){
+                return null;
+            }
+            List<ForwardInfo> forwards = new ArrayList<ForwardInfo>(nodes.size());
+            for(XMLNode node :nodes){
+                forwards.add(context.parseNode(XmlNodeParserProvider.FORWARD,node, ForwardInfo.class));
+            }
+            return forwards;
+        }
+        
         protected List<TransformerInfo> parseTransformers(List<XMLNode> nodes, XmlParserContext context) {
             if(nodes==null||nodes.isEmpty()){
                 return null;

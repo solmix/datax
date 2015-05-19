@@ -53,6 +53,8 @@ public interface XmlNodeParserProvider
     public static final String BATCH = OPERATION + "/batch";
 
     public static final String TRANSFORMER = OPERATION + "/transformer";
+    
+    public static final String FORWARD = OPERATION + "/forward";
 
     public static final String INVOKER = OPERATION + "/invoker";
 

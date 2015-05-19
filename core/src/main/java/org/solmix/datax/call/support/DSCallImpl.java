@@ -379,44 +379,44 @@ public class DSCallImpl implements DSCall
     }
     
     private DSResponse simpleResponse() {
-        Status st=Status.UNSET;
-        if(status==STATUS.SUCCESS){
-            st=Status.STATUS_SUCCESS;
-        }else if(status==STATUS.FAILED){
-            st=Status.STATUS_TRANSACTION_FAILED;
+        Status st = Status.UNSET;
+        if (status == STATUS.SUCCESS) {
+            st = Status.STATUS_SUCCESS;
+        } else if (status == STATUS.FAILED) {
+            st = Status.STATUS_TRANSACTION_FAILED;
         }
         List<DSRequest> canReturn = new ArrayList<DSRequest>();
         for (DSRequest req : requests) {
-            if(DataUtils.asBoolean(req.getOperationInfo().getOneway())){
+            if (DataUtils.asBoolean(req.getOperationInfo().getOneway())) {
                 continue;
-            }else{
+            } else {
                 canReturn.add(req);
             }
         }
-        DSResponse res=null;
-        boolean onlyOneRequest =canReturn.size()==1;
-        if(onlyOneRequest){
-            res= getResponse(canReturn.get(0));
+        DSResponse res = null;
+        boolean onlyOneRequest = canReturn.size() == 1;
+        if (onlyOneRequest) {
+            res = getResponse(canReturn.get(0));
             res.setStatus(st);
-        }else{
+        } else {
             res = new DSResponseImpl(st);
-            Map<String,Object> mergedData= new LinkedHashMap<String, Object>();
+            Map<String, Object> mergedData = new LinkedHashMap<String, Object>();
             List<Object> errors = new ArrayList<Object>();
             for (DSRequest req : canReturn) {
                 DSResponse resp = getResponse(req);
                 mergedData.put(req.getOperationId(), resp.getRawData());
                 Object[] error = resp.getErrors();
-                if(error!=null&&error.length>0){
+                if (error != null && error.length > 0) {
                     errors.addAll(Arrays.asList(error));
                 }
                 res.setRawData(mergedData);
-                if(errors.size()>0){
+                if (errors.size() > 0) {
                     res.setErrors(errors.toArray());
                 }
             }
         }
         return res;
-        
+
     }
     
     private DSResponse wrappedResponse() {

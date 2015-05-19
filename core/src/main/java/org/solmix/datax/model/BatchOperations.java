@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.solmix.commons.xml.XMLNode;
+import org.solmix.datax.repository.builder.XmlNodeParserProvider;
 import org.solmix.datax.repository.builder.XmlParserContext;
 import org.solmix.datax.repository.builder.xml.BaseXmlNodeParser;
 
@@ -40,6 +41,8 @@ public class BatchOperations
     private TransactionPolicy transactionPolicy;
     
     private MergedType mergedType;
+    
+    protected List<ForwardInfo> forwards;
 
     public BatchOperations(List<OperationInfo> operations,TransactionPolicy transactionPolicy,MergedType mergedType)
     {
@@ -66,6 +69,9 @@ public class BatchOperations
         return mergedType;
     }
 
+    public List<ForwardInfo> getForwards() {
+        return forwards;
+    }
     public static class Parser extends BaseXmlNodeParser<BatchOperations>{
 
         @Override
@@ -92,7 +98,21 @@ public class BatchOperations
                 OperationInfo oi=  p.parse(n, context);
                 operations.add(oi);
             }
-            return new BatchOperations(operations, transactionPolicy,mergedType);
+            BatchOperations batch= new BatchOperations(operations, transactionPolicy,mergedType);
+            
+            List<ForwardInfo> forwards=parseForwards(node.evalNodes("forward"), context);
+            batch.forwards=forwards;
+            return batch;
+        }
+        protected List<ForwardInfo> parseForwards(List<XMLNode> nodes, XmlParserContext context) {
+            if(nodes==null||nodes.isEmpty()){
+                return null;
+            }
+            List<ForwardInfo> forwards = new ArrayList<ForwardInfo>(nodes.size());
+            for(XMLNode node :nodes){
+                forwards.add(context.parseNode(XmlNodeParserProvider.FORWARD,node, ForwardInfo.class));
+            }
+            return forwards;
         }
     }
 }

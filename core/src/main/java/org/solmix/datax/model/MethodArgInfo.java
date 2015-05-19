@@ -18,7 +18,6 @@
  */
 package org.solmix.datax.model;
 
-import java.util.Map;
 
 import org.solmix.commons.xml.XMLNode;
 import org.solmix.datax.repository.builder.BuilderException;

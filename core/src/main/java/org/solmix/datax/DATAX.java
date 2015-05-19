@@ -88,6 +88,12 @@ public final class DATAX
     public static final String VM_DSREQUEST = "dsrequest";
     
     /**
+     * Velocity 中{@link DSRequest} 的名称
+     */
+    public static final String VM_DSRESPONSE = "dsresponse";
+    
+    
+    /**
      * Velocity 中HttpServletRequest 的名称
      */
     public static final String VM_REQUEST = "request";
@@ -110,7 +116,8 @@ public final class DATAX
 
     public static final String VM_OLD_VALUES = "oldValues";
     
-
+    /**template 中的数据*/
+    public static final String VM_DATA = "data";
     /**
      * Velocity 表达式生成的临时结果标示
      */

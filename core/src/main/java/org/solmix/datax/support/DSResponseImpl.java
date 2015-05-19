@@ -58,6 +58,8 @@ public class DSResponseImpl implements DSResponse
     
     private Map<Class<?> ,Object> attachments;
     
+    private String forward;
+    
     public DSResponseImpl(Status status)
     {
         setStatus(status);
@@ -416,5 +418,16 @@ public class DSResponseImpl implements DSResponse
             return (T) attachments.get(classKey);
         }
         return null;
+    }
+   
+    @Override
+    public String getForward() {
+        return forward;
+    }
+    
+    @Override
+    public void setForward(String forward) {
+      this.forward=forward;
+        
     }
 }

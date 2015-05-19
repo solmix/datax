@@ -18,6 +18,7 @@
  */
 package org.solmix.datax.support;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -49,11 +50,13 @@ import org.solmix.datax.DataxException;
 import org.solmix.datax.OperationNoFoundException;
 import org.solmix.datax.call.DSCall;
 import org.solmix.datax.call.DSCallFactory;
+import org.solmix.datax.call.DSCallTemplateContext;
 import org.solmix.datax.call.DSCallUtils;
 import org.solmix.datax.model.BatchOperations;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.model.FieldType;
+import org.solmix.datax.model.ForwardInfo;
 import org.solmix.datax.model.LookupType;
 import org.solmix.datax.model.MergedType;
 import org.solmix.datax.model.OperationInfo;
@@ -63,7 +66,6 @@ import org.solmix.datax.model.TransactionPolicy;
 import org.solmix.datax.model.TransformerInfo;
 import org.solmix.datax.model.ValidatorInfo;
 import org.solmix.datax.script.VelocityExpression;
-import org.solmix.datax.transformer.TemplateTransformer;
 import org.solmix.datax.transformer.Transformer;
 import org.solmix.datax.transformer.TransformerException;
 import org.solmix.datax.util.DataTools;
@@ -84,6 +86,7 @@ import org.solmix.runtime.i18n.ResourceBundleManager;
 import org.solmix.runtime.resource.ResourceInjector;
 import org.solmix.runtime.resource.ResourceManager;
 import org.solmix.runtime.resource.support.ResourceManagerImpl;
+import org.solmx.service.template.TemplateService;
 import org.w3c.dom.Element;
 
 
@@ -157,10 +160,16 @@ public class BaseDataService implements DataService
        
         OperationInfo oi = info.getOperationInfo(req.getOperationId());
         if (oi == null) {
-            throw new OperationNoFoundException("Not found operation：" + req.getOperationId() + " in datasource:" + getId());
+            throw new OperationNoFoundException("Not found operation：" + req.getOperationId() + " in Dataservice:" + getId());
         }
         if (oi.getBatch() != null) {
-                return executeBatch(req,oi);
+            DSResponse res= executeBatch(req,oi);
+            List<ForwardInfo> forwards = oi.getBatch().getForwards();
+            if(forwards==null){
+                return res;
+            }else{
+                return forwardToTemplate(res,req,forwards);
+            }
         }
         //附加的参数
         Map<String,ParamInfo> params = oi.getParams();
@@ -177,12 +186,13 @@ public class BaseDataService implements DataService
         OperationType type = oi.getType();
         DSResponse response = null;
         //自定义的不自动验证
-        if (type != OperationType.CUSTOM  && oi.getInvoker() == null) {
+        if (type != OperationType.CUSTOM) {
             response = validateDSRequest(req);
             if (response != null) {
                 return transformResponse(response, transformers,req);
             }
         }
+        //支持重定向
         if(oi.getRedirect()!=null){
             Object redirect = evaluteExpression(oi.getRedirect(),req);
             if(redirect!=null){
@@ -203,6 +213,43 @@ public class BaseDataService implements DataService
         }
     }
    
+    /**如果配置了forward 激活转发配置，将数据应用到模板上,并输出数据到rawData
+     * @throws DSCallException */
+    protected DSResponse forwardToTemplate(DSResponse res, DSRequest req, List<ForwardInfo> forwards) throws DSCallException {
+        TemplateService templateService = container.getExtension(TemplateService.class);
+        Assert.assertNotNull(templateService,"TemplateService is null");
+        String forward =res.getForward();
+        ForwardInfo selected=null;
+        if(forward==null){
+            if(forwards.size()==1){
+                selected=forwards.get(0);
+            }else{
+                selected=forwards.get(0);
+                LOG.warn("Multi forward with null forward");
+            }
+            
+        }else{
+            for(ForwardInfo i:forwards){
+                if(forward.equals(i.getName())){
+                    selected=i;
+                    break;
+                }
+            }
+        }
+        if(selected ==null){
+            throw new ForwardException("No found forwardinfo for :"+forward);
+        }
+        DSCallTemplateContext context = new DSCallTemplateContext(container,req,res);
+        StringWriter  sw = new StringWriter();
+         try {
+            templateService.evaluate(selected.getPath(), context, sw);
+            res.setRawData(sw.toString());
+        } catch (Exception e) {
+            throw new DSCallException("evaluate template error:", e);
+        }
+        return res;
+    }
+
     /**
      * 根据配置准备Transformers
      */
@@ -256,14 +303,7 @@ public class BaseDataService implements DataService
 
     
     protected void customTransformer(List<Transformer> transformers, DSRequest req, OperationInfo oi) {
-        if(transformers==null){
-            transformers= new ArrayList<Transformer>();
-        }
-        if (oi.getProperty("template") != null) {
-            transformers.add(new TemplateTransformer(oi.getProperty("template").toString(), false));
-        } else if (oi.getProperty("template-file") != null) {
-            transformers.add(new TemplateTransformer(oi.getProperty("template-file").toString(), true));
-        }
+     
     }
 
     protected void transformRequest(DSRequest req, List<Transformer> trans) {

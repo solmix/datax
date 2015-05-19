@@ -127,7 +127,9 @@ public class DataServiceProxy<T> implements InvocationHandler
        }
       Class<?> returnType= method.getReturnType();
       DSResponse response =session.execute(request);
-       if(returnType.isArray()){
+      if(returnType == Void.TYPE){
+          return null;
+      }else if(returnType.isArray()){
            Class<?> realy=returnType.getComponentType();
           List<?> list= response.getResultList(realy);
           Object array= Array.newInstance(realy, list.size());

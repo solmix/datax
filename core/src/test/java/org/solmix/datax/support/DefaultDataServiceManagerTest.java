@@ -22,6 +22,7 @@ package org.solmix.datax.support;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.List;
 import java.util.Map;
 
 import org.junit.After;
@@ -33,6 +34,7 @@ import org.solmix.datax.model.BatchOperations;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.model.FieldType;
+import org.solmix.datax.model.ForwardInfo;
 import org.solmix.datax.model.InvokerInfo;
 import org.solmix.datax.model.LookupType;
 import org.solmix.datax.model.MergedType;
@@ -201,6 +203,15 @@ public class DefaultDataServiceManagerTest
         
         //oneway extension
         assertEquals(Boolean.TRUE, oi.getOneway());
+        
+        List<ForwardInfo> forwards=oi.getForwards();
+        assertEquals(2, forwards.size());
+        ForwardInfo fi = forwards.get(0);
+        assertEquals("forward", fi.getName());
+        assertEquals("aa.vm", fi.getPath());
+        assertEquals("velocity", fi.getScript());
+        ParamInfo param =fi.getParams().get("forward1");
+        Assert.assertNotNull(param);
         //关联
         OperationInfo oi2=dsi.getOperationInfo("#feth2");
         assertEquals(oi.getId(), oi2.getRefid());
@@ -241,6 +252,9 @@ public class DefaultDataServiceManagerTest
        assertEquals(MergedType.WRAPPED, bi.getMergedType());
        OperationInfo afeth= bi.getOperations().get(0);
        assertNotNull(afeth.getBatch());
+       
+       List<ForwardInfo> bforwards=bi.getForwards();
+       assertEquals(1, bforwards.size());
        
        OperationInfo bfeth= bi.getOperations().get(1);
        assertEquals(bfeth.getRefid(), oi.getId());

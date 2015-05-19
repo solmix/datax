@@ -174,6 +174,7 @@ public class ExportInterceptor extends PhaseInterceptorSupport<Message>
 
                     case CSV: // '\001'
                         contentType = "text/comma-separated-values";
+                        conf.put(ExportService.ENCODING, "gbk");
                         break;
 
                     default:

@@ -61,7 +61,22 @@ public class JdbcSupport
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }
+    public int update(final String sql) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Executing SQL update [" + sql + "]");
+        }
+       return execute(new StatementCallback<Integer>() {
 
+            @Override
+            public Integer doInStatement(Statement stmt) throws SQLException {
+                int rows = stmt.executeUpdate(sql);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("SQL update affected " + rows + " rows");
+                }
+                return rows;
+            }
+        });
+    }
     public void execute(final String sql) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Executing SQL statement [" + sql + "]");

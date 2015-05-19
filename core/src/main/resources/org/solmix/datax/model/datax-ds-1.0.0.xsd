@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schema targetNamespace="http://www.solmix.org/schema/datax-ds/v1.0.0"
-	elementFormDefault="qualified" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:ds="http://www.solmix.org/schema/datax-ds/v1.0.0">
+	elementFormDefault="qualified" xmlns="http://www.w3.org/2001/XMLSchema"
+	xmlns:ds="http://www.solmix.org/schema/datax-ds/v1.0.0">
 
 	<element name="datax" type="ds:dataxType"></element>
 	<complexType name="dataxType">
@@ -12,37 +13,37 @@
 	<complexType name="configurationType">
 		<sequence>
 			<choice minOccurs="0" maxOccurs="unbounded">
-				<element name="service" type="ds:serviceType"
-					minOccurs="0" maxOccurs="unbounded">
+				<element name="service" type="ds:serviceType" minOccurs="0"
+					maxOccurs="unbounded">
 				</element>
 				<element name="fields">
 					<complexType>
 						<sequence>
-							<element name="field" minOccurs="1"
-								maxOccurs="unbounded" type="ds:fieldType">
+							<element name="field" minOccurs="1" maxOccurs="unbounded"
+								type="ds:fieldType">
 							</element>
 						</sequence>
-						<attribute name="id" type="string"
-							use="required">
+						<attribute name="id" type="string" use="required">
 						</attribute>
-						<anyAttribute namespace="##any"
-							processContents="lax">
+						<anyAttribute namespace="##any" processContents="lax">
 						</anyAttribute>
 					</complexType>
 				</element>
-				<element name="transformers" >
-				<complexType>
-					<sequence>
-						<element name="transformer" type="ds:transformerType" minOccurs="0" maxOccurs="unbounded"></element>
-					</sequence>
-				</complexType>
+				<element name="transformers">
+					<complexType>
+						<sequence>
+							<element name="transformer" type="ds:transformerType"
+								minOccurs="0" maxOccurs="unbounded"></element>
+						</sequence>
+					</complexType>
 				</element>
 				<element name="validators">
 					<complexType>
-					<sequence>
-						<element name="validator" type="ds:validatorType" minOccurs="0" maxOccurs="unbounded"></element>
-					</sequence>
-				</complexType>
+						<sequence>
+							<element name="validator" type="ds:validatorType"
+								minOccurs="0" maxOccurs="unbounded"></element>
+						</sequence>
+					</complexType>
 				</element>
 			</choice>
 		</sequence>
@@ -51,31 +52,29 @@
 	</complexType>
 	<complexType name="serviceType">
 		<sequence>
-            <element name="description" type="string" minOccurs="0" maxOccurs="1">
+			<element name="description" type="string" minOccurs="0"
+				maxOccurs="1">
 				<annotation>
 					<documentation>数据服务用途描述</documentation>
 				</annotation>
 			</element>
-            <choice minOccurs="0" maxOccurs="unbounded">
-            	<element name="fields" minOccurs="0" maxOccurs="1">
-            		<complexType>
-            			<sequence>
-            				<choice minOccurs="0"
-            					maxOccurs="unbounded">
-            					<element name="include"
-            						type="ds:includeType">
-            					</element>
-            					<element name="field"
-            						type="ds:fieldType">
-            					</element>
-            				</choice>
-            			</sequence>
-            		</complexType>
-            	</element>
-            	<element name="operations" type="ds:operationsType"
-            		minOccurs="0" maxOccurs="1">
-            	</element>
-            </choice>
+			<choice minOccurs="0" maxOccurs="unbounded">
+				<element name="fields" minOccurs="0" maxOccurs="1">
+					<complexType>
+						<sequence>
+							<choice minOccurs="0" maxOccurs="unbounded">
+								<element name="include" type="ds:includeType">
+								</element>
+								<element name="field" type="ds:fieldType">
+								</element>
+							</choice>
+						</sequence>
+					</complexType>
+				</element>
+				<element name="operations" type="ds:operationsType"
+					minOccurs="0" maxOccurs="1">
+				</element>
+			</choice>
 		</sequence>
 		<attribute name="id" type="string" use="required"></attribute>
 		<attribute name="serviceClass" type="string"></attribute>
@@ -112,18 +111,16 @@
 	<complexType name="fieldType">
 		<sequence>
 			<choice minOccurs="0" maxOccurs="unbounded">
-				<element name="validator" minOccurs="0"
-					maxOccurs="unbounded" type="ds:validatorType"></element>
+				<element name="validator" minOccurs="0" maxOccurs="unbounded"
+					type="ds:validatorType"></element>
 				<element name="valueMap" minOccurs="0" maxOccurs="1">
 					<complexType>
 						<sequence>
 							<element name="value" minOccurs="1" maxOccurs="unbounded">
 								<complexType>
-									<attribute name="id"
-										type="string" use="required">
+									<attribute name="id" type="string" use="required">
 									</attribute>
-									<attribute name="name"
-										type="string">
+									<attribute name="name" type="string">
 									</attribute>
 								</complexType>
 							</element>
@@ -132,8 +129,7 @@
 				</element>
 			</choice>
 		</sequence>
-		<attribute name="name" type="string" use="required"
-			form="unqualified">
+		<attribute name="name" type="string" use="required" form="unqualified">
 			<annotation>
 				<documentation>字段名称,必须在一个Fields中唯一</documentation>
 			</annotation>
@@ -197,8 +193,7 @@
 				<documentation>高级属性</documentation>
 			</annotation>
 		</attribute>
-		<attribute name="exportTitle" type="string"
-			form="unqualified">
+		<attribute name="exportTitle" type="string" form="unqualified">
 		</attribute>
 		<attribute name="rootValue" type="string" form="unqualified">
 		</attribute>
@@ -220,35 +215,21 @@
 			<choice minOccurs="0" maxOccurs="unbounded">
 				<element name="transformer" type="ds:transformerType">
 				</element>
-				<element name="params">
+				<element name="params" minOccurs="0" maxOccurs="1">
 					<complexType>
 
 						<sequence minOccurs="1" maxOccurs="unbounded">
-							<element name="param">
-								<complexType>
+							<element name="param" type="ds:paramType">
 
-									<attribute name="key" type="string"
-										use="required">
-									</attribute>
-									<attribute name="value"
-										type="string">
-									</attribute>
-									<attribute name="expression"
-										type="string">
-									</attribute>
-									<attribute name="isOverride"
-										type="boolean">
-									</attribute>
-									<anyAttribute namespace="##any"
-										processContents="lax">
-									</anyAttribute>
-								</complexType>
 							</element>
 						</sequence>
 						<attribute name="isOverride" type="boolean"></attribute>
 					</complexType>
 				</element>
-				<element name="invoker" type="ds:invokerType"></element>
+				<element name="invoker" type="ds:invokerType"
+					minOccurs="0" maxOccurs="1">
+				</element>
+				<element name="forward" type="ds:forwardType"></element>
 				<element name="extensions" type="ds:extensionsType"></element>
 				<any processContents="lax" minOccurs="0"
 					maxOccurs="unbounded" namespace="##other">
@@ -270,11 +251,11 @@
 							<element name="update"
 								type="ds:operationType">
 							</element>
+							<element name="forward" type="ds:forwardType"></element>
 							<any namespace="##other"></any>
 						</choice>
 					</sequence>
-					<attribute name="transactionPolicy"
-						type="ds:transactionPolicy" />
+					<attribute name="transactionPolicy" type="ds:transactionPolicy" />
 					<attribute name="merged" type="ds:mergedType"></attribute>
 				</complexType>
 			</element>
@@ -290,18 +271,18 @@
 	</complexType>
 
 	<complexType name="operationsType">
-    	<sequence>
-    		<choice minOccurs="0" maxOccurs="unbounded">
-    			<element name="fetch" type="ds:operationType"></element>
-    			<element name="add" type="ds:operationType"></element>
-    			<element name="remove" type="ds:operationType">
-    			</element>
-    			<element name="update" type="ds:operationType">
-    			</element>
-    			<element name="custom" type="ds:operationType">
-    			</element>
-    		</choice>
-    	</sequence>
+		<sequence>
+			<choice minOccurs="0" maxOccurs="unbounded">
+				<element name="fetch" type="ds:operationType"></element>
+				<element name="add" type="ds:operationType"></element>
+				<element name="remove" type="ds:operationType">
+				</element>
+				<element name="update" type="ds:operationType">
+				</element>
+				<element name="custom" type="ds:operationType">
+				</element>
+			</choice>
+		</sequence>
 	</complexType>
 
 	<group name="operationGroup">
@@ -319,13 +300,13 @@
 
 		<sequence minOccurs="0" maxOccurs="unbounded">
 			<element name="method-arg">
-			<complexType>
+				<complexType>
 
-				<attribute name="value" type="string"></attribute>
-				<attribute name="order" type="string"></attribute>
-				<attribute name="expression" type="string"></attribute>
-				<anyAttribute></anyAttribute>
-			</complexType>
+					<attribute name="value" type="string"></attribute>
+					<attribute name="order" type="string"></attribute>
+					<attribute name="expression" type="string"></attribute>
+					<anyAttribute></anyAttribute>
+				</complexType>
 			</element>
 		</sequence>
 		<attribute name="class" type="string"></attribute>
@@ -351,31 +332,53 @@
 		</restriction>
 	</simpleType>
 
-    <complexType name="extensionsType">
-    	<sequence minOccurs="0" maxOccurs="unbounded">
-    		<any processContents="lax"></any>
-    	</sequence></complexType>
+	<complexType name="extensionsType">
+		<sequence minOccurs="0" maxOccurs="unbounded">
+			<any processContents="lax"></any>
+		</sequence>
+	</complexType>
 
-    <simpleType name="mergedType">
-    	<restriction base="string">
-    		<enumeration value="simple"></enumeration>
-    		<enumeration value="wrapped"></enumeration>
-    	</restriction>
-    </simpleType>
-    
-    <complexType name="transformerType">
-						<complexContent>
-							<extension base="ds:ref">
-								<sequence minOccurs="0"
-									maxOccurs="unbounded">
-									<any></any>
-								</sequence>
-								<attribute name="id" type="string">
-								</attribute>
-								<anyAttribute namespace="##any"
-									processContents="lax">
-								</anyAttribute>
-							</extension>
-						</complexContent>
-					</complexType>
+	<simpleType name="mergedType">
+		<restriction base="string">
+			<enumeration value="simple"></enumeration>
+			<enumeration value="wrapped"></enumeration>
+		</restriction>
+	</simpleType>
+
+	<complexType name="transformerType">
+		<complexContent>
+			<extension base="ds:ref">
+				<sequence minOccurs="0" maxOccurs="unbounded">
+					<any namespace="##any" processContents="skip" minOccurs="0"
+						maxOccurs="unbounded"></any>
+				</sequence>
+				<attribute name="id" type="string">
+				</attribute>
+				<anyAttribute namespace="##any" processContents="lax">
+				</anyAttribute>
+			</extension>
+		</complexContent>
+	</complexType>
+
+	<complexType name="forwardType">
+		<sequence minOccurs="0" maxOccurs="unbounded">
+			<element name="param" type="ds:paramType"></element>
+		</sequence>
+		<attribute name="name" type="string"></attribute>
+		<attribute name="path" type="string"></attribute>
+		<attribute name="script" type="string"></attribute>
+	</complexType>
+	<complexType name="paramType">
+
+		<attribute name="key" type="string" use="required">
+		</attribute>
+		<attribute name="value" type="string">
+		</attribute>
+		<attribute name="expression" type="string">
+		</attribute>
+		<attribute name="isOverride" type="boolean">
+		</attribute>
+		<anyAttribute namespace="##any" processContents="lax">
+		</anyAttribute>
+	</complexType>
 </schema>

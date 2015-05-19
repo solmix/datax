@@ -76,6 +76,7 @@ public interface DSResponse
         }
     }
 
+    
     void setAffectedRows(Integer affected);
 
     Integer getAffectedRows();
@@ -119,6 +120,14 @@ public interface DSResponse
     void setStatus(Status status);
 
     boolean isSuccess();
+    
+    /**
+     * 当配置forward时，用于控制跳转方向。
+     * @return
+     */
+    String getForward();
+    
+    void setForward(String forward);
 
     public Object getRawData();
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 The Solmix Project
+ * Copyright 2015 The Solmix Project
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -16,36 +16,27 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+package org.solmix.datax.support;
 
-package org.solmix.datax.transformer;
+import org.solmix.datax.DataxRuntimeException;
 
-import javax.annotation.Resource;
-
-import org.solmix.datax.model.TransformerInfo;
-import org.solmx.service.template.TemplateService;
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$ 2015年7月28日
+ * @version $Id$  2015年5月19日
  */
 
-public class TemplateTransformer extends TransformerAdaptor
+public class ForwardException extends DataxRuntimeException
 {
-
-    private String template;
-    private String dataKey;
-    
-    @Resource
-    private TemplateService templateService;
-
-    public TemplateTransformer()
+    private static final long serialVersionUID = 7989492643880642136L;
+    public ForwardException(String string, Throwable e)
     {
+        super(string, e);
     }
 
-    @Override
-    public void init(TransformerInfo info) {
-        template = (String) info.getProperty("template");
-        dataKey = (String) info.getProperty("data-key");
+    public ForwardException(String string)
+    {
+        super(string);
     }
 }

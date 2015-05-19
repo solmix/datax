@@ -39,6 +39,11 @@
 					<extensions>
 						<aa></aa>
 					</extensions>
+					<forward name="forward" path="aa.vm" script="velocity">
+						<param key="forward1" value="forward_value" expression="forward_expr"/>
+					</forward>
+					<forward name="forward2" path="aa.vm" script="velocity">
+					</forward>
 					<customCriteriaFields xmlns="http://www.solmix.org/schema/dataservice-sql">aaaa</customCriteriaFields>
 				</fetch>
 				<fetch id="feth2" refid="#fetch"></fetch>
@@ -52,6 +57,9 @@
 						<fetch refid="#feth2"></fetch>
 						<remove></remove>
 						<update></update>
+						<forward name="forward" path="aa.vm" script="velocity">
+							<param key="forward1" value="forward_value" expression="forward_expr"/>
+						</forward>
 					</batch>
 				</add>
 			</operations>

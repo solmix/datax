@@ -43,7 +43,7 @@ public class AdvanceCriteriaTransformer extends TransformerAdaptor
         return paseAdvanceCriteria(request.getValues());
     }
 
-    public Map<String, Object> paseAdvanceCriteria(Map<String, Object> advance) {
+    public static Map<String, Object> paseAdvanceCriteria(Map<String, Object> advance) {
         if (advance.get(_CONSTRUCTOR) == null || !ADVANCED_CRITERIA.equals(advance.get(_CONSTRUCTOR).toString())) {
             return advance;
         }
@@ -52,8 +52,9 @@ public class AdvanceCriteriaTransformer extends TransformerAdaptor
         // _equals
         return result;
     }
-
-    private static void checkAdvanceCriteria(Map<String, Object> result, Map<String, Object> advance) {
+    
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static void checkAdvanceCriteria(Map<String, Object> result, Map<String, Object> advance) {
 
         for (String key : advance.keySet()) {
             if (key.equals("criteria") || key.equals("operator") || key.equals("_constructor") || key.equals("value") || key.equals("fieldName")) {
@@ -65,7 +66,11 @@ public class AdvanceCriteriaTransformer extends TransformerAdaptor
         Object criteria = advance.get("criteria");
         if (fieldName != null) {
             String oper = advance.get("operator").toString();
-            result.put(fieldName.toString() + "_" + oper, advance.get("value"));
+            Object value = advance.get("value");
+            if(value!=null){
+                value=value.toString().trim();
+            }
+            result.put(fieldName.toString() + "_" + oper, value);
         } else if (criteria != null) {
             if (criteria instanceof List) {
                 List cri = (List) criteria;

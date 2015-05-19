@@ -28,6 +28,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.solmix.commons.collections.DataTypeMap;
 import org.solmix.commons.util.Assert;
 import org.solmix.commons.util.DataUtils;
@@ -52,6 +54,7 @@ import org.solmix.wmix.exchange.WmixMessage;
 
 public class SgtInInterceptor extends AbstractInInterceptor
 {
+    private static final Logger LOG=LoggerFactory.getLogger(SgtInInterceptor.class);
 
     private DSCallFactory dscFactory = new DefaultDSCallFactory();
 
@@ -59,6 +62,9 @@ public class SgtInInterceptor extends AbstractInInterceptor
     @Override
     protected void postToSchema(DataTypeMap data, DataServiceManager manager, WmixMessage message, Exchange exchange) {
 
+        if(LOG.isDebugEnabled()){
+            LOG.debug(">>- {}",data);
+        }
         List<?> operations = data.getList("operations");
         RequestContext requestContext = wrappedRequestcontext(exchange);
         if (operations != null) {

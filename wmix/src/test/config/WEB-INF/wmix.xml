@@ -16,7 +16,7 @@
 			<wmix:components autoDiscovery="true" xmlns="http://www.solmix.org/schema/wmix-components">
 			<component name="app3" path="/app3">
 				<endpoints>
-				<bean class="org.solmix.datax.wmix.mock.TestEndpoint"  xmlns="http://www.springframework.org/schema/beans"></bean>
+				<bean class="org.solmix.datax.wmix.mock.MockEndpoint"  xmlns="http://www.springframework.org/schema/beans"></bean>
 				</endpoints>
 			</component>
 			</wmix:components>

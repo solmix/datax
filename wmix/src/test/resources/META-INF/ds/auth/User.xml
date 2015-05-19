@@ -12,7 +12,7 @@
 			</fields>
 			<operations>
 				<fetch>
-				<invoker class="org.solmix.datax.wmix.exchange.TestDataService" method="fetch1"></invoker>
+				<invoker class="org.solmix.datax.wmix.exchange.MockDataService" method="fetch1"></invoker>
 				</fetch>
 			</operations>
 		</service>

@@ -52,4 +52,7 @@ public interface ApplicationSecurity
      * @return
      */
     String getName();
+    
+    
+    boolean isExclude(String operationid);
 }

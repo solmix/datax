@@ -16,12 +16,15 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+
 package org.solmix.datax.wmix.serializer;
 
 import java.io.IOException;
 import java.util.List;
 
+import org.solmix.datax.DATAX;
 import org.solmix.datax.DSResponse;
+import org.solmix.datax.DSResponse.Status;
 import org.solmix.datax.attachment.Pageable;
 import org.solmix.datax.wmix.Constants;
 
@@ -30,11 +33,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
-
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年8月19日
+ * @version $Id$ 2015年8月19日
  */
 
 public class DSResponseSerializer extends JsonSerializer<ResultObject>
@@ -42,56 +44,68 @@ public class DSResponseSerializer extends JsonSerializer<ResultObject>
 
     @Override
     public void serialize(ResultObject response, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException {
-        if(response.isDSResponse()){
+        if (response.isDSResponse()) {
             jgen.writeStartObject();
             jgen.writeFieldName("response");
-            serialize((DSResponse)response.getReal(),jgen,provider);
+            serialize((DSResponse) response.getReal(), jgen, provider);
             jgen.writeEndObject();
-        }else if(response.isDSResponseList()){
-            List<DSResponse> res = (List<DSResponse>)response.getReal();
+        } else if (response.isDSResponseList()) {
+            List<DSResponse> res = (List<DSResponse>) response.getReal();
             jgen.writeStartObject();
             jgen.writeArrayFieldStart("responses");
-            for(DSResponse re:res){
-                serialize(re,jgen,provider);
+            for (DSResponse re : res) {
+                serialize(re, jgen, provider);
             }
             jgen.writeEndArray();
             jgen.writeEndObject();
-            
-        }else{
+
+        } else {
             jgen.writeObject(response.getReal());
         }
-       
+
     }
-    
+
     public void serialize(DSResponse response, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException {
-       
+
         jgen.writeStartObject();
-        jgen.writeNumberField("status", response.getStatus().value());
+        Status status = response.getStatus();
+        jgen.writeNumberField("status", status.value());
         jgen.writeBooleanField("isDSResponse", true);
-        if(response.getAffectedRows()!=null){
-            jgen.writeNumberField("affectedRows", response.getAffectedRows());
-        }
-        Object invalidate = response.getAttribute(Constants.INVALIDATE_CACHE);
-        Pageable page = response.getAttachment(Pageable.class);
-        if(invalidate!=null){
-            jgen.writeBooleanField("invalidateCache", Boolean.valueOf(invalidate.toString()));
-        }
-        if(page!=null){
-            jgen.writeNumberField("startRow", page.getStartRow());
-            jgen.writeNumberField("endRow", page.getEndRow());
-            jgen.writeNumberField("totalRows", page.getTotalRow());
-        }
-        Object o =response.getRawData();
-        if(o!=null){
-            jgen.writeObjectField("data", o);
-        }
-        Object[] errors = response.getErrors();
-        if(errors!=null&&errors.length>0){
-            jgen.writeObjectField("errors",errors);
+        if (status == Status.STATUS_LOGIN_REQUIRED) {
+            jgen.writeObjectField("AUTH", DATAX.LOGIN_REQUIRED_MARKER);
+        } else if (status == Status.STATUS_LOGIN_SUCCESS) {
+            jgen.writeObjectField("AUTH", DATAX.LOGIN_SUCCESS_MARKER);
+        } else if (status == Status.STATUS_MAX_LOGIN_ATTEMPTS_EXCEEDED) {
+            jgen.writeObjectField("AUTH", DATAX.MAX_LOGIN_ATTEMPTS_EXCEEDED_MARKER);
+        } else {
+            if (response.getAffectedRows() != null) {
+                jgen.writeNumberField("affectedRows", response.getAffectedRows());
+            }
+            Object invalidate = response.getAttribute(Constants.INVALIDATE_CACHE);
+            Pageable page = response.getAttachment(Pageable.class);
+            if (invalidate != null) {
+                jgen.writeBooleanField("invalidateCache", Boolean.valueOf(invalidate.toString()));
+            }
+            if (page != null) {
+                jgen.writeNumberField("startRow", page.getStartRow());
+                jgen.writeNumberField("endRow", page.getEndRow());
+                jgen.writeNumberField("totalRows", page.getTotalRow());
+            }
+            Object o = response.getRawData();
+            if (o != null) {
+                jgen.writeObjectField("data", o);
+            }
+            Object[] errors = response.getErrors();
+            if (errors != null && errors.length > 0) {
+                jgen.writeObjectField("errors", errors);
+            }
         }
         jgen.writeEndObject();
-       
+
     }
+
     @Override
-    public Class<ResultObject> handledType() { return ResultObject.class; }
+    public Class<ResultObject> handledType() {
+        return ResultObject.class;
+    }
 }

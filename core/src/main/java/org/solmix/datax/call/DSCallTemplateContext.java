@@ -39,6 +39,10 @@ import org.solmx.service.toolkit.ToolkitService;
 public class DSCallTemplateContext extends MappedTemplateContext
 {
 
+    public DSCallTemplateContext(ToolkitService toolkit, DSRequest request)
+    {
+        this(toolkit,request,null);
+    }
     public DSCallTemplateContext(ToolkitService toolkit, DSRequest request, DSResponse response)
     {
         initToolkit(toolkit);
@@ -48,14 +52,17 @@ public class DSCallTemplateContext extends MappedTemplateContext
 
     protected void initResponse(DSRequest request, DSResponse response) {
         put(DATAX.VM_DSREQUEST, request);
-        put(DATAX.VM_DSRESPONSE, response);
+      
         if (request.getDSCall() != null) {
             put(DATAX.VM_DSC, request.getDSCall());
         }
         put(DATAX.VM_DS, request.getDataService());
         put(DATAX.VM_VALUES, request.getRawValues());
-
-        put(DATAX.VM_DATA, response.getRawData());
+        if(response!=null){
+            put(DATAX.VM_DSRESPONSE, response);
+            put(DATAX.VM_DATA, response.getRawData());
+        }
+        
     }
 
     protected void initContainer(Container container) {

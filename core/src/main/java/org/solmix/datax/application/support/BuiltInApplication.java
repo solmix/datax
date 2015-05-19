@@ -84,11 +84,12 @@ public class BuiltInApplication implements Application
          DSResponse result =null;
          String operationid =request.getOperationId();
          result= new DSResponseImpl(request.getDataService(), request);
+         boolean exclude =security.isExclude(operationid);
          if(this.authenticationEnabled){
              if(this.security==null){
                 throw new java.lang.IllegalStateException("BuildIn application configured enable authentication,but the runtime ENV not have applicationSecurity instance");
              }else{
-                if( !security.isAuthenticated()){
+                if( !exclude&&!security.isAuthenticated()){
                     result.setStatus(Status.STATUS_LOGIN_REQUIRED);
                     return result;
                 }
@@ -99,7 +100,7 @@ public class BuiltInApplication implements Application
             MDC.put(DATAX.LOG_CONTEXT, request.getOperationId());
         }
         try{
-            if(!isPermitted(request, context)){
+            if(authorizationEnabled&&!exclude&&!isPermitted(request, context)){
                 LOG.warn((new StringBuilder()).append("User does not qualify for any userTypes that are allowed to perform this operation ('").append(
                     operationid).append("')").toString());
                 result.setStatus(Status.STATUS_AUTHORIZATION_FAILURE);

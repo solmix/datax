@@ -125,4 +125,12 @@ public final class DATAX
     
     public static final String AFTER_VALIDATE_VALUES = "org.solmix.datax.validated.values";
     
+    public static final String LOGIN_STATUS_CODE_MARKER = "<SCRIPT>//'1']]>>auth_";
+
+    public static final String LOGIN_REQUIRED_MARKER = "<SCRIPT>//'1']]>>auth_loginRequired";
+
+    public static final String LOGIN_SUCCESS_MARKER = "<SCRIPT>//'1']]>>auth_loginSuccess";
+
+    public static final String MAX_LOGIN_ATTEMPTS_EXCEEDED_MARKER = "<SCRIPT>//'1']]>>auth_maxLoginAttemptsExceeded";
+
 }

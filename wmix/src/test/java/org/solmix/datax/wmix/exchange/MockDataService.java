@@ -37,7 +37,7 @@ import org.solmix.datax.call.DSCall;
  * @version $Id$  2015年7月18日
  */
 
-public class TestDataService
+public class MockDataService
 {
 
     @Resource

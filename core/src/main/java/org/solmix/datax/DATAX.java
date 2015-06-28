@@ -16,10 +16,24 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+package org.solmix.datax;
+
+import java.util.regex.Pattern;
+
+
 /**
- * 
+ * Datax常量
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$  2015年6月25日
  */
 
-package org.solmix.datax.builder;
+public final class DATAX
+{
+    
+    /**
+     * 使用XSD验证XML时,java默认的<code>xpath</code>取Node时需要命名空间，默认命名空间为ds.
+     */
+    public static final String NS="ds:";
+    public final static Pattern NAMESPACE_PATTERN = Pattern.compile("^([a-zA-Z]\\w+[.])*[a-zA-Z]\\w+");
+    public final static Pattern ID_PATTERN = Pattern.compile("^[a-zA-Z]\\w+");
+}

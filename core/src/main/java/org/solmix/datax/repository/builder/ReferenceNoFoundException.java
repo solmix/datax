@@ -16,34 +16,22 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax;
+package org.solmix.datax.repository.builder;
 
-import java.util.Map;
-
-import org.solmix.datax.repository.RepositoryService;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$  2015年6月25日
  */
 
-public interface DataServiceManager
+public class ReferenceNoFoundException extends BuilderException
 {
-    RepositoryService getRepositoryService();
-    
-    void setRepositoryService(RepositoryService service);
-    
-    void setConfigLocation(String location);
-    
-    void addService(Class<?> serviceClass);
-    
-    DataService getDataService(String serviceName);
-    
-     Map<String, Object> getProperties();
+    private static final long serialVersionUID = -5343955789892626091L;
 
-    
-     void setProperties(Map<String, Object> properties) ;
+    public ReferenceNoFoundException()
+    {
+    }
 
 }

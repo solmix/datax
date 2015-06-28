@@ -18,13 +18,19 @@
  */
 package org.solmix.datax.builder;
 
-import java.io.InputStream;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import org.junit.Assert;
+import java.io.InputStream;
+import java.util.regex.Pattern;
+
 import org.junit.Test;
 import org.solmix.commons.xml.XMLNode;
 import org.solmix.commons.xml.XMLParser;
-import org.solmix.datax.builder.xml.DataServiceEntityResolver;
+import org.solmix.datax.DATAX;
+import org.solmix.datax.repository.builder.xml.DataServiceEntityResolver;
 
 
 /**
@@ -39,10 +45,25 @@ public class EntityReloverTest
     @Test
     public void test() {
         InputStream is=EntityReloverTest.class.getResourceAsStream("services.xml");
-        XMLParser parser = new XMLParser(is, true, null,new DataServiceEntityResolver());
-        XMLNode node =parser.evalNode("/ds:datax/ds:service");
-       Assert.assertNotNull(node);
-       Assert.assertEquals("http://www.solmix.org/schema/dataservice-1.0.0", node.getNode().getNamespaceURI());
+        XMLParser parser = new XMLParser(is, true, null,new DataServiceEntityResolver(),DATAX.NS);
+        XMLNode node =parser.evalNode("datax/configuration");
+        assertNotNull(node);
+        assertEquals("http://www.solmix.org/schema/dataservice-1.0.0", node.getNode().getNamespaceURI());
     }
 
+    @Test
+    public void testPattern() {
+         Pattern NAMESPACE_PATTERN = Pattern.compile("^([a-zA-Z]\\w+[.])*[a-zA-Z]\\w+");
+         assertTrue(NAMESPACE_PATTERN.matcher("com.example").matches());
+         assertTrue(NAMESPACE_PATTERN.matcher("com2.example.ssd").matches());
+         assertTrue(NAMESPACE_PATTERN.matcher("com.exampl2e.ssd2").matches());
+         assertTrue(NAMESPACE_PATTERN.matcher("com.exampl2e.ssd2.exampl2e.ssd2").matches());
+         assertFalse(NAMESPACE_PATTERN.matcher("com.2example.ssd").matches());
+         assertFalse(NAMESPACE_PATTERN.matcher("com.example.2ssd").matches());
+         assertFalse(NAMESPACE_PATTERN.matcher("com.example.$ssd").matches());
+         assertFalse(NAMESPACE_PATTERN.matcher("com.example.ss$d").matches());
+         assertFalse(NAMESPACE_PATTERN.matcher("com.exa$mple.ssd").matches());
+         assertFalse(NAMESPACE_PATTERN.matcher("com.exa mple.ssd").matches());
+         assertFalse(NAMESPACE_PATTERN.matcher("com.example.").matches());
+    }
 }

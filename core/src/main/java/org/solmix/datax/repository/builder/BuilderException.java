@@ -16,33 +16,40 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.builder.xml;
+package org.solmix.datax.repository.builder;
 
-import org.solmix.commons.xml.XMLParser;
-import org.solmix.datax.builder.AbstractBuilder;
-import org.solmix.datax.repository.RepositoryService;
+import org.solmix.datax.DataxException;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$  2015年6月25日
  */
 
-public class XMLDataServiceBuilder extends AbstractBuilder
+public class BuilderException extends DataxException
 {
 
-    private XMLParser xmlParser;
-    private String uri;
-    private XMLDataServiceBuilder(XMLParser parser, RepositoryService repositoryService,
-        String resourceUri){
-        super(repositoryService);
-        this.xmlParser=parser;
-        this.uri=resourceUri;
-    }
-    
-    public void build(){
+    private static final long serialVersionUID = -4416769309453806197L;
+
+    public BuilderException(){
         
+    }
+    /**
+     * @param string
+     * @param e
+     */
+    public BuilderException(String string, Throwable e)
+    {
+        super(string, e);
+    }
+
+    /**
+     * @param string
+     */
+    public BuilderException(String string)
+    {
+        super(string);
     }
 
 }

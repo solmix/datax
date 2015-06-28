@@ -16,34 +16,34 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax;
 
-import java.util.Map;
+package org.solmix.datax.repository.builder;
 
-import org.solmix.datax.repository.RepositoryService;
-
+import org.solmix.commons.xml.XMLNode;
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$ 2015年6月26日
  */
 
-public interface DataServiceManager
+public class DataServiceInfoResolver implements ReferenceResolver
 {
-    RepositoryService getRepositoryService();
-    
-    void setRepositoryService(RepositoryService service);
-    
-    void setConfigLocation(String location);
-    
-    void addService(Class<?> serviceClass);
-    
-    DataService getDataService(String serviceName);
-    
-     Map<String, Object> getProperties();
 
-    
-     void setProperties(Map<String, Object> properties) ;
+    private final XMLNode node;
+
+    private final XmlParserContext context;
+
+    public DataServiceInfoResolver(XMLNode node, XmlParserContext context)
+    {
+        this.node = node;
+        this.context = context;
+    }
+
+    @Override
+    public void resolve() {
+        // TODO Auto-generated method stub
+
+    }
 
 }

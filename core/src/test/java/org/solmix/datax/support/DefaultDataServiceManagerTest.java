@@ -16,27 +16,54 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+
 package org.solmix.datax.support;
 
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
-import org.solmix.datax.DataServiceManager;
+import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.runtime.Container;
 import org.solmix.runtime.ContainerFactory;
-
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$ 2015年6月18日
  */
 
 public class DefaultDataServiceManagerTest
 {
+
+     DefaultDataServiceManager dsm;
+    Container c;
+    @Before
+    public  void setup() {
+         c = ContainerFactory.getDefaultContainer(true);
+        dsm = c.getExtension(DefaultDataServiceManager.class);
+        Assert.assertNotNull(dsm);
+    }
+
+//    @Test
+    public void testInit() {
+        dsm.init();
+    }
+    
     @Test
-    public void testContainerFound(){
-        Container c=ContainerFactory.getDefaultContainer(true);
-        Assert.assertNotNull(c.getExtension(DataServiceManager.class));
+    public void testDefinitionResources() {
+        dsm.addResource("classpath:META-INF/dataservice1/ds2.xml");
+        dsm.setLoadDefault(false);
+        dsm.init();
+        DataServiceInfo dsi =dsm.getRepositoryService().getDataService("com.example.ds.aa");
+        Assert.assertNotNull(dsi);
+        Assert.assertEquals(3, dsi.getFields().size());
+    }
+    @After
+    public void tearDown(){
+        if(c!=null){
+            c.close();
+        }
     }
 
 }

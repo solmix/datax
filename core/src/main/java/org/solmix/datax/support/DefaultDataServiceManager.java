@@ -18,16 +18,29 @@
  */
 package org.solmix.datax.support;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.solmix.commons.annotation.ThreadSafe;
+import org.solmix.commons.xml.XMLParsingException;
 import org.solmix.datax.DataService;
 import org.solmix.datax.DataServiceManager;
+import org.solmix.datax.DataxException;
+import org.solmix.datax.repository.DefaultRepository;
 import org.solmix.datax.repository.RepositoryService;
+import org.solmix.datax.repository.builder.BaseXmlNodeParserProvider;
+import org.solmix.datax.repository.builder.BuilderException;
+import org.solmix.datax.repository.builder.xml.XMLDataServiceBuilder;
 import org.solmix.runtime.Container;
+import org.solmix.runtime.resource.InputStreamResource;
+import org.solmix.runtime.resource.ResourceManager;
 
 
 /**
@@ -38,18 +51,28 @@ import org.solmix.runtime.Container;
 @ThreadSafe
 public class DefaultDataServiceManager implements DataServiceManager
 {
-
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultDataServiceManager.class);
     private static final String DEFAULT_XML_LOCATION = "META-INF/dataservice/*.xml";
 
     private boolean init;
     
+    /**加载该路径下的配置*/
     private String location;
+    
+    /**是否加载默认目录的配置*/
+    private boolean loadDefault = true;
     
     private List<String> resources;
     
     private String basePackage;
     
     private Container contaier;
+    
+    private Map<String,Object> properties;
+    
+    private RepositoryService repositoryService;
+    
+    private String defaultServerType;
     
     public DefaultDataServiceManager(Container c){
         this.contaier=c;
@@ -62,8 +85,7 @@ public class DefaultDataServiceManager implements DataServiceManager
      */
     @Override
     public RepositoryService getRepositoryService() {
-        // TODO Auto-generated method stub
-        return null;
+        return repositoryService;
     }
 
     /**
@@ -73,8 +95,11 @@ public class DefaultDataServiceManager implements DataServiceManager
      */
     @Override
     public void setRepositoryService(RepositoryService service) {
-        // TODO Auto-generated method stub
-
+        if(this.repositoryService!=null&&this.repositoryService!=service){
+            //设置了不同的repository，重新初始化
+            init=false;
+            this.repositoryService=service;
+        }
     }
 
     /**
@@ -111,6 +136,61 @@ public class DefaultDataServiceManager implements DataServiceManager
         return null;
     }
     
+    
+    
+    public boolean getLoadDefault() {
+        return loadDefault;
+    }
+
+    
+    public void setLoadDefault(boolean loadDefault) {
+        this.loadDefault = loadDefault;
+    }
+
+    public List<String> getResources() {
+        return resources;
+    }
+    /**
+     * 设置默认的<code>serverType</code>,
+     * 当配置中不指定<code>serverType</code>时使用,如果不设置则为"base".
+     * @param defaultServerType
+     */
+    public String getDefaultServerType() {
+        if(defaultServerType==null){
+            defaultServerType=BaseXmlNodeParserProvider.BASE;
+        }
+        return defaultServerType;
+    }
+    
+    /**
+     * 设置默认的<code>serverType</code>,
+     * 当配置中不指定<code>serverType</code>时使用,如果不设置则为"base".
+     * @param defaultServerType
+     */
+    public void setDefaultServerType(String defaultServerType) {
+        this.defaultServerType = defaultServerType;
+    }
+
+    public Map<String, Object> getProperties() {
+        return properties;
+    }
+
+    
+    public void setProperties(Map<String, Object> properties) {
+        this.properties = properties;
+    }
+
+    public void setResources(List<String> resources) {
+        this.resources = resources;
+    }
+    
+    public void addResource(String resource) {
+        if(this.resources==null){
+            this.resources= new ArrayList<String>();
+        }
+        resources.add(resource);
+    }
+
     /**确保已经初始化*/
     private void ensureInit(){
         if(!init){
@@ -122,45 +202,93 @@ public class DefaultDataServiceManager implements DataServiceManager
      * 
      */
     public synchronized void init() {
-        buildRepository();
+        if(init){
+            return;
+        }
+        //未设置，使用默认repository。
+        if(repositoryService==null){
+            buildDefaultRepository();
+        }
         init=true;
     }
 
-    private void buildRepository(){
+    private void buildDefaultRepository(){
         String xmlLocation=location;
-        if(xmlLocation==null){
-            xmlLocation=DEFAULT_XML_LOCATION;
-        }
-        Map<String,InputStream> xmlResources = new HashMap<String,InputStream>();
-        xmlResources.putAll(lookupXmlDataServiceConfig(xmlLocation));
+        
+        Map<String,InputStream> xmlResources = new LinkedHashMap<String,InputStream>();
+        //先加载指定的XML
         xmlResources.putAll(loadDefinitionXmlDataServiceConfig());
-        if(this.basePackage!=null){
-            scanClassDefinition(basePackage);
+        
+        if (loadDefault && xmlLocation == null) {
+            xmlLocation = DEFAULT_XML_LOCATION;
         }
+        if (xmlLocation != null) {
+            xmlResources.putAll(lookupXmlDataServiceConfig(xmlLocation));
+        }
+        
+        DefaultRepository repository= new DefaultRepository(this);
+        if(this.basePackage!=null){
+            scanClassDefinition(basePackage,repository);
+        }
+        
+        for(String xml:xmlResources.keySet()){
+            XMLDataServiceBuilder builder=null;
+            try {
+                builder = new XMLDataServiceBuilder(xmlResources.get(xml), repository, getProperties(), xml,contaier,getDefaultServerType());
+            } catch (XMLParsingException e) {
+                throw new BuilderException("Error validate xml file:"+xml, e);
+            }
+            builder.build();
+        }
+        this.repositoryService=repository;
         
     }
 
     /**
      *扫描注解
      */
-    private void scanClassDefinition(String basePackage2) {
+    protected void scanClassDefinition(String basePackage,DefaultRepository repository) {
         // TODO Auto-generated method stub
-        
     }
     /**
      *加载制定xml配置
      */
     private  Map<String,InputStream> loadDefinitionXmlDataServiceConfig() {
-        return null;
-        // TODO Auto-generated method stub
-        
+        if(this.resources==null)
+            return Collections.emptyMap();
+        ResourceManager rm= contaier.getExtension(ResourceManager.class);
+        Map<String,InputStream> configs= new LinkedHashMap<String, InputStream>();
+        try {
+            for(String xml:this.resources){
+                InputStreamResource ism = rm.getResourceAsStream(xml);
+                if(ism==null){
+                    LOG.warn("Can't found definition xml configuration {}",xml);
+                }else{
+                    configs.put(ism.getURI().toString(),ism.getInputStream());
+                }
+            }
+        } catch (IOException e) {
+           throw new DataxException("load definition dataservice configuration file failed.",e);
+        }
+        return configs;
     }
     /**
      *查找xml
      */
     private  Map<String,InputStream> lookupXmlDataServiceConfig(String xmlLocation) {
-        return null;
-        // TODO Auto-generated method stub
+        ResourceManager rm= contaier.getExtension(ResourceManager.class);
+        Map<String,InputStream> configs= new LinkedHashMap<String, InputStream>();
+        try {
+            InputStreamResource[] resources= rm.getResourcesAsStream(xmlLocation);
+            if(resources!=null){
+                for(InputStreamResource resource:resources){
+                    configs.put(resource.getURI().toString(), resource.getInputStream());
+                }
+            }
+        } catch (IOException e) {
+           throw new DataxException("lookup dataservice configuration file failed.",e);
+        }
+        return configs;
         
     }
 

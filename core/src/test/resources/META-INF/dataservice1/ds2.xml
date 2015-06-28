@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<datax xmlns="http://www.solmix.org/schema/dataservice-1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.solmix.org/schema/dataservice-1.0.0 http://www.solmix.org/xmlns/dataservice/v1.0.0">
+	<configuration namespace="com.example.ds">
+		<service id="aa">
+			<fields>
+				<include refid="extfield"></include>
+				<field name="field1">
+					<valueMap>
+						<value id="11" name="text" />
+					</valueMap>
+				</field>
+				<include refid="com.example.ds.extfield2"></include>
+
+			</fields>
+		</service>
+		<fields id="extfield">
+			<field name="extfield1">
+			<validator id="v1" type="length"></validator>
+			</field>
+		</fields>
+		<fields id="extfield2">
+			<field name="extfield2"></field>
+		</fields>
+	</configuration>
+</datax>

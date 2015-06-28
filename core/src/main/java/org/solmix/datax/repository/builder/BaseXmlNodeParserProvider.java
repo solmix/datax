@@ -16,38 +16,37 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+package org.solmix.datax.repository.builder;
 
-package org.solmix.datax;
+import org.solmix.datax.model.DataServiceInfo;
+import org.solmix.datax.model.FieldInfo;
+import org.solmix.runtime.Container;
+import org.solmix.runtime.Extension;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$ 2015年6月18日
+ * @version $Id$  2015年6月25日
  */
-
-public class DataxException extends RuntimeException
+@Extension(name=BaseXmlNodeParserProvider.BASE)
+public class BaseXmlNodeParserProvider extends AbstractXmlNodeParserProvider implements XmlNodeParserProvider
 {
-
-    private static final long serialVersionUID = 4014907223048817109L;
-
-    public DataxException()
+    public BaseXmlNodeParserProvider(Container container)
     {
-
+        super(container);
     }
+
+    public static final String BASE="base";
 
     /**
-     * @param string
-     * @param e
+     * {@inheritDoc}
+     * 
+     * @see org.solmix.datax.repository.builder.AbstractXmlNodeParserProvider#config()
      */
-    public DataxException(String string, Throwable e)
-    {
-        super(string, e);
+    @Override
+    protected void config() {
+       bind("/datax/configuration/service", DataServiceInfo.Parser.class);
+       bind("/datax/configuration/service/fields/field", FieldInfo.Parser.class);
     }
-
-    public DataxException(String string)
-    {
-        super(string);
-    }
-
 }

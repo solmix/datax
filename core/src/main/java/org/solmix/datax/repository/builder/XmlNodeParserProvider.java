@@ -16,34 +16,19 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.builder.xml;
+package org.solmix.datax.repository.builder;
 
-import java.io.IOException;
-import java.net.URL;
-
-import org.solmix.commons.util.ClassLoaderUtils;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
+import org.solmix.runtime.Extension;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月17日
+ * @version $Id$  2015年6月24日
  */
-
-public class DataServiceEntityResolver implements EntityResolver
+@Extension
+public interface XmlNodeParserProvider
 {
-
-    public static final String DATASERVICE_XSD="org/solmix/datax/model/dataservice-1.0.0.xsd";
-    
-    @Override
-    public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-        
-        URL url=ClassLoaderUtils.getResource(DATASERVICE_XSD, DataServiceEntityResolver.class);
-        InputSource in = new InputSource(url.openStream());
-        return in;
-    }
+    <T> XmlNodeParser<T> getXmlNodeParser(String path,Class<T> clz);
 
 }

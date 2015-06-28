@@ -16,19 +16,18 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.model;
+package org.solmix.datax.repository.builder;
+
+import org.solmix.datax.repository.RepositoryService;
 
 
 /**
- * DataServiceInfo 工厂
  * 
  * @author solmix.f@gmail.com
  * @version $Id$  2015年6月18日
  */
 
-public interface DataServiceInfoFactory
+public interface DataServiceInfoBuilder<T> 
 {
-    
-    DataServiceInfo createDataServiceInfo();
-
+    void build(T input,RepositoryService repository);
 }

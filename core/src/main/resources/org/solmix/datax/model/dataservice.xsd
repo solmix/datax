@@ -5,7 +5,7 @@
 	version="1.0.0">
 
 
-</schema>
+
     <xsd:element name="solmix">
     <xsd:complexType>
     	<xsd:sequence>
@@ -336,3 +336,4 @@
     </xsd:complexType>
 
     <xsd:complexType name="subsType"></xsd:complexType>
+</xsd:schema>

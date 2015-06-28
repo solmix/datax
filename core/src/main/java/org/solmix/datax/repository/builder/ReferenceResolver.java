@@ -16,22 +16,17 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.builder;
-
-import org.solmix.datax.repository.RepositoryService;
+package org.solmix.datax.repository.builder;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$  2015年6月25日
  */
 
-public class AbstractBuilder
+public interface ReferenceResolver
 {
-    private RepositoryService repositoryService;
-    
-    public AbstractBuilder(RepositoryService repositoryService){
-        this.repositoryService=repositoryService;
-    }
+
+    void resolve();
 }

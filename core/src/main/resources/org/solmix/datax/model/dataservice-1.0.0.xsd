@@ -1,214 +1,209 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema targetNamespace="http://www.solmix.org/schema/dataservice-1.0.0" elementFormDefault="qualified" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:ds="http://www.solmix.org/schema/dataservice-1.0.0">
+<schema targetNamespace="http://www.solmix.org/schema/dataservice-1.0.0"
+	elementFormDefault="qualified" xmlns="http://www.w3.org/2001/XMLSchema"
+	xmlns:ds="http://www.solmix.org/schema/dataservice-1.0.0">
 
-    <element name="datax" type="ds:dataxType"></element>
-    <complexType name="dataxType">
-    	<sequence minOccurs="0" maxOccurs="unbounded">
-    		<element name="service" type="ds:serviceType" minOccurs="0" maxOccurs="unbounded"></element>
-    	</sequence>
-    </complexType>
-    <complexType name="serviceType">
-    	<sequence>
-    		<element name="description" type="string"
-    					minOccurs="0" maxOccurs="1">
-    					<annotation>
-    						<documentation>
-    							数据服务用途描述
-    						</documentation>
-    					</annotation>
-    		</element>
-    		<element name="fields" minOccurs="0" maxOccurs="1">
-    					<complexType>
-    						<sequence>
-    							<element name="field" minOccurs="1"
-    								maxOccurs="unbounded">
-    								<complexType>
-    									<sequence>
-    										<element name="valueMap"
-    											minOccurs="0" maxOccurs="1">
-    											<complexType>
-    												<sequence>
-    													<element
-    														name="value">
-    														<complexType>
-    															<attribute
-    																name="id" type="string">
-    															</attribute>
-    															<attribute
-    																name="name" type="string">
-    															</attribute>
-    														</complexType>
-    													</element>
-    												</sequence>
-    												<attribute
-    													name="operation" type="string">
-    												</attribute>
-    											</complexType>
-    										</element>
-    										<element
-    											name="validators">
-    											<complexType>
-    												<sequence>
-    													<element
-    														name="validator" minOccurs="1"
-    														maxOccurs="unbounded">
-    														<complexType>
-    															<attribute
-    																name="type" type="string">
-    															</attribute>
-    															<attribute
-    																name="max" type="string">
-    															</attribute>
-    														</complexType>
-    													</element>
-    												</sequence>
-    											</complexType>
-    										</element>
-    									</sequence>
-    									<attribute name="name"
-    										type="string" use="required" form="unqualified">
-    										<annotation>
-    											<documentation>
-    												字段名称,必须在一个Fields中唯一
-    											</documentation>
-    										</annotation>
-    									</attribute>
-    									<attribute name="type"
-    										form="unqualified">
-    										<annotation>
-    											<documentation>
-    												字段类型
-    											</documentation>
-    										</annotation>
-    										<simpleType>
-    											<restriction
-    												base="string">
-    												<enumeration
-    													value="text">
-    												</enumeration>
-    												<enumeration
-    													value="boolean">
-    												</enumeration>
-    												<enumeration
-    													value="integer">
-    												</enumeration>
-    												<enumeration
-    													value="float">
-    												</enumeration>
-    												<enumeration
-    													value="date">
-    												</enumeration>
-    												<enumeration
-    													value="time">
-    												</enumeration>
-    												<enumeration
-    													value="datetime">
-    												</enumeration>
-    												<enumeration
-    													value="enum">
-    												</enumeration>
-    												<enumeration
-    													value="intEnum">
-    												</enumeration>
-    												<enumeration
-    													value="sequence">
-    												</enumeration>
-    												<enumeration
-    													value="link">
-    												</enumeration>
-    												<enumeration
-    													value="image">
-    												</enumeration>
-    												<enumeration
-    													value="binary">
-    												</enumeration>
-    												<enumeration
-    													value="imageFile">
-    												</enumeration>
-    												<enumeration
-    													value="any">
-    												</enumeration>
-    												<enumeration
-    													value="modifier">
-    												</enumeration>
-    												<enumeration
-    													value="modifierTimestamp">
-    												</enumeration>
-    												<enumeration
-    													value="creatorTimestamp">
-    												</enumeration>
-    												<enumeration
-    													value="creator">
-    												</enumeration>
-    												<enumeration
-    													value="password">
-    												</enumeration>
-    												<enumeration
-    													value="custom">
-    												</enumeration>
-    												<enumeration
-    													value="ntext">
-    												</enumeration>
-    												<enumeration
-    													value="unknown">
-    												</enumeration>
-    											</restriction>
-    										</simpleType>
-    									</attribute>
-    									<attribute name="title"
-    										type="string" form="unqualified">
-    										<annotation>
-    											<documentation>
-    												标题
-    											</documentation>
-    										</annotation>
-    									</attribute>
-    									<attribute name="hidden"
-    										type="boolean" form="unqualified">
-    										<annotation>
-    											<documentation>
-    												是否隐藏
-    											</documentation>
-    										</annotation>
-    									</attribute>
-    									<attribute name="canEdit"
-    										type="boolean" form="unqualified">
-    										<annotation>
-    											<documentation>
-    												高级属性
-    											</documentation>
-    										</annotation>
-    									</attribute>
-    									<attribute name="canExport"
-    										type="boolean" form="unqualified">
-    										<annotation>
-    											<documentation>
-    												高级属性
-    											</documentation>
-    										</annotation>
-    									</attribute>
-    									<attribute name="canFilter"
-    										type="boolean" form="unqualified">
-    										<annotation>
-    											<documentation>
-    												高级属性
-    											</documentation>
-    										</annotation>
-    									</attribute>
-    									<attribute
-    										name="exportTitle" type="string" form="unqualified">
-    									</attribute>
-    									<attribute name="rootValue"
-    										type="string" form="unqualified">
-    									</attribute>
-    									<anyAttribute></anyAttribute>
-    								</complexType>
-    							</element>
-    						</sequence>
-    					</complexType>
-    				</element>
-    	</sequence>
-    	<attribute name="namespace" type="string"></attribute>
-    	<attribute name="type" type="string"></attribute>
-    </complexType>
+	<element name="datax" type="ds:dataxType"></element>
+	<complexType name="dataxType">
+		<sequence minOccurs="0" maxOccurs="unbounded">
+			<element name="configuration" type="ds:configurationType"
+				minOccurs="1" maxOccurs="1"></element>
+		</sequence>
+	</complexType>
+	<complexType name="configurationType">
+		<sequence>
+			<choice minOccurs="0" maxOccurs="unbounded">
+				<element name="service" type="ds:serviceType" minOccurs="0"
+					maxOccurs="unbounded">
+				</element>
+				<element name="fields">
+					<complexType>
+						<sequence>
+							<element name="field" minOccurs="1"
+								maxOccurs="unbounded" type="ds:fieldType">
+							</element>
+						</sequence>
+						<attribute name="id" type="string" use="required"></attribute>
+						<anyAttribute></anyAttribute>
+					</complexType>
+				</element>
+			</choice>
+		</sequence>
+		<attribute name="namespace" type="string" use="required"></attribute>
+		<attribute name="serverType" type="string"></attribute>
+	</complexType>
+	<complexType name="serviceType">
+		<sequence>
+			<element name="description" type="string" minOccurs="0"
+				maxOccurs="1">
+				<annotation>
+					<documentation>数据服务用途描述</documentation>
+				</annotation>
+			</element>
+			<element name="fields" minOccurs="0" maxOccurs="1">
+				<complexType>
+					<sequence>
+						<choice minOccurs="0" maxOccurs="unbounded">
+							<element name="include"
+								type="ds:includeType">
+							</element>
+							<element name="field" type="ds:fieldType">
+							</element>
+						</choice>
+					</sequence>
+
+
+				</complexType>
+			</element>
+			<element name="operations">
+			<complexType>
+				<sequence>
+					<choice minOccurs="0" maxOccurs="unbounded">
+						<element name="fetch" type="string"></element>
+						<element name="add" type="string"></element>
+						<element name="remove" type="string"></element>
+						<element name="update" type="string"></element>
+						<element name="custom" type="string"></element>
+					</choice>
+				</sequence>
+			</complexType>
+			</element>
+		</sequence>
+		<attribute name="id" type="string" use="required"></attribute>
+		<anyAttribute></anyAttribute>
+	</complexType>
+
+	<complexType name="fieldType">
+		<sequence>
+			<choice minOccurs="0" maxOccurs="unbounded">
+				<element name="validator" minOccurs="0"
+					maxOccurs="unbounded">
+					<complexType>
+						<sequence>
+							<any></any>
+						</sequence>
+						<attribute name="id" type="string"></attribute>
+						<attribute name="type" type="string">
+						</attribute>
+						<attribute name="refid" type="string"></attribute>
+						<attribute name="container-ref" type="string"></attribute>
+						<attribute name="errorMessage" type="string"></attribute>
+						<attribute name="serverOnly" type="boolean"></attribute>
+						<attribute name="validateOnChange"
+							type="boolean">
+						</attribute>
+						<attribute name="max" type="double"></attribute>
+						<attribute name="min" type="double"></attribute>
+						<attribute name="exclusive" type="boolean"></attribute>
+						<attribute name="mask" type="string"></attribute>
+						<attribute name="precision" type="double"></attribute>
+						<attribute name="expression" type="string"></attribute>
+						<attribute name="substring" type="string"></attribute>
+						<attribute name="operator" type="string"></attribute>
+						<attribute name="count" type="long"></attribute>
+						<anyAttribute></anyAttribute>
+					</complexType>
+				</element>
+				<element name="valueMap" minOccurs="0" maxOccurs="1">
+					<complexType>
+						<sequence>
+							<element name="value" minOccurs="1" maxOccurs="unbounded">
+								<complexType>
+									<attribute name="id"
+										type="string" use="required">
+									</attribute>
+									<attribute name="name"
+										type="string">
+									</attribute>
+								</complexType>
+							</element>
+						</sequence>
+					</complexType>
+				</element>
+			</choice>
+		</sequence>
+		<attribute name="name" type="string" use="required"
+			form="unqualified">
+			<annotation>
+				<documentation>字段名称,必须在一个Fields中唯一</documentation>
+			</annotation>
+		</attribute>
+		<attribute name="type" form="unqualified">
+			<annotation>
+				<documentation>字段类型</documentation>
+			</annotation>
+			<simpleType>
+				<restriction base="string">
+					<enumeration value="text"></enumeration>
+					<enumeration value="boolean"></enumeration>
+					<enumeration value="integer"></enumeration>
+					<enumeration value="float"></enumeration>
+					<enumeration value="date"></enumeration>
+					<enumeration value="time"></enumeration>
+					<enumeration value="datetime"></enumeration>
+					<enumeration value="enum"></enumeration>
+					<enumeration value="intEnum"></enumeration>
+					<enumeration value="sequence"></enumeration>
+					<enumeration value="link"></enumeration>
+					<enumeration value="image"></enumeration>
+					<enumeration value="binary"></enumeration>
+					<enumeration value="imageFile"></enumeration>
+					<enumeration value="any"></enumeration>
+					<enumeration value="modifier"></enumeration>
+					<enumeration value="modifierTimestamp">
+					</enumeration>
+					<enumeration value="creatorTimestamp"></enumeration>
+					<enumeration value="creator"></enumeration>
+					<enumeration value="password"></enumeration>
+					<enumeration value="custom"></enumeration>
+					<enumeration value="ntext"></enumeration>
+					<enumeration value="unknown"></enumeration>
+				</restriction>
+			</simpleType>
+		</attribute>
+		<attribute name="title" type="string" form="unqualified">
+			<annotation>
+				<documentation>标题</documentation>
+			</annotation>
+		</attribute>
+		<attribute name="hidden" type="boolean" form="unqualified">
+			<annotation>
+				<documentation>是否隐藏</documentation>
+			</annotation>
+		</attribute>
+		<attribute name="required" type="boolean"></attribute>
+		<attribute name="canEdit" type="boolean" form="unqualified">
+			<annotation>
+				<documentation>高级属性</documentation>
+			</annotation>
+		</attribute>
+		<attribute name="canExport" type="boolean" form="unqualified">
+			<annotation>
+				<documentation>高级属性</documentation>
+			</annotation>
+		</attribute>
+		<attribute name="canFilter" type="boolean" form="unqualified">
+			<annotation>
+				<documentation>高级属性</documentation>
+			</annotation>
+		</attribute>
+		<attribute name="exportTitle" type="string"
+			form="unqualified">
+		</attribute>
+		<attribute name="rootValue" type="string" form="unqualified">
+		</attribute>
+		<attribute name="dateFormat" type="string"></attribute>
+		<attribute name="maxFileSize" type="int"></attribute>
+		<attribute name="primaryKey" type="boolean"></attribute>
+		<attribute name="foreignKey" type="string"></attribute>
+		<anyAttribute></anyAttribute>
+	</complexType>
+
+
+	<complexType name="includeType">
+
+		<attribute name="refid" type="string" use="required"></attribute>
+		<anyAttribute></anyAttribute>
+	</complexType>
+
 </schema>

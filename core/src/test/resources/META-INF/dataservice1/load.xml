@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<datax xmlns="http://www.solmix.org/schema/dataservice-1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.solmix.org/schema/dataservice-1.0.0 http://www.solmix.org/xmlns/dataservice/v1.0.0">
+	<configuration namespace="load">
+
+		<service id="ds" lookup="container"
+			serviceClass="org.solmix.datax.service.TestDataService" serviceName="test"
+			scope="singleton">
+			<description>服务描述</description>
+			<fields>
+				<field name="field1" canEdit="true" canFilter="true"
+					canExport="true" dateFormat="yyyy-MM-dd" exportTitle="字段1"
+					foreignKey="load.ds1.field" hidden="true" maxFileSize="248000"
+					primaryKey="true" required="true" rootValue="1" title="字段@" type="text">
+					<validator id="check" class="org.solmix.datax.service.TestValidator"
+						count="1" errorMessage="验证错误" exclusive="true" expression="$dataUtils.validate(aa)"
+						lookup="container" mask="####00.##" max="100" min="2" name="v1"
+						operator="add" precision="20.0" serverOnly="true" substring="aa"
+						type="length" validateOnChange="true" />
+					<validator refid="##ds.check" />
+					<validator refid="#check" />
+					<valueMap>
+						<value id="11" name="text" />
+					</valueMap>
+				</field>
+			</fields>
+			<operations>
+				<fetch autoJoinTransactions="true" serviceMethod="getMenu">
+					<params isOverride="true">
+						<param key="key" value="v" isOverride="false" />
+						<param key="key2" value="v2"  />
+					</params>
+					<transformer id="trans" class="org.solmix.datax.transformer.TestTransformer" lookup="container" name="trans"/>
+					<invoker class="org.solmix.datax.transformer.TestTransformer" name="invoker" lookup="container" method="ink"/>
+					<transformer refid="#trans"></transformer>
+				</fetch>
+				<fetch id="feth2" refid="#fetch"></fetch>
+				<add>
+					<batch transactionPolicy="from_first_change">
+						<add>
+							<batch>
+								<add></add>
+							</batch>
+						</add>
+						<fetch refid="#feth2"></fetch>
+						<remove></remove>
+						<update></update>
+					</batch>
+				</add>
+				<dddd></dddd>
+			</operations>
+		</service>
+	</configuration>
+</datax>

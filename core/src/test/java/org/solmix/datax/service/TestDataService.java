@@ -16,10 +16,16 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+package org.solmix.datax.service;
+
+
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$  2015年7月1日
  */
 
-package org.solmix.datax.repository.builder;
+public class TestDataService
+{
+
+}

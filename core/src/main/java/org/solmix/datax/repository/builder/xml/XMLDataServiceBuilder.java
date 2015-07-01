@@ -24,6 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.solmix.commons.util.StringUtils;
 import org.solmix.commons.xml.XMLNode;
 import org.solmix.commons.xml.XMLParser;
@@ -53,6 +55,7 @@ import org.solmix.runtime.extension.ExtensionLoader;
 public class XMLDataServiceBuilder extends AbstractBuilder
 {
 
+    private static final Logger LOG = LoggerFactory.getLogger(XMLDataServiceBuilder.class);
     private XMLParser xmlParser;
     
     private String uri;
@@ -81,12 +84,15 @@ public class XMLDataServiceBuilder extends AbstractBuilder
     }
     
     public void build(){
+        if(LOG.isTraceEnabled())
+            LOG.trace(">>>>Starting build dataservice from uri:{}",uri);
         if(!repository.isResourceLoaded(uri)){
             parseConfigurationElement(xmlParser.evalNode("/datax/configuration"));
             repository.addLoadedResource(uri);
         }
         resolverReference();
-        
+        if(LOG.isTraceEnabled())
+            LOG.trace("<<<<END");
     }
     /**
      * 
@@ -135,6 +141,8 @@ public class XMLDataServiceBuilder extends AbstractBuilder
         XmlNodeParser<DataServiceInfo> parser = xmlNodeParserProvider.getXmlNodeParser("/datax/configuration/service", DataServiceInfo.class);
         for (XMLNode node : nodes) {
             try {
+                if(LOG.isTraceEnabled())
+                    LOG.trace(">>>>Starting parse dataservice xpath:{},name:{}",node.getPath(),node.getStringAttribute("id"));
                 DataServiceInfo dsi = parser.parse(node, context);
                 repository.addDataService(dsi);
             } catch (IncludeNoFoundException e) {
@@ -145,11 +153,17 @@ public class XMLDataServiceBuilder extends AbstractBuilder
     }
     
     protected void fieldsToRepository(List<XMLNode> nodes, XmlParserContext context) {
+        if(nodes==null||nodes.isEmpty()){
+            return;
+        }
         for(XMLNode node:nodes){
             String id = node.getStringAttribute("id");
             if(id==null){
                 throw new BuilderException("id is null for xml:\n"+node.toString());
             }
+            if(LOG.isTraceEnabled())
+                LOG.trace(">>>>Starting parse ext Fields xpath:{},name:{}",node.getPath(),node.getStringAttribute("id"));
+            
             id=context.applyCurrentNamespace(id, false);
             context.getRepositoryService().addInclude(id,node);
         }

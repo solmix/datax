@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Assert;
+import org.solmix.commons.annotation.Immutable;
 import org.solmix.commons.util.StringUtils;
 import org.solmix.commons.xml.VariablesParser;
 import org.solmix.commons.xml.XMLNode;
@@ -37,37 +38,40 @@ import org.solmix.datax.repository.builder.xml.BaseXmlNodeParser;
  * @author solmix.f@gmail.com
  * @version $Id$  2015年6月26日
  */
-
+@Immutable
 public class FieldInfo
 {
-    private final String name;
+    protected final String name;
     
-    private final FieldType type;
+    protected final FieldType type;
     
-    private String title;
+    protected String title;
     
-    private Boolean hidden;
+    protected Boolean hidden;
     
-    private Boolean required;
+    protected Boolean required;
     
-    private Boolean canEdit;
+    protected Boolean canEdit;
     
-    private Boolean canExport;
+    protected Boolean canFilter;
     
-    private String exportTitle;
+    protected Boolean canExport;
     
-    private String rootValue;
+    protected String exportTitle;
     
-    private String dateFormat;
+    protected String rootValue;
     
-    private Integer maxFileSize;
+    protected String dateFormat;
     
-    private Boolean primaryKey;
-    private String foreignKey;
+    protected Integer maxFileSize;
     
-    private Map<String,String> valueMap;
+    protected Boolean primaryKey;
     
-    private List<ValidatorInfo> validators;
+    protected String foreignKey;
+    
+    protected Map<String,String> valueMap;
+    
+    protected List<ValidatorInfo> validators;
     
     public FieldInfo(String name,FieldType type){
         Assert.assertNotNull(name);
@@ -86,6 +90,18 @@ public class FieldInfo
 
 
     
+    
+    public Map<String, String> getValueMap() {
+        return valueMap;
+    }
+
+
+    
+    public List<ValidatorInfo> getValidators() {
+        return validators;
+    }
+
+
     public String getTitle() {
         return title;
     }
@@ -101,9 +117,13 @@ public class FieldInfo
     public Boolean getRequired() {
         return required;
     }
-
-
     
+    
+    public Boolean getCanFilter() {
+        return canFilter;
+    }
+
+
     public Boolean getCanEdit() {
         return canEdit;
     }
@@ -166,11 +186,12 @@ public class FieldInfo
         public FieldInfo parse(XMLNode node, XmlParserContext context) {
             String name= node.getStringAttribute("name");
             if(!validateId(name)){
-                throw new BuilderException("Invalid Filed name at:"+node.getPath());
+                throw new BuilderException("Invalid Filed name ("+name+") at:"+node.getPath());
             }
             String type= node.getStringAttribute("type");
             Boolean canEdit = node.getBooleanAttribute("canEdit");
             Boolean canExport = node.getBooleanAttribute("canExport");
+            Boolean canFilter = node.getBooleanAttribute("canFilter");
             String exportTitle= node.getStringAttribute("exportTitle");
             Boolean hidden = node.getBooleanAttribute("hidden");
             Boolean primaryKey = node.getBooleanAttribute("primaryKey");
@@ -203,6 +224,7 @@ public class FieldInfo
             fi.rootValue=rootValue;
             fi.valueMap=valueMap;
             fi.validators=validators;
+            fi.canFilter=canFilter;
             return fi; 
         }
 
@@ -211,7 +233,7 @@ public class FieldInfo
          * @param context
          * @return
          */
-        private List<ValidatorInfo> parseValidators(List<XMLNode> nodes, XmlParserContext context) {
+        protected List<ValidatorInfo> parseValidators(List<XMLNode> nodes, XmlParserContext context) {
             if(nodes==null||nodes.size()==0){
                 return null;
             }
@@ -227,7 +249,7 @@ public class FieldInfo
          * @param context
          * @return
          */
-        private Map<String, String> parseValueMap(XMLNode node, XmlParserContext context) {
+        protected Map<String, String> parseValueMap(XMLNode node, XmlParserContext context) {
            if(node==null){
                return null;
            }

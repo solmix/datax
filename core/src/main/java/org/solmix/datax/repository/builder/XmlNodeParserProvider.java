@@ -29,6 +29,31 @@ import org.solmix.runtime.Extension;
 @Extension
 public interface XmlNodeParserProvider
 {
+
+    public static final String ROOT = "/datax";
+
+    public static final String CONFIGURATION = ROOT + "/configuration";
+
+    public static final String SERVICE = CONFIGURATION + "/service";
+
+    public static final String FIELDS = SERVICE + "/fields";
+
+    public static final String FIELD = FIELDS + "/field";
+
+    public static final String VALIDATOR = FIELD + "/validator";
+
+    public static final String OPERATIONS = SERVICE + "/operations";
+
+    public static final String OPERATION = OPERATIONS + "/operation";
+    
+    public static final String PARAM = OPERATION + "/params/param";
+    
+    public static final String BATCH = OPERATION + "/batch";
+
+    public static final String TRANSFORMER = OPERATION + "/transformer";
+
+    public static final String INVOKER = OPERATION + "/invoker";
+    
     <T> XmlNodeParser<T> getXmlNodeParser(String path,Class<T> clz);
 
 }

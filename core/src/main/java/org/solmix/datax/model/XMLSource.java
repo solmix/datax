@@ -18,47 +18,17 @@
  */
 package org.solmix.datax.model;
 
-import java.util.List;
-
-import javax.annotation.Resource;
-
 import org.solmix.commons.xml.XMLNode;
-import org.solmix.datax.repository.builder.XmlParserContext;
-import org.solmix.runtime.resource.ResourceManager;
 
 
 /**
- * 
+ * 表明可以获取该对象的xml node.
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月26日
+ * @version $Id$  2015年6月29日
  */
 
-public class TestDataServiceInfo extends DataServiceInfo
+public interface XMLSource
 {
+    XMLNode getXMLNode();
 
-    /**
-     * @param id
-     * @param fields
-     */
-    public TestDataServiceInfo(String id, List<FieldInfo> fields)
-    {
-        super(id);
-    }
-
-    public static class Parser extends DataServiceInfo.Parser{
-
-        @Resource
-        private ResourceManager resourceManager;
-        
-        
-        public ResourceManager getResourceManager() {
-            return resourceManager;
-        }
-
-        @Override
-        public TestDataServiceInfo parse(XMLNode node,XmlParserContext context){
-            return new TestDataServiceInfo("a",null);
-        }
-           
-       }
 }

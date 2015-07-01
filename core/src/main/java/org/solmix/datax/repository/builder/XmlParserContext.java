@@ -22,6 +22,8 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.solmix.commons.xml.XMLNode;
+import org.solmix.datax.model.OperationInfo;
+import org.solmix.datax.model.TransformerInfo;
 import org.solmix.datax.model.ValidatorInfo;
 import org.solmix.datax.repository.DefaultRepository;
 
@@ -38,6 +40,7 @@ public class XmlParserContext
     private final DefaultRepository repositoryService;
     private final XmlNodeParserProvider xmlNodeParserProvider;
     private String currentNamespace;
+    private String currentService;
     
     public XmlParserContext(DefaultRepository repository,XmlNodeParserProvider provider){
         this.repositoryService=repository;
@@ -61,6 +64,10 @@ public class XmlParserContext
         }
         return xmlNodeParserProvider.getXmlNodeParser(path, clz);
     }
+    public <T> T parseNode(String path,XMLNode node,Class<T> clz ){
+        XmlNodeParser<T> parser = getXmlNodeParser(path,clz);
+        return parser.parse(node, this);
+    }
     
     public <T> T parseNode(XMLNode node,Class<T> clz ){
         XmlNodeParser<T> parser = getXmlNodeParser(node,clz);
@@ -82,10 +89,21 @@ public class XmlParserContext
     public String getCurrentNamespace() {
         return currentNamespace;
     }
+    
+    public String getCurrentService() {
+        return currentService;
+    }
+    
+    public void setCurrentService(String currentService) {
+        this.currentService = currentService;
+    }
+
     public Map<String, Object> getDataServiceManagerProperties(){
        return getRepositoryService().getDataServiceManager().getProperties();
     }
+    
     /**
+     * namespace+"."+base
      * @param base
      * @param isReference
      * @return
@@ -105,6 +123,31 @@ public class XmlParserContext
         }
         return currentNamespace + "." + base;
       }
+    public String applyCurrentNamespace(String serviceid ,String base, boolean isReference) {
+        if (base == null) {
+            return null;
+        }
+        if (isReference) {
+          if (base.contains(".")){
+              return base;
+          }
+        } else {
+          if (base.startsWith(currentNamespace + "."+currentService+".")) {
+              return base;
+          }
+        }
+        return currentNamespace + "." +serviceid+"."+ base;
+    }
+    
+    /**
+     * namespace+"."+serviceid+"."+base.
+     * @param base
+     * @param isReference
+     * @return
+     */
+    public String applyCurrentService(String base, boolean isReference) {
+        return applyCurrentNamespace(currentService,base, isReference);
+    }
     
     public Collection<ReferenceResolver> getReferenceResolvers() {
         return repositoryService.getReferenceResolvers();
@@ -132,6 +175,37 @@ public class XmlParserContext
         } catch (IllegalArgumentException e) {
            throw new ReferenceNoFoundException();
         }
+    }
+
+    /**
+     * 循环取出最终的reference
+     * 
+     * @param refid
+     */
+    public OperationInfo getOperationInfo(String refid) {
+        try {
+            OperationInfo oi=  repositoryService.getOperationInfo(refid);
+            if(oi.getRefid()!=null){
+                //已经是格式化后的ID。
+                return repositoryService.getOperationInfo(oi.getRefid());
+            }else{
+                return oi;
+            }
+          } catch (IllegalArgumentException e) {
+             throw new ReferenceNoFoundException();
+          }
+    }
+
+    /**
+     * @param refid
+     * @return
+     */
+    public TransformerInfo getTransformerInfo(String refid) {
+        try {
+            return  repositoryService.getTransformerInfo(refid);
+          } catch (IllegalArgumentException e) {
+             throw new ReferenceNoFoundException();
+          }
     }
     
 }

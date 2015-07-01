@@ -18,13 +18,13 @@
  */
 package org.solmix.datax.model;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.solmix.commons.annotation.Immutable;
 import org.solmix.commons.xml.XMLNode;
 import org.solmix.datax.repository.builder.ReferenceNoFoundException;
 import org.solmix.datax.repository.builder.ReferenceResolver;
 import org.solmix.datax.repository.builder.XmlParserContext;
 import org.solmix.datax.repository.builder.xml.BaseXmlNodeParser;
+import org.solmix.datax.validator.Validator;
 
 
 /**
@@ -32,32 +32,29 @@ import org.solmix.datax.repository.builder.xml.BaseXmlNodeParser;
  * @author solmix.f@gmail.com
  * @version $Id$  2015年6月28日
  */
-
-public class ValidatorInfo
+@Immutable
+public class ValidatorInfo implements XMLSource
 {
-    private static final Logger LOG = LoggerFactory.getLogger(ValidatorInfo.class);
     public static final String v = null;
-    private String id;
-    private static int COUNT=0;
-    
-    private String containerRef;
-    private String type;
-    private XMLNode node;
-    private String errorMessage;
-    
-    private Boolean serverOnly;
-    private Boolean validateOnChange;
-    
-    private Boolean exclusive;
-    private Double max;
-    private Double min;
-    
-    private Double precision;
-    private String mask;
-    private String expression;
-    private String substring;
-    private String operator;
-    private Long count;
+    protected String id;
+    protected static int COUNT=0;
+    protected String name;
+    protected String type;
+    protected XMLNode node;
+    protected String errorMessage;
+    protected Boolean serverOnly;
+    protected Boolean validateOnChange;
+    protected Boolean exclusive;
+    protected Double max;
+    protected Double min;
+    protected Double precision;
+    protected String mask;
+    protected String expression;
+    protected String substring;
+    protected String operator;
+    protected Long count;
+    protected Class<? extends Validator> clazz;
+    protected LookupType lookup;
     
     ValidatorInfo(){
     }
@@ -66,6 +63,20 @@ public class ValidatorInfo
         if(id==null){
             id=ValidatorInfo.class.getName()+"#"+(++COUNT);
         }
+        this.id=id;
+    }
+    
+    
+    public String getName() {
+        return name;
+    }
+    
+    public Class<? extends Validator> getClazz() {
+        return clazz;
+    }
+    
+    public LookupType getLookup() {
+        return lookup;
     }
     /**
      * @param vi
@@ -77,7 +88,7 @@ public class ValidatorInfo
     private static void copy(ValidatorInfo source,ValidatorInfo target){
         target.id=source.id;
         target.type=source.type;
-        target.containerRef=source.containerRef;
+        target.name=source.name;
         target.errorMessage=source.errorMessage;
         target.serverOnly=source.serverOnly;
         target.validateOnChange=source.validateOnChange;
@@ -88,6 +99,9 @@ public class ValidatorInfo
         target.substring=source.substring;
         target.operator=source.operator;
         target.count=source.count;
+        target.clazz=source.clazz;
+        target.node=source.node;
+        target.lookup=source.lookup;
     }
     /**
      * @return
@@ -96,17 +110,8 @@ public class ValidatorInfo
         return id;
     }
     
-    
-    public String getContainerRef() {
-        return containerRef;
-    }
-    
     public String getType() {
         return type;
-    }
-    
-    public XMLNode getNode() {
-        return node;
     }
     
     public String getErrorMessage() {
@@ -169,47 +174,87 @@ public class ValidatorInfo
         @Override
         public void resolve() {
           ValidatorInfo vi= context.getValidatorInfo(refid);
-            copy(vi, this);
+          copy(vi, this);
         }
-        
+        @Override
+        public String toString(){
+            return new StringBuilder().append("Resolver Validator:").append(refid).toString();
+        }
+
     }
     
     public static class Parser extends BaseXmlNodeParser<ValidatorInfo>{
 
         @Override
         public ValidatorInfo parse(XMLNode node, XmlParserContext context) {
-            String containerRef= node.getStringAttribute("container-ref");
-            String refid= node.getStringAttribute("refid");
-           if(refid!=null&&containerRef!=null){
-               LOG.warn("Validator configure both container-ref:{} and refid:{},ignore container-ref",containerRef,refid);
-           }
-           if(refid!=null){
-               ValidatorInfo vi=null;
-               try {
-                 vi=  context.getValidatorInfo(refid);
-            } catch (ReferenceNoFoundException e) {
-                ValidatorInfoResolver v = new ValidatorInfoResolver(refid,context);
-                context.getRepositoryService().addReferenceResolver(v);
-                return v;
+            String refid = node.getStringAttribute("refid");
+            if (refid != null) {
+                refid=parseRefid(refid,context);
+                ValidatorInfo vi = null;
+                try {
+                    vi = context.getValidatorInfo(refid);
+                } catch (ReferenceNoFoundException e) {
+                    ValidatorInfoResolver v = new ValidatorInfoResolver(refid, context);
+                    context.getRepositoryService().addReferenceResolver(v);
+                    return v;
+                }
+
+                return new ValidatorInfo(vi);
             }
-               
-               return new ValidatorInfo(vi);
+            String id = node.getStringAttribute("id");
+            if (id != null) {
+                id = context.applyCurrentService(id, false);
+            }
+            ValidatorInfo vi = new ValidatorInfo(node, id);
+            Class<? extends Validator> clzz = super.paseClass(node, Validator.class);
+            Long count = node.getLongAttribute("count");
+            String errorMessage = node.getStringAttribute("errorMessage");
+            Boolean exclusive = node.getBooleanAttribute("exclusive");
+            String expression = node.getStringAttribute("expression");
+            String mask = node.getStringAttribute("mask");
+            Double max = node.getDoubleAttribute("max");
+            Double min = node.getDoubleAttribute("min");
+            String operator = node.getStringAttribute("operator");
+            Double precision = node.getDoubleAttribute("precision");
+            Boolean serverOnly = node.getBooleanAttribute("serverOnly");
+            Boolean validateOnChange= node.getBooleanAttribute("validateOnChange");
+            String substring = node.getStringAttribute("substring");
+            String type = node.getStringAttribute("type");
+           String strlookup= node.getStringAttribute("lookup");
+           LookupType lookup;
+           if(strlookup==null){
+               lookup=LookupType.NEW;
+           }else{
+               lookup=LookupType.fromValue(strlookup);
            }
-           String id= node.getStringAttribute("id");
-           if(id!=null){
-               id= context.applyCurrentNamespace(id, false);
-           }
-           ValidatorInfo vi = new ValidatorInfo(node,id);
-           if(id!=null){
-               //如果设置了ID，可以被引用
-               context.getRepositoryService().addValidatorInfo(vi);
-           }
-           vi.containerRef=containerRef;
+            if (id != null) {
+                // 如果设置了ID，可以被引用
+                context.getRepositoryService().addValidatorInfo(vi);
+            }
+            String name = node.getStringAttribute("name");
+            vi.name = name;
+            vi.clazz = clzz;
+            vi.count = count;
+            vi.errorMessage = errorMessage;
+            vi.exclusive = exclusive;
+            vi.expression = expression;
+            vi.mask = mask;
+            vi.max = max;
+            vi.min = min;
+            vi.operator = operator;
+            vi.precision = precision;
+            vi.serverOnly = serverOnly;
+            vi.substring = substring;
+            vi.type = type;
+            vi.lookup=lookup;
+            vi.validateOnChange=validateOnChange;
             return vi;
         }
         
     }
 
-   
-
+    @Override
+    public XMLNode getXMLNode() {
+        return node;
+    }
 }

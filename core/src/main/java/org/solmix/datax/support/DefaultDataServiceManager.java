@@ -21,6 +21,7 @@ package org.solmix.datax.support;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,6 +38,7 @@ import org.solmix.datax.repository.DefaultRepository;
 import org.solmix.datax.repository.RepositoryService;
 import org.solmix.datax.repository.builder.BaseXmlNodeParserProvider;
 import org.solmix.datax.repository.builder.BuilderException;
+import org.solmix.datax.repository.builder.ReferenceResolver;
 import org.solmix.datax.repository.builder.xml.XMLDataServiceBuilder;
 import org.solmix.runtime.Container;
 import org.solmix.runtime.resource.InputStreamResource;
@@ -240,8 +242,15 @@ public class DefaultDataServiceManager implements DataServiceManager
             }
             builder.build();
         }
+        Collection<ReferenceResolver> resolvers=repository.getReferenceResolvers();
+        if(!resolvers.isEmpty()){
+            StringBuilder resolverError = new StringBuilder();
+            for(ReferenceResolver resolver:resolvers){
+                resolverError.append(resolver.toString()).append(" Failed ;");
+            }
+            throw new BuilderException(resolverError.toString());
+        }
         this.repositoryService=repository;
-        
     }
 
     /**

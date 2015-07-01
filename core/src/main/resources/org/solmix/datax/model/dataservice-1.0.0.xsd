@@ -24,7 +24,7 @@
 							</element>
 						</sequence>
 						<attribute name="id" type="string" use="required"></attribute>
-						<anyAttribute></anyAttribute>
+						<anyAttribute namespace="##any" processContents="lax"></anyAttribute>
 					</complexType>
 				</element>
 			</choice>
@@ -34,76 +34,69 @@
 	</complexType>
 	<complexType name="serviceType">
 		<sequence>
-			<element name="description" type="string" minOccurs="0"
-				maxOccurs="1">
+            <element name="description" type="string" minOccurs="0" maxOccurs="1">
 				<annotation>
 					<documentation>数据服务用途描述</documentation>
 				</annotation>
 			</element>
-			<element name="fields" minOccurs="0" maxOccurs="1">
-				<complexType>
-					<sequence>
-						<choice minOccurs="0" maxOccurs="unbounded">
-							<element name="include"
-								type="ds:includeType">
-							</element>
-							<element name="field" type="ds:fieldType">
-							</element>
-						</choice>
-					</sequence>
+            <choice minOccurs="0" maxOccurs="unbounded">
+            	<element name="fields" minOccurs="0" maxOccurs="1">
+            		<complexType>
+            			<sequence>
+            				<choice minOccurs="0"
+            					maxOccurs="unbounded">
+            					<element name="include"
+            						type="ds:includeType">
+            					</element>
+            					<element name="field"
+            						type="ds:fieldType">
+            					</element>
+            				</choice>
+            			</sequence>
 
 
-				</complexType>
-			</element>
-			<element name="operations">
-			<complexType>
-				<sequence>
-					<choice minOccurs="0" maxOccurs="unbounded">
-						<element name="fetch" type="string"></element>
-						<element name="add" type="string"></element>
-						<element name="remove" type="string"></element>
-						<element name="update" type="string"></element>
-						<element name="custom" type="string"></element>
-					</choice>
-				</sequence>
-			</complexType>
-			</element>
+            		</complexType>
+            	</element>
+            	<element name="operations" type="ds:operationsType"
+            		minOccurs="0" maxOccurs="1">
+            	</element>
+            	<any namespace="##any" processContents="lax"></any>
+            </choice>
 		</sequence>
 		<attribute name="id" type="string" use="required"></attribute>
-		<anyAttribute></anyAttribute>
+		<attribute name="serviceClass" type="string"></attribute>
+		<attribute name="serviceName" type="string"></attribute>
+		<attribute name="scope" type="string"></attribute>
+		<attribute name="lookup" type="ds:lookupType"></attribute>
+		<anyAttribute namespace="##any" processContents="lax"></anyAttribute>
 	</complexType>
-
+	<complexType name="validatorType">
+		<complexContent>
+			<extension base="ds:ref">
+				<attribute name="id" type="string"></attribute>
+				<attribute name="type" type="string"></attribute>
+				<attribute name="errorMessage" type="string"></attribute>
+				<attribute name="serverOnly" type="boolean"></attribute>
+				<attribute name="validateOnChange" type="boolean">
+				</attribute>
+				<attribute name="max" type="double"></attribute>
+				<attribute name="min" type="double"></attribute>
+				<attribute name="exclusive" type="boolean"></attribute>
+				<attribute name="mask" type="string"></attribute>
+				<attribute name="precision" type="double"></attribute>
+				<attribute name="expression" type="string"></attribute>
+				<attribute name="substring" type="string"></attribute>
+				<attribute name="operator" type="string"></attribute>
+				<attribute name="count" type="long"></attribute>
+				<anyAttribute></anyAttribute>
+			</extension>
+		</complexContent>
+	</complexType>
 	<complexType name="fieldType">
 		<sequence>
 			<choice minOccurs="0" maxOccurs="unbounded">
 				<element name="validator" minOccurs="0"
-					maxOccurs="unbounded">
-					<complexType>
-						<sequence>
-							<any></any>
-						</sequence>
-						<attribute name="id" type="string"></attribute>
-						<attribute name="type" type="string">
-						</attribute>
-						<attribute name="refid" type="string"></attribute>
-						<attribute name="container-ref" type="string"></attribute>
-						<attribute name="errorMessage" type="string"></attribute>
-						<attribute name="serverOnly" type="boolean"></attribute>
-						<attribute name="validateOnChange"
-							type="boolean">
-						</attribute>
-						<attribute name="max" type="double"></attribute>
-						<attribute name="min" type="double"></attribute>
-						<attribute name="exclusive" type="boolean"></attribute>
-						<attribute name="mask" type="string"></attribute>
-						<attribute name="precision" type="double"></attribute>
-						<attribute name="expression" type="string"></attribute>
-						<attribute name="substring" type="string"></attribute>
-						<attribute name="operator" type="string"></attribute>
-						<attribute name="count" type="long"></attribute>
-						<anyAttribute></anyAttribute>
-					</complexType>
-				</element>
+					maxOccurs="unbounded" type="ds:validatorType"></element>
 				<element name="valueMap" minOccurs="0" maxOccurs="1">
 					<complexType>
 						<sequence>
@@ -196,14 +189,144 @@
 		<attribute name="maxFileSize" type="int"></attribute>
 		<attribute name="primaryKey" type="boolean"></attribute>
 		<attribute name="foreignKey" type="string"></attribute>
-		<anyAttribute></anyAttribute>
+		<anyAttribute namespace="##any" processContents="lax"></anyAttribute>
 	</complexType>
 
 
 	<complexType name="includeType">
-
 		<attribute name="refid" type="string" use="required"></attribute>
 		<anyAttribute></anyAttribute>
 	</complexType>
 
+	<complexType name="operationType">
+		<choice>
+			<element name="batch">
+				<complexType>
+					<sequence>
+						<choice minOccurs="0" maxOccurs="unbounded">
+							<element name="fetch"
+								type="ds:operationType">
+							</element>
+							<element name="add"
+								type="ds:operationType">
+							</element>
+							<element name="remove"
+								type="ds:operationType">
+							</element>
+							<element name="update"
+								type="ds:operationType">
+							</element>
+							<any namespace="##other"></any>
+						</choice>
+					</sequence>
+					<attribute name="transactionPolicy"
+						type="ds:transactionPolicy" />
+				</complexType>
+			</element>
+			<choice minOccurs="0" maxOccurs="unbounded">
+				<element name="transformer">
+					<complexType>
+						<complexContent>
+							<extension base="ds:ref">
+
+
+
+								<sequence minOccurs="0"
+									maxOccurs="unbounded">
+									<any></any>
+								</sequence>
+								<attribute name="id" type="string">
+								</attribute>
+								<anyAttribute namespace="##any" processContents="lax"></anyAttribute>
+							</extension>
+						</complexContent>
+					</complexType>
+				</element>
+				<element name="params">
+					<complexType>
+
+						<sequence minOccurs="1" maxOccurs="unbounded">
+							<element name="param">
+								<complexType>
+
+									<attribute name="key" type="string"
+										use="required">
+									</attribute>
+									<attribute name="value"
+										type="string">
+									</attribute>
+									<attribute name="expression"
+										type="string">
+									</attribute>
+									<attribute name="isOverride"
+										type="boolean">
+									</attribute>
+									<anyAttribute namespace="##any" processContents="lax"></anyAttribute>
+								</complexType>
+							</element>
+						</sequence>
+						<attribute name="isOverride" type="boolean"></attribute>
+					</complexType>
+				</element>
+				<element name="invoker" type="ds:invokerType"></element>
+				<any namespace="##any" processContents="lax"></any>
+			</choice>
+		</choice>
+		<attribute name="id" type="string"></attribute>
+		<attribute name="autoJoinTransactions" type="boolean"></attribute>
+		<attribute name="serverMethod" type="string"></attribute>
+		<attribute name="refid" type="string"></attribute>
+		<anyAttribute namespace="##any" processContents="lax"></anyAttribute>
+	</complexType>
+
+	<complexType name="operationsType">
+    	<sequence>
+    		<choice minOccurs="0" maxOccurs="unbounded">
+    			<element name="fetch" type="ds:operationType"></element>
+    			<element name="add" type="ds:operationType"></element>
+    			<element name="remove" type="ds:operationType">
+    			</element>
+    			<element name="update" type="ds:operationType">
+    			</element>
+    			<element name="custom" type="ds:operationType">
+    			</element>
+    			<any namespace="##any" processContents="lax"></any>
+    		</choice>
+    	</sequence>
+	</complexType>
+
+	<group name="operationGroup">
+		<sequence></sequence>
+	</group>
+
+	<complexType name="ref">
+		<attribute name="class" type="string"></attribute>
+		<attribute name="refid" type="string"></attribute>
+		<attribute name="name" type="string"></attribute>
+		<attribute name="lookup" type="ds:lookupType"></attribute>
+	</complexType>
+
+	<complexType name="invokerType">
+
+		<attribute name="class" type="string" use="required"></attribute>
+		<attribute name="name" type="string"></attribute>
+		<attribute name="method" type="string" use="required"></attribute>
+		<attribute name="lookup" type="ds:lookupType"></attribute>
+	</complexType>
+
+	<simpleType name="transactionPolicy">
+		<restriction base="string">
+			<enumeration value="from_first_change"></enumeration>
+			<enumeration value="any_change"></enumeration>
+			<enumeration value="all"></enumeration>
+			<enumeration value="none"></enumeration>
+		</restriction>
+	</simpleType>
+
+	<simpleType name="lookupType">
+		<restriction base="string">
+			<enumeration value="new"></enumeration>
+			<enumeration value="container"></enumeration>
+		</restriction>
+	</simpleType>
 </schema>

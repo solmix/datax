@@ -62,6 +62,7 @@ public class XmlNodeParserProviderTest
         assertTrue((p.getClass().isAssignableFrom(Parser.class)));
         assertNotNull(Parser.class.cast(p).getResourceManager());
         assertTrue(p.parse(null, null) instanceof DataServiceInfo );
+        assertTrue(p.parse(null, null) instanceof TestDataServiceInfo );
     }
 
 }

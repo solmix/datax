@@ -18,8 +18,14 @@
  */
 package org.solmix.datax.repository.builder;
 
+import org.solmix.datax.model.BatchOperations;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.model.FieldInfo;
+import org.solmix.datax.model.InvokerInfo;
+import org.solmix.datax.model.OperationInfo;
+import org.solmix.datax.model.ParamInfo;
+import org.solmix.datax.model.TransformerInfo;
+import org.solmix.datax.model.ValidatorInfo;
 import org.solmix.runtime.Container;
 import org.solmix.runtime.Extension;
 
@@ -46,7 +52,15 @@ public class BaseXmlNodeParserProvider extends AbstractXmlNodeParserProvider imp
      */
     @Override
     protected void config() {
-       bind("/datax/configuration/service", DataServiceInfo.Parser.class);
-       bind("/datax/configuration/service/fields/field", FieldInfo.Parser.class);
+        
+       bind(SERVICE, DataServiceInfo.Parser.class);
+       bind(FIELD, FieldInfo.Parser.class);
+              
+       bind(VALIDATOR, ValidatorInfo.Parser.class);
+       bind(OPERATION, OperationInfo.Parser.class);
+       bind(PARAM,ParamInfo.Parser.class);
+       bind(BATCH,BatchOperations.Parser.class);
+       bind(TRANSFORMER,TransformerInfo.Parser.class);
+       bind(INVOKER,InvokerInfo.Parser.class);
     }
 }

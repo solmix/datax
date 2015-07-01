@@ -20,6 +20,7 @@
 package org.solmix.datax.repository.builder;
 
 import org.solmix.commons.xml.XMLNode;
+import org.solmix.datax.model.DataServiceInfo;
 
 /**
  * 
@@ -42,8 +43,16 @@ public class DataServiceInfoResolver implements ReferenceResolver
 
     @Override
     public void resolve() {
-        // TODO Auto-generated method stub
-
+        DataServiceInfo dsi= context.parseNode(XmlNodeParserProvider.SERVICE, node, DataServiceInfo.class);
+        if(dsi!=null){
+            context.getRepositoryService().addDataService(dsi);
+        }
+    }
+    @Override
+    public String toString(){
+        String id = node.getStringAttribute("id");
+         id = context.applyCurrentNamespace(id, true);
+        return new StringBuilder().append("Resolver DataService:").append(id).toString();
     }
 
 }

@@ -16,10 +16,35 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+package org.solmix.datax.model;
+
+
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$  2015年7月1日
  */
 
-package org.solmix.datax.repository.support;
+public enum LookupType implements ValueEnum
+{
+    NEW("new"),
+    CONTAINER("container");
+    
+    private final String value;
+    LookupType(String v) {
+        value = v;
+    }
+
+    public String value() {
+        return value;
+    }
+
+    public static LookupType fromValue(String v) {
+        for (LookupType c: LookupType.values()) {
+            if (c.value.equals(v)) {
+                return c;
+            }
+        }
+        throw new IllegalArgumentException(v);
+    }
+}

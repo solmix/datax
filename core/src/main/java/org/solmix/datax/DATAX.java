@@ -36,4 +36,22 @@ public final class DATAX
     public static final String NS="ds:";
     public final static Pattern NAMESPACE_PATTERN = Pattern.compile("^([a-zA-Z]\\w+[.])*[a-zA-Z]\\w+");
     public final static Pattern ID_PATTERN = Pattern.compile("^[a-zA-Z]\\w+");
+    public final static Pattern REF_ID_PATTERN = Pattern.compile("^([#a-zA-Z]\\w+[.])*[#a-zA-Z]\\w+");
+    
+    /**
+     * 命名空间占位符 etc:
+     * <code>
+     * namespace=com.example
+     * ##ds.validator=com.example.ds.validator
+     * </code>
+     */
+    public final static String NS_AREA="##";
+    /**
+     * Dataserivce空间占位符 etc:
+     * <code>
+     * serviceid=com.example.ds
+     * #validator=com.example.ds.validator
+     * </code>
+     */
+    public final static String DS_AREA="#";
 }

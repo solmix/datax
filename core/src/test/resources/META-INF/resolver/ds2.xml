@@ -14,8 +14,8 @@
 				<include refid="com.example.ds.extfield2"></include>
 			</fields>
 			<operations>
-				<fetch id="fetch"></fetch>
-				<add></add>
+			<fetch id="fetch"></fetch>
+			<add></add>
 			</operations>
 		</service>
 		<service id="aab">
@@ -29,23 +29,8 @@
 				<include refid="com.example.ds.extfield2"></include>
 			</fields>
 			<operations>
-				<fetch id="fetch">
-
-					<params>
-						<param key="key" value="v" isOverride="true" />
-					</params>
-					<transformer class="org.solmix.datax.transformer.TestTransformer" />
-					<invoker class="org.solmix.datax.transformer.TestTransformer" />
-				</fetch>
-				<add>
-					<batch>
-						<fetch>
-							<batch>
-								<add></add>
-							</batch>
-						</fetch>
-					</batch>
-				</add>
+			<fetch id="fetch"></fetch>
+			<add></add>
 			</operations>
 		</service>
 		<fields id="extfield">
@@ -54,7 +39,9 @@
 			</field>
 		</fields>
 		<fields id="extfield2">
-			<field name="extfield2"></field>
+			<field name="extfield2">
+			<validator refid="com.example.ds.aac.length"/>
+			</field>
 		</fields>
 	</configuration>
 </datax>

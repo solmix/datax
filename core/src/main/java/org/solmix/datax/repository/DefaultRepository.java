@@ -30,6 +30,8 @@ import org.solmix.commons.annotation.NotThreadSafe;
 import org.solmix.commons.xml.XMLNode;
 import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.model.DataServiceInfo;
+import org.solmix.datax.model.OperationInfo;
+import org.solmix.datax.model.TransformerInfo;
 import org.solmix.datax.model.ValidatorInfo;
 import org.solmix.datax.repository.builder.ReferenceResolver;
 
@@ -47,6 +49,11 @@ public class DefaultRepository implements RepositoryService
     protected Map<String,DataServiceInfo> services= new StringMap<DataServiceInfo>("DataServiceInfo Cache");
     
     protected Map<String,ValidatorInfo> validtors= new StringMap<ValidatorInfo>("ValidatorInfo Cache");
+    
+    protected Map<String,OperationInfo> operations= new StringMap<OperationInfo>("OperationInfo Cache");
+
+    protected Map<String,TransformerInfo> transformers= new StringMap<TransformerInfo>("TransformerInfo Cache");
+
     
     protected Map<String,XMLNode> fields= new StringMap<XMLNode>("Fields XMLNode Cache");
     
@@ -179,4 +186,23 @@ public class DefaultRepository implements RepositoryService
     public void addValidatorInfo(ValidatorInfo validator) {
          validtors.put(validator.getId(), validator);
      }
+
+    public void addOperationInfo(OperationInfo operation) {
+        operations.put(operation.getId(), operation);
+    }
+    /**
+     * @param refid
+     * @return
+     */
+    public OperationInfo getOperationInfo(String refid) {
+        return operations.get(refid);
+    }
+
+    public void addTransformerInfo(TransformerInfo ti) {
+        transformers.put(ti.getId(), ti);
+    }
+
+    public TransformerInfo getTransformerInfo(String refid) {
+        return transformers.get(refid);
+    }
 }

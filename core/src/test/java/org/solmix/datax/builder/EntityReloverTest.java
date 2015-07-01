@@ -66,4 +66,23 @@ public class EntityReloverTest
          assertFalse(NAMESPACE_PATTERN.matcher("com.exa mple.ssd").matches());
          assertFalse(NAMESPACE_PATTERN.matcher("com.example.").matches());
     }
+    
+    @Test
+    public void testRefPattern() {
+         Pattern NAMESPACE_PATTERN = Pattern.compile("^([#a-zA-Z]\\w+[.])*[#]{0,2}[a-zA-Z]\\w+");
+         assertTrue(NAMESPACE_PATTERN.matcher("#com.example").matches());
+         assertFalse(NAMESPACE_PATTERN.matcher("##com.example").matches());
+         assertTrue(NAMESPACE_PATTERN.matcher("##example").matches());
+         assertTrue(NAMESPACE_PATTERN.matcher("com2.example.ssd").matches());
+         assertTrue(NAMESPACE_PATTERN.matcher("com.exampl2e.ssd2").matches());
+         assertTrue(NAMESPACE_PATTERN.matcher("#ssd2").matches());
+         assertTrue(NAMESPACE_PATTERN.matcher("com.exampl2e.ssd2.exampl2e.ssd2").matches());
+         assertFalse(NAMESPACE_PATTERN.matcher("com.2example.ssd").matches());
+         assertFalse(NAMESPACE_PATTERN.matcher("com.example.2ssd").matches());
+         assertFalse(NAMESPACE_PATTERN.matcher("com.example.$ssd").matches());
+         assertFalse(NAMESPACE_PATTERN.matcher("com.example.ss$d").matches());
+         assertFalse(NAMESPACE_PATTERN.matcher("com.exa$mple.ssd").matches());
+         assertFalse(NAMESPACE_PATTERN.matcher("com.exa mple.ssd").matches());
+         assertFalse(NAMESPACE_PATTERN.matcher("com.example.").matches());
+    }
 }

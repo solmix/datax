@@ -16,29 +16,16 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax;
+package org.solmix.datax.transformer;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$  2015年6月30日
  */
 
-public interface DataService extends FreeResourcesHandler
+public class MockTransformer implements Transformer
 {
-    /**
-     * 服务名称
-     * 
-     * @return
-     */
-    String getName();
-    
-    /**
-     * 服务实现类别
-     * 
-     * @return
-     */
-    String getServerType();
-    DSResponse execute(DSRequest req) throws DataxException;
+
 }

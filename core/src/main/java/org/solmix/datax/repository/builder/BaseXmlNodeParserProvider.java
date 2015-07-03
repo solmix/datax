@@ -27,7 +27,6 @@ import org.solmix.datax.model.ParamInfo;
 import org.solmix.datax.model.TransformerInfo;
 import org.solmix.datax.model.ValidatorInfo;
 import org.solmix.runtime.Container;
-import org.solmix.runtime.Extension;
 
 
 /**
@@ -35,7 +34,6 @@ import org.solmix.runtime.Extension;
  * @author solmix.f@gmail.com
  * @version $Id$  2015年6月25日
  */
-@Extension(name=BaseXmlNodeParserProvider.BASE)
 public class BaseXmlNodeParserProvider extends AbstractXmlNodeParserProvider implements XmlNodeParserProvider
 {
     public BaseXmlNodeParserProvider(Container container)
@@ -43,13 +41,6 @@ public class BaseXmlNodeParserProvider extends AbstractXmlNodeParserProvider imp
         super(container);
     }
 
-    public static final String BASE="base";
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.solmix.datax.repository.builder.AbstractXmlNodeParserProvider#config()
-     */
     @Override
     protected void config() {
         

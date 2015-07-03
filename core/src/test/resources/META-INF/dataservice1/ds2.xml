@@ -34,8 +34,8 @@
 					<params>
 						<param key="key" value="v" isOverride="true" />
 					</params>
-					<transformer class="org.solmix.datax.transformer.TestTransformer" />
-					<invoker class="org.solmix.datax.transformer.TestTransformer" />
+					<transformer class="org.solmix.datax.transformer.MockTransformer" />
+					<invoker class="org.solmix.datax.transformer.MockTransformer" method="aa"/>
 				</fetch>
 				<add>
 					<batch>

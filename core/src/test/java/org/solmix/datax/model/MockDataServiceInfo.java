@@ -33,16 +33,16 @@ import org.solmix.runtime.resource.ResourceManager;
  * @version $Id$  2015年6月26日
  */
 
-public class TestDataServiceInfo extends DataServiceInfo
+public class MockDataServiceInfo extends DataServiceInfo
 {
 
     /**
      * @param id
      * @param fields
      */
-    public TestDataServiceInfo(String id, List<FieldInfo> fields)
+    public MockDataServiceInfo(String id, List<FieldInfo> fields)
     {
-        super(id);
+        super(id,"base");
     }
 
     public static class Parser extends DataServiceInfo.Parser{
@@ -56,8 +56,8 @@ public class TestDataServiceInfo extends DataServiceInfo
         }
 
         @Override
-        public TestDataServiceInfo parse(XMLNode node,XmlParserContext context){
-            return new TestDataServiceInfo("a",null);
+        public MockDataServiceInfo parse(XMLNode node,XmlParserContext context){
+            return new MockDataServiceInfo("a",null);
         }
            
        }

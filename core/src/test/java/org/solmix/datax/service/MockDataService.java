@@ -16,16 +16,28 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.transformer;
+package org.solmix.datax.service;
+
+import javax.annotation.Resource;
+
+import org.solmix.datax.model.DataServiceInfo;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月30日
+ * @version $Id$  2015年7月1日
  */
 
-public class TestTransformer implements Transformer
+public class MockDataService
 {
+    @Resource(name="load.ds")
+    private DataServiceInfo info;
+
+    
+    public DataServiceInfo getInfo() {
+        return info;
+    }
+    
 
 }

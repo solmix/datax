@@ -1,2 +1,2 @@
 org.solmix.datax.support.DefaultDataServiceManager:org.solmix.datax.DataServiceManager:true:true
-org.solmix.datax.repository.builder.BaseXmlNodeParserProvider::true:true
+org.solmix.datax.support.BaseDataServiceFactory::true:true

@@ -16,29 +16,18 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax;
+package org.solmix.datax.service;
+
+import org.solmix.datax.validator.Validator;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$  2015年7月1日
  */
 
-public interface DataService extends FreeResourcesHandler
+public class MockValidator implements Validator
 {
-    /**
-     * 服务名称
-     * 
-     * @return
-     */
-    String getName();
-    
-    /**
-     * 服务实现类别
-     * 
-     * @return
-     */
-    String getServerType();
-    DSResponse execute(DSRequest req) throws DataxException;
+
 }

@@ -51,6 +51,8 @@ public class DataServiceInfo
     public static final String SCOPE_PROPERTY="property";
     
     protected final String id;
+    
+    protected final String serverType;
 
     protected String description;
 
@@ -66,10 +68,11 @@ public class DataServiceInfo
 
     protected String serviceName;
 
-    public DataServiceInfo(String id)
+    public DataServiceInfo(String id,String serverType)
     {
         Assert.assertNotNull(id);
         this.id = id;
+        this.serverType=serverType;
     }
 
     public List<FieldInfo> getFields() {
@@ -98,8 +101,11 @@ public class DataServiceInfo
     public String getScope() {
         return scope;
     }
-
     
+    public String getServerType() {
+        return serverType;
+    }
+
     public String getServiceName() {
         return serviceName;
     }
@@ -145,8 +151,8 @@ public class DataServiceInfo
                     lookup = LookupType.fromValue(strlookup);
                 }
                 String name = node.getStringAttribute("serviceName");
-                String scope = node.getStringAttribute("scope");
-                DataServiceInfo dsi = new DataServiceInfo(id);
+                String scope = node.getStringAttribute("scope",SCOPE_SINGLETON);
+                DataServiceInfo dsi = new DataServiceInfo(id,context.getServerType());
                 dsi.fields = fields;
                 dsi.description = description;
                 dsi.operations = operations;

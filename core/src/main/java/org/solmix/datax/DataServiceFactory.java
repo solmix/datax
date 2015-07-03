@@ -16,16 +16,37 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.service;
+package org.solmix.datax;
+
+import java.util.Map;
+
+import org.solmix.datax.model.DataServiceInfo;
+import org.solmix.datax.repository.builder.XmlNodeParserProvider;
+import org.solmix.runtime.Extension;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年7月1日
+ * @version $Id$  2015年7月2日
  */
-
-public class TestDataService
+@Extension
+public interface DataServiceFactory
 {
+    /**
+     * 实例DataService。
+     * 
+     * @param info 每个DataService的配置信息
+     * @param properties 通用扩展配置信息
+     * @return
+     */
+    DataService instance(DataServiceInfo info,Map<String, Object> properties);
+    
+    /**
+     * DataServiceInfo信息加载实现
+     * 
+     * @return
+     */
+    XmlNodeParserProvider getXmlNodeParserProvider();
 
 }

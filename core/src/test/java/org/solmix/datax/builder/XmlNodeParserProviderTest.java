@@ -25,8 +25,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.solmix.datax.model.DataServiceInfo;
-import org.solmix.datax.model.TestDataServiceInfo;
-import org.solmix.datax.model.TestDataServiceInfo.Parser;
+import org.solmix.datax.model.MockDataServiceInfo;
+import org.solmix.datax.model.MockDataServiceInfo.Parser;
 import org.solmix.datax.repository.builder.BaseXmlNodeParserProvider;
 import org.solmix.datax.repository.builder.XmlNodeParser;
 import org.solmix.runtime.Container;
@@ -54,7 +54,7 @@ public class XmlNodeParserProviderTest
     public void test(){
         BaseXmlNodeParserProvider provider = new BaseXmlNodeParserProvider(container){
             protected void config() {
-                bind("/datax/services/service", TestDataServiceInfo.Parser.class);
+                bind("/datax/services/service", MockDataServiceInfo.Parser.class);
              }
         };
         XmlNodeParser<DataServiceInfo> p= provider.getXmlNodeParser("/datax/services/service", DataServiceInfo.class);
@@ -62,7 +62,7 @@ public class XmlNodeParserProviderTest
         assertTrue((p.getClass().isAssignableFrom(Parser.class)));
         assertNotNull(Parser.class.cast(p).getResourceManager());
         assertTrue(p.parse(null, null) instanceof DataServiceInfo );
-        assertTrue(p.parse(null, null) instanceof TestDataServiceInfo );
+        assertTrue(p.parse(null, null) instanceof MockDataServiceInfo );
     }
 
 }

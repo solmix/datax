@@ -16,18 +16,27 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.service;
 
-import org.solmix.datax.validator.Validator;
-
+package org.solmix.datax;
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年7月1日
+ * @version $Id$ 2015年7月2日
  */
 
-public class TestValidator implements Validator
+public class DataServiceNoFoundException extends DataxException
 {
 
+    private static final long serialVersionUID = 926315145307875736L;
+
+    public DataServiceNoFoundException(String string, Throwable e)
+    {
+        super(string, e);
+    }
+
+    public DataServiceNoFoundException(String string)
+    {
+        super(string);
+    }
 }

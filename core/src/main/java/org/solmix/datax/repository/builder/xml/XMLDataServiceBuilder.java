@@ -30,6 +30,7 @@ import org.solmix.commons.util.StringUtils;
 import org.solmix.commons.xml.XMLNode;
 import org.solmix.commons.xml.XMLParser;
 import org.solmix.datax.DATAX;
+import org.solmix.datax.DataServiceFactory;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.repository.DefaultRepository;
 import org.solmix.datax.repository.builder.AbstractBuilder;
@@ -64,7 +65,7 @@ public class XMLDataServiceBuilder extends AbstractBuilder
     private String defaultServerType;
     private XmlNodeParserProvider xmlNodeParserProvider;
    
-    private ExtensionLoader<XmlNodeParserProvider> extensionLoader;
+    private ExtensionLoader<DataServiceFactory> extensionLoader;
     
     public XMLDataServiceBuilder(InputStream stream, DefaultRepository repositoryService,
         Map<String,Object> variables,String resourceUri,Container container,String defaultServerType){
@@ -80,7 +81,7 @@ public class XMLDataServiceBuilder extends AbstractBuilder
         if(this.container==null){
             this.container=ContainerFactory.getThreadDefaultContainer();
         }
-        extensionLoader=this.container.getExtensionLoader(XmlNodeParserProvider.class);
+        extensionLoader=this.container.getExtensionLoader(DataServiceFactory.class);
     }
     
     public void build(){
@@ -127,12 +128,13 @@ public class XMLDataServiceBuilder extends AbstractBuilder
         if (serverType == null) {
             serverType = defaultServerType;
         }
-        xmlNodeParserProvider = extensionLoader.getExtension(serverType);
+      DataServiceFactory dsf  = extensionLoader.getExtension(serverType);
+        xmlNodeParserProvider =dsf.getXmlNodeParserProvider();
         if (xmlNodeParserProvider == null) {
             throw new BuilderException("No found XmlNodeParserProvider for serverType: " + serverType);
         }
         XmlParserContext context = new XmlParserContext(repository, xmlNodeParserProvider);
-
+        context.setServerType(serverType);
         context.setCurrentNamespace(namespace);
         // parse fields
         fieldsToRepository(xmlNode.evalNodes("fields"), context);

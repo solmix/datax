@@ -40,6 +40,7 @@ public class XmlParserContext
     private final DefaultRepository repositoryService;
     private final XmlNodeParserProvider xmlNodeParserProvider;
     private String currentNamespace;
+    private String serverType;
     private String currentService;
     
     public XmlParserContext(DefaultRepository repository,XmlNodeParserProvider provider){
@@ -75,21 +76,33 @@ public class XmlParserContext
     }
     public void setCurrentNamespace(String currentNamespace) {
         if (currentNamespace == null) {
-          throw new BuilderException("The mapper element requires a namespace attribute to be specified.");
+          throw new BuilderException("The cofiguration element requires a namespace attribute to be specified.");
         }
-
         if (this.currentNamespace != null && !this.currentNamespace.equals(currentNamespace)) {
           throw new BuilderException("Wrong namespace. Expected '"
               + this.currentNamespace + "' but found '" + currentNamespace + "'.");
         }
-
         this.currentNamespace = currentNamespace;
+      }
+    
+    public void setServerType(String serverType) {
+        if (serverType == null) {
+          throw new BuilderException("The cofiguration element requires a servertype attribute to be specified.");
+        }
+        if (this.serverType != null && !this.serverType.equals(serverType)) {
+          throw new BuilderException("Wrong serverType. Expected '"
+              + this.serverType + "' but found '" + serverType + "'.");
+        }
+        this.serverType = serverType;
       }
     
     public String getCurrentNamespace() {
         return currentNamespace;
     }
     
+    public String getServerType() {
+        return serverType;
+    }
     public String getCurrentService() {
         return currentService;
     }

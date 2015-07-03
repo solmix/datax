@@ -18,7 +18,6 @@
  */
 package org.solmix.datax.repository.builder;
 
-import org.solmix.runtime.Extension;
 
 
 /**
@@ -26,7 +25,6 @@ import org.solmix.runtime.Extension;
  * @author solmix.f@gmail.com
  * @version $Id$  2015年6月24日
  */
-@Extension
 public interface XmlNodeParserProvider
 {
 

@@ -16,38 +16,37 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+
 package org.solmix.datax;
 
-import java.util.Map;
-
-
 /**
+ * DataService(DS)调用时抛出异常。
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$ 2015年7月15日
  */
 
-public interface DataService extends FreeResourcesHandler
+public class DSCallException extends Exception
 {
-    /**
-     * 服务名称
-     * 
-     * @return
-     */
-    String getId();
-    
-    /**
-     * 服务实现类别
-     * 
-     * @return
-     */
-    String getServerType();
-    
-    DSResponse execute(DSRequest req) throws DSCallException;
+
+    private static final long serialVersionUID = 903779250691622632L;
+
+    public DSCallException()
+    {
+
+    }
 
     /**
-     * @param singleData
-     * @return
+     * @param string
+     * @param e
      */
-    Map<Object, Object> getProperties(Object data);
+    public DSCallException(String string, Throwable e)
+    {
+        super(string, e);
+    }
+
+    public DSCallException(String string)
+    {
+        super(string);
+    }
 }

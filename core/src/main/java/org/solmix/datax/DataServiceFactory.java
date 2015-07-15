@@ -23,6 +23,7 @@ import java.util.Map;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.repository.builder.XmlNodeParserProvider;
 import org.solmix.runtime.Extension;
+import org.solmix.runtime.event.EventService;
 
 
 /**
@@ -49,4 +50,10 @@ public interface DataServiceFactory
      */
     XmlNodeParserProvider getXmlNodeParserProvider();
 
+    /**
+     * EventService服务实现，默认为NullEventService.
+     * 
+     * @return
+     */
+    EventService getEventService();
 }

@@ -18,36 +18,15 @@
  */
 package org.solmix.datax;
 
-import java.util.Map;
-
 
 /**
+ * 代表一连串的DSRequest。
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$  2015年7月15日
  */
 
-public interface DataService extends FreeResourcesHandler
+public interface DSCall
 {
-    /**
-     * 服务名称
-     * 
-     * @return
-     */
-    String getId();
-    
-    /**
-     * 服务实现类别
-     * 
-     * @return
-     */
-    String getServerType();
-    
-    DSResponse execute(DSRequest req) throws DSCallException;
 
-    /**
-     * @param singleData
-     * @return
-     */
-    Map<Object, Object> getProperties(Object data);
 }

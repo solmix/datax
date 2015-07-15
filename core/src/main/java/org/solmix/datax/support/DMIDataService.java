@@ -16,18 +16,33 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.repository.builder;
+package org.solmix.datax.support;
 
-import org.solmix.datax.repository.RepositoryService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.solmix.datax.DSCall;
+import org.solmix.datax.DSCallException;
+import org.solmix.datax.DSRequest;
+import org.solmix.datax.DSResponse;
+import org.solmix.datax.RequestContext;
 
 
 /**
+ * Direct Method Invoke DataService.
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$  2015年7月15日
  */
 
-public interface DataServiceInfoBuilder<T> 
+public class DMIDataService
 {
-    void build(T input,RepositoryService repository);
+
+    private static final Logger LOG = LoggerFactory.getLogger(DMIDataService.class.getName());
+    
+    public static DSResponse execute(final DSRequest dsRequest, DSCall rpc, RequestContext requestContext) throws DSCallException {
+        
+        
+        return null;
+        
+    }
 }

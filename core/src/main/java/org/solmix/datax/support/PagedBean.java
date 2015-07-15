@@ -16,38 +16,54 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax;
+package org.solmix.datax.support;
 
-import java.util.Map;
+import org.solmix.datax.Pageable;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$  2015年7月15日
  */
 
-public interface DataService extends FreeResourcesHandler
+public class PagedBean implements Pageable
 {
-    /**
-     * 服务名称
-     * 
-     * @return
-     */
-    String getId();
-    
-    /**
-     * 服务实现类别
-     * 
-     * @return
-     */
-    String getServerType();
-    
-    DSResponse execute(DSRequest req) throws DSCallException;
+    private Integer endRow;
 
-    /**
-     * @param singleData
-     * @return
-     */
-    Map<Object, Object> getProperties(Object data);
+    private Integer startRow;
+    
+    private Integer totalRow;
+
+    
+    public Integer getEndRow() {
+        return endRow;
+    }
+
+    
+    public void setEndRow(Integer endRow) {
+        this.endRow = endRow;
+    }
+
+    
+    public Integer getStartRow() {
+        return startRow;
+    }
+
+    
+    public void setStartRow(Integer startRow) {
+        this.startRow = startRow;
+    }
+
+    
+    public Integer getTotalRow() {
+        return totalRow;
+    }
+
+    
+    public void setTotalRow(Integer totalRow) {
+        this.totalRow = totalRow;
+    }
+    
+
 }

@@ -84,7 +84,8 @@ public class DefaultDataServiceManager implements DataServiceManager
 
     private String defaultServerType;
     
-    private  ExtensionLoader<DataServiceFactory> extendsionLoader;
+
+    private ExtensionLoader<DataServiceFactory> extensionLoader;
 
     public DefaultDataServiceManager(Container c)
     {
@@ -92,7 +93,7 @@ public class DefaultDataServiceManager implements DataServiceManager
         if (container != null) {
             container.setExtension(this, DataServiceManager.class);
             setupDataServiceResolver();
-            extendsionLoader = container.getExtensionLoader(DataServiceFactory.class);
+            extensionLoader = container.getExtensionLoader(DataServiceFactory.class);
         }
     }
 
@@ -200,7 +201,7 @@ public class DefaultDataServiceManager implements DataServiceManager
     }
     
     private DataService instanceDataService(DataServiceInfo info){
-        DataServiceFactory dsf= extendsionLoader.getExtension(info.getServerType());
+        DataServiceFactory dsf= extensionLoader.getExtension(info.getServerType());
         DataService ds= dsf.instance(info,properties);
         return ds;
     }
@@ -291,7 +292,7 @@ public class DefaultDataServiceManager implements DataServiceManager
         if (xmlLocation != null) {
             xmlResources.putAll(lookupXmlDataServiceConfig(xmlLocation));
         }
-
+       
         DefaultRepository repository = new DefaultRepository(this);
         if (this.basePackage != null) {
             scanClassDefinition(basePackage, repository);
@@ -322,6 +323,7 @@ public class DefaultDataServiceManager implements DataServiceManager
      */
     protected void scanClassDefinition(String basePackage, DefaultRepository repository) {
         // TODO Auto-generated method stub
+        //XXX
     }
 
     /**

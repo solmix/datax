@@ -16,38 +16,27 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+
 package org.solmix.datax;
-
-import java.util.Map;
-
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$ 2015年7月2日
  */
 
-public interface DataService extends FreeResourcesHandler
+public class OperationNoFoundException extends DataxException
 {
-    /**
-     * 服务名称
-     * 
-     * @return
-     */
-    String getId();
-    
-    /**
-     * 服务实现类别
-     * 
-     * @return
-     */
-    String getServerType();
-    
-    DSResponse execute(DSRequest req) throws DSCallException;
 
-    /**
-     * @param singleData
-     * @return
-     */
-    Map<Object, Object> getProperties(Object data);
+    private static final long serialVersionUID = 926315145307875736L;
+
+    public OperationNoFoundException(String string, Throwable e)
+    {
+        super(string, e);
+    }
+
+    public OperationNoFoundException(String string)
+    {
+        super(string);
+    }
 }

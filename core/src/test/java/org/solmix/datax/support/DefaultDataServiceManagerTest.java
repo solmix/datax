@@ -175,7 +175,6 @@ public class DefaultDataServiceManagerTest
         OperationInfo oi=dsi.getOperationInfo("#fetch");
         assertEquals(dsi.getId()+".fetch", oi.getId());
         assertEquals(Boolean.TRUE, oi.getAutoJoinTransactions());
-        assertEquals("getMenu", oi.getServiceMethod());
         //关联
         OperationInfo oi2=dsi.getOperationInfo("#feth2");
         assertEquals(oi.getId(), oi2.getRefid());

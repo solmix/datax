@@ -274,7 +274,6 @@
 		</choice>
 		<attribute name="id" type="string"></attribute>
 		<attribute name="autoJoinTransactions" type="boolean"></attribute>
-		<attribute name="serverMethod" type="string"></attribute>
 		<attribute name="refid" type="string"></attribute>
 		<anyAttribute namespace="##any" processContents="lax"></anyAttribute>
 	</complexType>
@@ -308,10 +307,11 @@
 
 	<complexType name="invokerType">
 
-		<attribute name="class" type="string" use="required"></attribute>
+		<attribute name="class" type="string"></attribute>
 		<attribute name="name" type="string"></attribute>
 		<attribute name="method" type="string" use="required"></attribute>
 		<attribute name="lookup" type="ds:lookupType"></attribute>
+		<anyAttribute processContents="lax" namespace="##any"></anyAttribute>
 	</complexType>
 
 	<simpleType name="transactionPolicy">

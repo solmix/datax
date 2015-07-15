@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.solmix.commons.annotation.NotThreadSafe;
 import org.solmix.commons.xml.XMLNode;
@@ -54,7 +55,8 @@ public class DefaultRepository implements RepositoryService
 
     protected Map<String,TransformerInfo> transformers= new StringMap<TransformerInfo>("TransformerInfo Cache");
 
-    
+    protected ConcurrentHashMap<String,DataServiceInfo> drived=  new ConcurrentHashMap<String, DataServiceInfo>();
+        
     protected Map<String,XMLNode> fields= new StringMap<XMLNode>("Fields XMLNode Cache");
     
     protected Collection<ReferenceResolver>  referenceResolvers= new LinkedList<ReferenceResolver>();
@@ -204,5 +206,32 @@ public class DefaultRepository implements RepositoryService
 
     public TransformerInfo getTransformerInfo(String refid) {
         return transformers.get(refid);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.solmix.datax.repository.RepositoryService#getDerivedDataService(java.lang.String)
+     */
+    @Override
+    public DataServiceInfo getDerivedDataService(String name) {
+        return drived.get(name);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.solmix.datax.repository.RepositoryService#addDerivedDataService(java.lang.String, org.solmix.datax.model.DataServiceInfo)
+     */
+    @Override
+    public DataServiceInfo addDerivedDataService(DataServiceInfo info) {
+        String id = info.getId();
+        if (!drived.contains(id)) {
+            return drived.putIfAbsent(id, info);
+        } else {
+            return drived.replace(id, info);
+        }
     }
 }

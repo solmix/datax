@@ -48,7 +48,6 @@ public class OperationInfo
     
     protected Boolean autoJoinTransactions;
     
-    protected String serviceMethod;
     protected BatchOperations batch;
     
     protected List<TransformerInfo> transformers;
@@ -103,12 +102,6 @@ public class OperationInfo
         return autoJoinTransactions;
     }
 
-    
-    public String getServiceMethod() {
-        return serviceMethod;
-    }
-
-    
     public BatchOperations getBatch() {
         return batch;
     }
@@ -124,7 +117,6 @@ public class OperationInfo
 
     private static void copy(OperationInfo source,OperationInfo target){
         target.type=source.type;
-        target.serviceMethod=source.serviceMethod;
         target.autoJoinTransactions=source.autoJoinTransactions;
         target.params=source.params;
         target.invoker=source.invoker;
@@ -221,13 +213,11 @@ public class OperationInfo
             }
             
             
-            String serviceMethod= node.getStringAttribute("serviceMethod");
             Boolean autoJoinTransactions= node.getBooleanAttribute("autoJoinTransactions");
             Map<String ,ParamInfo> params = parseParams(node.evalNode("params"), context);
             List<TransformerInfo> transformers=parseTransformers(node.evalNodes("transformer"), context);
             BatchOperations batch= parseBatch(node.evalNode("batch"),context);
             InvokerInfo invoker = parseInvoker(node.evalNode("invoker"),context);
-            oi.serviceMethod=serviceMethod;
             oi.autoJoinTransactions=autoJoinTransactions;
             oi.params=params;
             oi.batch=batch;

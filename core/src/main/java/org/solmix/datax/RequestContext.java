@@ -18,36 +18,29 @@
  */
 package org.solmix.datax;
 
-import java.util.Map;
+import java.util.Set;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$  2015年7月15日
  */
 
-public interface DataService extends FreeResourcesHandler
+public interface RequestContext
 {
-    /**
-     * 服务名称
-     * 
-     * @return
-     */
-    String getId();
-    
-    /**
-     * 服务实现类别
-     * 
-     * @return
-     */
-    String getServerType();
-    
-    DSResponse execute(DSRequest req) throws DSCallException;
+    /** 添加一个值。 */
+    void put(String key, Object value);
 
-    /**
-     * @param singleData
-     * @return
-     */
-    Map<Object, Object> getProperties(Object data);
+    /** 取得指定值。 */
+    Object get(String key);
+
+    /** 删除一个值。 */
+    void remove(String key);
+
+    /** 判断是否包含指定的键。 */
+    boolean containsKey(String key);
+
+    /** 取得所有key的集合。 */
+    Set<String> keySet();
 }

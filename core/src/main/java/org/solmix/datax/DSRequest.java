@@ -20,12 +20,57 @@ package org.solmix.datax;
 
 
 /**
+ * 代表一次DataService(DS)请求。
  * 
  * @author solmix.f@gmail.com
  * @version $Id$  2015年6月18日
  */
 
-public interface DSRequest
+public interface DSRequest extends Pageable
 {
+    DSResponse execute() throws DSCallException;
 
+    DSCall getDSCall();
+    
+    DataService getDataService();
+    
+    String getDataServiceId();
+    
+    void setDataService(DataService service);
+    
+    void setDSCall(DSCall call);
+    
+    boolean isValidated();
+    void freeResources();
+    /**
+     * 
+     * @param FreeResourcesHandler handler
+     */
+    void registerFreeResourcesHandler(FreeResourcesHandler handler);
+
+    /**
+     * @return
+     */
+    boolean isInvoked();
+
+    /**
+     * @return
+     */
+    String getOperationId();
+
+    /**
+     * @return
+     */
+    RequestContext getRequestContext();
+
+    /**
+     * @param b
+     */
+    void setRequestStarted(boolean started);
+
+    /**
+     * @param b
+     */
+    void setValidated(boolean validate);
+    
 }

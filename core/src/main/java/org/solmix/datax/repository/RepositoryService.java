@@ -31,5 +31,15 @@ import org.solmix.datax.model.DataServiceInfo;
 public interface RepositoryService
 {
     DataServiceInfo getDataService(String name);
-
+    
+    DataServiceInfo getDerivedDataService(String name);
+    
+    /**
+     * 将自动生成的DataServiceInfo放入repository，该方法是线程安全的。
+     * 
+     * @param name
+     * @param info
+     * @return
+     */
+    DataServiceInfo addDerivedDataService(DataServiceInfo info);
 }

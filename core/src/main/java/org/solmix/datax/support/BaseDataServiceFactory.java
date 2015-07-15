@@ -16,11 +16,13 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+
 package org.solmix.datax.support;
 
 import java.util.Collections;
 import java.util.Map;
 
+import org.solmix.commons.annotation.ThreadSafe;
 import org.solmix.commons.collections.DataTypeMap;
 import org.solmix.datax.DataService;
 import org.solmix.datax.DataServiceFactory;
@@ -32,42 +34,59 @@ import org.solmix.runtime.Extension;
 import org.solmix.runtime.event.EventService;
 import org.solmix.runtime.event.support.NullEventService;
 
-
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年7月2日
+ * @version $Id$ 2015年7月2日
  */
-@Extension(name=BaseDataServiceFactory.BASE)
+@Extension(name = BaseDataServiceFactory.BASE)
+@ThreadSafe
 public class BaseDataServiceFactory implements DataServiceFactory
 {
-    public static final String BASE="base";
-    private final  XmlNodeParserProvider provider;
-    
+
+    public static final String BASE = "base";
+
+    private final XmlNodeParserProvider provider;
+
+    private Object eventServicelock = new Object();
+
+    private EventService eventService;
 
     Container container;
-    public BaseDataServiceFactory(Container container){
-        this.container=container;
-        provider=new BaseXmlNodeParserProvider(container);
+
+    public BaseDataServiceFactory(Container container)
+    {
+        this.container = container;
+        provider = new BaseXmlNodeParserProvider(container);
     }
+    
+    /**
+     * 前一个版本的Schema派生功能，
+     * 这里通过org.solmix.datax.support.DefaultDataServiceManager.scanClassDefinition(String, DefaultRepository)的方式实现。
+     */
+
     @Override
-    public DataService instance(DataServiceInfo info,Map<String,Object> properties) {
-        DataTypeMap prop= new DataTypeMap(Collections.unmodifiableMap(properties));
-        BaseDataService bds = new BaseDataService(info,container,prop);
+    public DataService instance(DataServiceInfo info, Map<String, Object> properties) {
+        DataTypeMap prop = new DataTypeMap(Collections.unmodifiableMap(properties));
+        BaseDataService bds = new BaseDataService(info, container, prop);
         bds.setEventService(getEventService());
         bds.init();
         return bds;
     }
-
     
-    protected EventService getEventService(){
-        EventService service = container.getExtension(EventService.class);
-        if(service==null){
-            service= new NullEventService();
+    @Override
+    public EventService getEventService() {
+        if (eventService == null) {
+            synchronized (eventServicelock) {
+                eventService = container.getExtension(EventService.class);
+                if (eventService == null) {
+                    eventService = new NullEventService();
+                }
+            }
         }
-        return service;
+        return eventService;
     }
-    
+
     @Override
     public XmlNodeParserProvider getXmlNodeParserProvider() {
         return provider;

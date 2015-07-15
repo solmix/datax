@@ -18,6 +18,9 @@
  */
 package org.solmix.datax;
 
+import java.util.List;
+import java.util.Map;
+
 
 /**
  * 
@@ -25,7 +28,110 @@ package org.solmix.datax;
  * @version $Id$  2015年6月18日
  */
 
-public interface DSResponse
+public interface DSResponse extends Pageable
 {
 
+    /**
+     * Define the return Status of Datasource.
+     * 
+     * @author solmix.f@gmail.com
+     * @version 110035 2011-3-20
+     */
+    public enum Status
+    {
+        /**
+       * 
+       */
+        STATUS_SUCCESS(0) ,
+        UNSET(1) ,
+        STATUS_FAILURE(-1) ,
+        STATUS_AUTHORIZATION_FAILURE(-3) ,
+        STATUS_VALIDATION_ERROR(-4) ,
+        STATUS_LOGIN_INCORRECT(-5) ,
+        STATUS_MAX_LOGIN_ATTEMPTS_EXCEEDED(-6) ,
+        STATUS_LOGIN_REQUIRED(-7) ,
+        STATUS_LOGIN_SUCCESS(-8) ,
+        UPDATE_WITHOUT_PK(-9) ,
+        STATUS_TRANSACTION_FAILED(-10);
+
+        private final int value;
+
+        Status(int value)
+        {
+            this.value = value;
+        }
+
+        public int value() {
+            return value;
+        }
+
+        public static Status fromValue(int v) {
+            for (Status c : Status.values()) {
+                if (c.value == v) {
+                    return c;
+                }
+            }
+            throw new IllegalArgumentException("illegal dsresponse status");
+        }
+    }
+
+    /**
+     * Return the DataSource
+     * 
+     * @return
+     */
+    DataService getDataService();
+
+    /**
+     * Set the DataService of current DataService response instance.
+     * 
+     * @param dataSource
+     */
+    void setDataService(DataService dataService);
+
+    /**
+     * filter data by {@link org.solmix.api.datasource.DataSource#getProperties(Object)} if need original data ,use
+     * <code> getContext().getData()</code>
+     * 
+     * @return
+     */
+    Map<Object, Object> getSingleRecord();
+
+    /**
+     * filter data by {@link org.solmix.api.datasource.DataSource#getProperties(Object)} if need original data ,use
+     * <code> getContext().getData()</code>
+     * 
+     * @return
+     */
+    List<Map<Object, Object>> getRecordList();
+
+    Status getStatus();
+
+    void setStatus(Status status);
+
+    boolean isSuccess();
+
+    public Object getRawData();
+
+    /**
+     * Setting the raw data to this response.the raw data may be transformed by {@link #getSingleRecord()},
+     * {@link #getRecordList()},{@link #getSingleResult(Class)},{@link #getRecordList()}.
+     * 
+     * @param rawData the rawData to set
+     */
+    public void setRawData(Object rawData);
+
+    public <T> T getSingleResult(Class<T> type);
+
+    public <T> List<T> getResultList(Class<T> type);
+
+    /**
+     * @return
+     */
+    Object[] getErrors();
+
+    /**
+     * @param errors
+     */
+    void setErrors(Object... errors);
 }

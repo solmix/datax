@@ -21,6 +21,7 @@ package org.solmix.datax;
 
 
 /**
+ * 运行异常。
  * 
  * @author solmix.f@gmail.com
  * @version $Id$ 2015年6月18日

@@ -53,14 +53,11 @@
             					</element>
             				</choice>
             			</sequence>
-
-
             		</complexType>
             	</element>
             	<element name="operations" type="ds:operationsType"
             		minOccurs="0" maxOccurs="1">
             	</element>
-            	<any namespace="##any" processContents="lax"></any>
             </choice>
 		</sequence>
 		<attribute name="id" type="string" use="required"></attribute>
@@ -73,6 +70,9 @@
 	<complexType name="validatorType">
 		<complexContent>
 			<extension base="ds:ref">
+				<sequence minOccurs="0" maxOccurs="unbounded">
+					<any namespace="##any" processContents="lax"></any>
+				</sequence>
 				<attribute name="id" type="string"></attribute>
 				<attribute name="type" type="string"></attribute>
 				<attribute name="errorMessage" type="string"></attribute>
@@ -200,44 +200,20 @@
 
 	<complexType name="operationType">
 		<choice>
-			<element name="batch">
-				<complexType>
-					<sequence>
-						<choice minOccurs="0" maxOccurs="unbounded">
-							<element name="fetch"
-								type="ds:operationType">
-							</element>
-							<element name="add"
-								type="ds:operationType">
-							</element>
-							<element name="remove"
-								type="ds:operationType">
-							</element>
-							<element name="update"
-								type="ds:operationType">
-							</element>
-							<any namespace="##other"></any>
-						</choice>
-					</sequence>
-					<attribute name="transactionPolicy"
-						type="ds:transactionPolicy" />
-				</complexType>
-			</element>
 			<choice minOccurs="0" maxOccurs="unbounded">
 				<element name="transformer">
 					<complexType>
 						<complexContent>
 							<extension base="ds:ref">
-
-
-
 								<sequence minOccurs="0"
 									maxOccurs="unbounded">
 									<any></any>
 								</sequence>
 								<attribute name="id" type="string">
 								</attribute>
-								<anyAttribute namespace="##any" processContents="lax"></anyAttribute>
+								<anyAttribute namespace="##any"
+									processContents="lax">
+								</anyAttribute>
 							</extension>
 						</complexContent>
 					</complexType>
@@ -261,7 +237,9 @@
 									<attribute name="isOverride"
 										type="boolean">
 									</attribute>
-									<anyAttribute namespace="##any" processContents="lax"></anyAttribute>
+									<anyAttribute namespace="##any"
+										processContents="lax">
+									</anyAttribute>
 								</complexType>
 							</element>
 						</sequence>
@@ -269,12 +247,36 @@
 					</complexType>
 				</element>
 				<element name="invoker" type="ds:invokerType"></element>
-				<any namespace="##any" processContents="lax"></any>
+				<any namespace="##other" processContents="lax"></any>
 			</choice>
+			<element name="batch">
+				<complexType>
+					<sequence>
+						<choice minOccurs="0" maxOccurs="unbounded">
+							<element name="fetch"
+								type="ds:operationType">
+							</element>
+							<element name="add"
+								type="ds:operationType">
+							</element>
+							<element name="remove"
+								type="ds:operationType">
+							</element>
+							<element name="update"
+								type="ds:operationType">
+							</element>
+							<any namespace="##other"></any>
+						</choice>
+					</sequence>
+					<attribute name="transactionPolicy"
+						type="ds:transactionPolicy" />
+				</complexType>
+			</element>
 		</choice>
 		<attribute name="id" type="string"></attribute>
 		<attribute name="autoJoinTransactions" type="boolean"></attribute>
 		<attribute name="refid" type="string"></attribute>
+		<attribute name="validate" type="boolean"></attribute>
 		<anyAttribute namespace="##any" processContents="lax"></anyAttribute>
 	</complexType>
 
@@ -289,7 +291,6 @@
     			</element>
     			<element name="custom" type="ds:operationType">
     			</element>
-    			<any namespace="##any" processContents="lax"></any>
     		</choice>
     	</sequence>
 	</complexType>

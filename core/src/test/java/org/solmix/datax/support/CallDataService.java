@@ -16,38 +16,16 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax;
-
-import java.util.Map;
-
-import org.solmix.datax.repository.RepositoryService;
+package org.solmix.datax.support;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$  2015年7月18日
  */
 
-public interface DataServiceManager
+public class CallDataService
 {
-    RepositoryService getRepositoryService();
-    
-    void setRepositoryService(RepositoryService service);
-    
-    void setConfigLocation(String location);
-    
-    void addService(Class<?> serviceClass);
-    
-    DataService getDataService(String serviceName);
-    
-     Map<String, Object> getProperties();
-
-    
-     void setProperties(Map<String, Object> properties) ;
-     
-     DSRequest createDSRequest();
-     
-     DSResponse createDsResponse(DSRequest request);
 
 }

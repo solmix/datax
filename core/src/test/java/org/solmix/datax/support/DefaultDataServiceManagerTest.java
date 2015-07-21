@@ -28,6 +28,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.solmix.datax.DSRequest;
 import org.solmix.datax.model.BatchOperations;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.model.FieldInfo;
@@ -71,7 +72,16 @@ public class DefaultDataServiceManagerTest
     public void testInit() {
         dsm.init();
     }
-
+    
+    @Test
+    public void testCreateDSRequest() {
+        DSRequest ds= dsm.createDSRequest();
+        Assert.assertNotNull(ds.getApplication());
+    }
+    @Test
+    public void testCreateDSResponse() {
+        
+    }
     @Test
     public void testDefinitionResources() {
         dsm.addResource("classpath:META-INF/dataservice1/ds2.xml");

@@ -16,38 +16,37 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax;
+package org.solmix.datax.validation;
 
-import java.util.Map;
-
-import org.solmix.datax.repository.RepositoryService;
+import org.solmix.datax.DataxException;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$  2015年7月19日
  */
 
-public interface DataServiceManager
+public class ValidationException extends DataxException
 {
-    RepositoryService getRepositoryService();
-    
-    void setRepositoryService(RepositoryService service);
-    
-    void setConfigLocation(String location);
-    
-    void addService(Class<?> serviceClass);
-    
-    DataService getDataService(String serviceName);
-    
-     Map<String, Object> getProperties();
 
-    
-     void setProperties(Map<String, Object> properties) ;
-     
-     DSRequest createDSRequest();
-     
-     DSResponse createDsResponse(DSRequest request);
+    private static final long serialVersionUID = 8229837256742427043L;
 
+    public ValidationException(String string, Throwable e)
+    {
+        super(string, e);
+    }
+
+    public ValidationException(String string)
+    {
+        super(string);
+    }
+
+    /**
+     * @param e
+     */
+    public ValidationException(Exception e)
+    {
+        super(e);
+    }
 }

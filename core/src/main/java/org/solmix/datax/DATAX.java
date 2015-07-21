@@ -54,4 +54,8 @@ public final class DATAX
      * </code>
      */
     public final static String DS_AREA="#";
+    
+    public static final String LOG_CONTEXT="logContext";
+    public static final String VALIDATION_LOGNAME = "VALIDATION";
+    public static final String VALIDATION_TOPIC_PREFIX =  "org/solmix/datax/validation/";;
 }

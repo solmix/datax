@@ -18,7 +18,13 @@
  */
 package org.solmix.datax.service;
 
-import org.solmix.datax.validator.Validator;
+import java.util.Map;
+
+import org.solmix.datax.model.ValidatorInfo;
+import org.solmix.datax.validation.ErrorMessage;
+import org.solmix.datax.validation.ValidationContext;
+import org.solmix.datax.validation.ValidationException;
+import org.solmix.datax.validation.Validator;
 
 
 /**
@@ -29,5 +35,13 @@ import org.solmix.datax.validator.Validator;
 
 public class MockValidator implements Validator
 {
+
+    @Override
+    public ErrorMessage validate(ValidatorInfo validatorInfo, Object value, String fieldName, Map<String, Object> record, ValidationContext context)
+        throws ValidationException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 
 }

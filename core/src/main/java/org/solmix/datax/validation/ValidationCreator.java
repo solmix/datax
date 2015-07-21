@@ -16,38 +16,20 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax;
-
-import java.util.Map;
-
-import org.solmix.datax.repository.RepositoryService;
+package org.solmix.datax.validation;
 
 
 /**
+ * 在验证值得时候将值转化为需要的类型。
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$  2015年7月20日
  */
 
-public interface DataServiceManager
+public interface ValidationCreator
 {
-    RepositoryService getRepositoryService();
+    String  getName();
     
-    void setRepositoryService(RepositoryService service);
-    
-    void setConfigLocation(String location);
-    
-    void addService(Class<?> serviceClass);
-    
-    DataService getDataService(String serviceName);
-    
-     Map<String, Object> getProperties();
-
-    
-     void setProperties(Map<String, Object> properties) ;
-     
-     DSRequest createDSRequest();
-     
-     DSResponse createDsResponse(DSRequest request);
+    Object create(Object data,ValidationContext vcontext) throws ValidationException;
 
 }

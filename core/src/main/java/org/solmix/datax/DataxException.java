@@ -51,4 +51,12 @@ public class DataxException extends RuntimeException
         super(string);
     }
 
+    /**
+     * @param e
+     */
+    public DataxException(Exception e)
+    {
+        super(e);
+    }
+
 }

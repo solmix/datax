@@ -106,7 +106,7 @@ public class TransformerInfo implements XMLSource
         }
         @Override
         public String toString(){
-            return new StringBuilder().append("Resolver Validator:").append(refid).toString();
+            return new StringBuilder().append("Resolver Validator2:").append(refid).toString();
         }
 
     }
@@ -119,7 +119,7 @@ public class TransformerInfo implements XMLSource
             String containerRef = node.getStringAttribute("container-ref");
             String refid = node.getStringAttribute("refid");
             if (refid != null && containerRef != null) {
-                LOG.warn("Validator configure both container-ref:{} and refid:{},ignore container-ref", containerRef, refid);
+                LOG.warn("Validator2 configure both container-ref:{} and refid:{},ignore container-ref", containerRef, refid);
             }
             if (refid != null) {
                 TransformerInfo vi = null;

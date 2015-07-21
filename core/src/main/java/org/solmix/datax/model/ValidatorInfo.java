@@ -18,13 +18,15 @@
  */
 package org.solmix.datax.model;
 
+import java.util.Map;
+
 import org.solmix.commons.annotation.Immutable;
 import org.solmix.commons.xml.XMLNode;
 import org.solmix.datax.repository.builder.ReferenceNoFoundException;
 import org.solmix.datax.repository.builder.ReferenceResolver;
 import org.solmix.datax.repository.builder.XmlParserContext;
 import org.solmix.datax.repository.builder.xml.BaseXmlNodeParser;
-import org.solmix.datax.validator.Validator;
+import org.solmix.datax.validation.Validator;
 
 
 /**
@@ -43,6 +45,7 @@ public class ValidatorInfo implements XMLSource
     protected XMLNode node;
     protected String errorMessage;
     protected Boolean serverOnly;
+    protected Boolean clientOnly;
     protected Boolean validateOnChange;
     protected Boolean exclusive;
     protected Double max;
@@ -56,7 +59,12 @@ public class ValidatorInfo implements XMLSource
     protected Class<? extends Validator> clazz;
     protected LookupType lookup;
     
+    protected Map<String,Object> properties;
+    
     ValidatorInfo(){
+    }
+   public ValidatorInfo(String type){
+        this.type=type;
     }
     public ValidatorInfo(XMLNode node,String id){
         this.node=node;
@@ -66,7 +74,16 @@ public class ValidatorInfo implements XMLSource
         this.id=id;
     }
     
-    
+    public Boolean getClientOnly() {
+        return clientOnly;
+    }
+    public Object getProperty(String key) {
+        Object res= properties.get(key);
+        if(res==null&&getXMLNode()!=null){
+            res = getXMLNode().getBooleanAttribute(key);
+        }
+        return res;
+    }
     public String getName() {
         return name;
     }
@@ -85,12 +102,19 @@ public class ValidatorInfo implements XMLSource
     {
         copy(vi,this);
     }
+    
+    public ValidatorInfo(String string, Map<String, Object> properties)
+    {
+        this(string);
+        this.properties=properties;
+    }
     private static void copy(ValidatorInfo source,ValidatorInfo target){
         target.id=source.id;
         target.type=source.type;
         target.name=source.name;
         target.errorMessage=source.errorMessage;
         target.serverOnly=source.serverOnly;
+        target.clientOnly=source.clientOnly;
         target.validateOnChange=source.validateOnChange;
         target.max=source.max;
         target.min=source.min;
@@ -102,6 +126,7 @@ public class ValidatorInfo implements XMLSource
         target.clazz=source.clazz;
         target.node=source.node;
         target.lookup=source.lookup;
+        target.properties=source.properties;
     }
     /**
      * @return
@@ -178,7 +203,7 @@ public class ValidatorInfo implements XMLSource
         }
         @Override
         public String toString(){
-            return new StringBuilder().append("Resolver Validator:").append(refid).toString();
+            return new StringBuilder().append("Resolver Validator2:").append(refid).toString();
         }
 
     }
@@ -217,6 +242,7 @@ public class ValidatorInfo implements XMLSource
             String operator = node.getStringAttribute("operator");
             Double precision = node.getDoubleAttribute("precision");
             Boolean serverOnly = node.getBooleanAttribute("serverOnly");
+            Boolean  clientOnly = node.getBooleanAttribute("clientOnly");
             Boolean validateOnChange= node.getBooleanAttribute("validateOnChange");
             String substring = node.getStringAttribute("substring");
             String type = node.getStringAttribute("type");
@@ -244,6 +270,7 @@ public class ValidatorInfo implements XMLSource
             vi.operator = operator;
             vi.precision = precision;
             vi.serverOnly = serverOnly;
+            vi.clientOnly=clientOnly;
             vi.substring = substring;
             vi.type = type;
             vi.lookup=lookup;

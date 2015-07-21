@@ -39,13 +39,19 @@ import org.solmix.datax.DataService;
 
 public class DSResponseImpl  extends PagedBean implements DSResponse
 {
+
     private static final Logger LOG = LoggerFactory.getLogger(DSResponseImpl.class);
-    private Status status=Status.UNSET;
-    
+
+    private Status status = Status.UNSET;
+
     private Object[] errors;
+
     private DataService dataService;
+
     private Long affectedRows;
+
     private Object rawData;
+    
     public DSResponseImpl(Status status)
     {
         setStatus(status);
@@ -68,6 +74,13 @@ public class DSResponseImpl  extends PagedBean implements DSResponse
     }
 
     /**
+     * @param request
+     */
+    public DSResponseImpl(DSRequest request)
+    {
+        this(request,null);
+    }
+    /**
      * {@inheritDoc}
      * 
      * @see org.solmix.datax.DSResponse#getDataService()
@@ -86,7 +99,21 @@ public class DSResponseImpl  extends PagedBean implements DSResponse
     public void setDataService(DataService dataService) {
         this.dataService=dataService;
     }
+    public void setAffectedRows(Long affectedRows) {
+        this.affectedRows=affectedRows;
+        
+    }
 
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.solmix.api.datasource.DSResponse#getAffectedRows(java.lang.Long)
+     */
+    @Override
+    public Long getAffectedRows(Long long1) {
+        return affectedRows;
+        
+    }
     /**
      * {@inheritDoc}
      * 
@@ -186,8 +213,7 @@ public class DSResponseImpl  extends PagedBean implements DSResponse
      */
     @Override
     public <T> T getSingleResult(Class<T> type) {
-        // TODO Auto-generated method stub
-        return null;
+        return getResultInternal(type, rawData);
     }
 
     /**
@@ -201,7 +227,6 @@ public class DSResponseImpl  extends PagedBean implements DSResponse
         if (List.class.isAssignableFrom(rawData.getClass())) {
             for (Object obj : List.class.cast(rawData)) {
                 res.add(getResultInternal(type, obj));
-
             }
         }else {
             try {

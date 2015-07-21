@@ -18,7 +18,11 @@
  */
 package org.solmix.datax;
 
+import java.util.List;
 import java.util.Map;
+
+import org.solmix.datax.model.DataServiceInfo;
+import org.solmix.datax.validation.ValidationException;
 
 
 /**
@@ -46,8 +50,29 @@ public interface DataService extends FreeResourcesHandler
     DSResponse execute(DSRequest req) throws DSCallException;
 
     /**
+     * 根据DataService Field 的配置返回格式化的记录.
+     * 
      * @param singleData
      * @return
      */
     Map<Object, Object> getProperties(Object data);
+    
+    DataServiceInfo getDataServiceInfo();
+
+    /**
+     * 自动组装时，可以判断当前是服务是否存在对应字段的值。
+     * @param realFieldName
+     * @param value
+     * @return
+     */
+    @Deprecated
+    boolean hasRecord(String realFieldName, Object value);
+
+    /**
+     * 验证请求.
+     * 
+     * @param req
+     * @return
+     */
+    List<Object> validateDSRequst(DSRequest req) throws ValidationException;
 }

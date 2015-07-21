@@ -16,16 +16,16 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+
 package org.solmix.datax;
 
 import java.util.List;
 import java.util.Map;
 
-
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$ 2015年6月18日
  */
 
 public interface DSResponse extends Pageable
@@ -74,6 +74,10 @@ public interface DSResponse extends Pageable
             throw new IllegalArgumentException("illegal dsresponse status");
         }
     }
+
+    void setAffectedRows(Long long1);
+
+    Long getAffectedRows(Long long1);
 
     /**
      * Return the DataSource

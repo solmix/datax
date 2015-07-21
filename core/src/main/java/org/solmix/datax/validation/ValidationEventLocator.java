@@ -16,11 +16,16 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+package org.solmix.datax.validation;
+
+
 /**
- * DataService 输入验证.
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$  2015年7月18日
  */
 
-package org.solmix.datax.validator;
+public interface ValidationEventLocator
+{
+//TODO
+}

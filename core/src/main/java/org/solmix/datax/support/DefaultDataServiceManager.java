@@ -29,10 +29,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.solmix.commons.annotation.ThreadSafe;
 import org.solmix.commons.xml.XMLParsingException;
+import org.solmix.datax.DSRequest;
+import org.solmix.datax.DSResponse;
 import org.solmix.datax.DataService;
 import org.solmix.datax.DataServiceFactory;
 import org.solmix.datax.DataServiceManager;
@@ -47,6 +51,7 @@ import org.solmix.datax.repository.builder.xml.XMLDataServiceBuilder;
 import org.solmix.runtime.Container;
 import org.solmix.runtime.extension.ExtensionLoader;
 import org.solmix.runtime.resource.InputStreamResource;
+import org.solmix.runtime.resource.ResourceInjector;
 import org.solmix.runtime.resource.ResourceManager;
 
 /**
@@ -78,7 +83,7 @@ public class DefaultDataServiceManager implements DataServiceManager
 
     private Container container;
 
-    private Map<String, Object> properties;
+    private Map<String, Object> properties = Collections.emptyMap();
 
     private RepositoryService repositoryService;
 
@@ -160,8 +165,8 @@ public class DefaultDataServiceManager implements DataServiceManager
             if (DataServiceInfo.SCOPE_PROPERTY.equals(dsi.getScope())) {
                 singleton = false;
             }
-            holder = new DataServiceHolder(dsi.getId(), singleton);
-            holder = cached.putIfAbsent(serviceName, holder);
+            holder = new DataServiceHolder(singleton);
+            cached.putIfAbsent(serviceName, holder);
             if(singleton){
                return instanceSingletonDataService(holder,dsi);
             }else{
@@ -182,10 +187,15 @@ public class DefaultDataServiceManager implements DataServiceManager
         }
     }
     
-    private DataServiceInfo getDataServiceInfo(String serviceName){
-        DataServiceInfo dsi = repositoryService.getDataService(serviceName);
+    private DataServiceInfo getDataServiceInfo(String serviceName) {
+        DataServiceInfo dsi = null;
+        try {
+            dsi = repositoryService.getDataService(serviceName);
+        } catch (Exception e) {
+            throw new DataServiceNoFoundException("Can't found DataServiceInfo with serviceId:" + serviceName, e);
+        }
         if (dsi == null) {
-            throw new DataServiceNoFoundException("Can't found DataServiceInfo with serviceName:" + serviceName);
+            throw new DataServiceNoFoundException("Can't found DataServiceInfo with serviceId:" + serviceName);
         }
         return dsi;
     }
@@ -202,7 +212,7 @@ public class DefaultDataServiceManager implements DataServiceManager
     
     private DataService instanceDataService(DataServiceInfo info){
         DataServiceFactory dsf= extensionLoader.getExtension(info.getServerType());
-        DataService ds= dsf.instance(info,properties);
+        DataService ds= dsf.instance(info,getProperties());
         return ds;
     }
 
@@ -268,6 +278,7 @@ public class DefaultDataServiceManager implements DataServiceManager
     /**
      * 
      */
+    @PostConstruct
     public synchronized void init() {
         if (init) {
             return;
@@ -374,13 +385,11 @@ public class DefaultDataServiceManager implements DataServiceManager
 
         boolean singleton;
 
-        String serviceId;
 
         DataService service;
 
-        DataServiceHolder(String serviceId, boolean singleton)
+        DataServiceHolder( boolean singleton)
         {
-            this.serviceId = serviceId;
             this.singleton = singleton;
         }
 
@@ -393,8 +402,30 @@ public class DefaultDataServiceManager implements DataServiceManager
                 this.service = service;
             }
             return this.service;
-
         }
+        
+    }
 
+   
+    @Override
+    public DSRequest createDSRequest() {
+        DSRequest  request= new DSRequestImpl();
+        injectObject(request);
+        return request;
+    }
+
+    protected void injectObject(Object obj){
+        ResourceManager rm=  container.getExtension(ResourceManager.class);
+        if(rm!=null){
+            ResourceInjector in= new ResourceInjector(rm);
+            in.inject(obj);
+        }
+    }
+    
+    @Override
+    public DSResponse createDsResponse(DSRequest request) {
+        DSResponse response= new DSResponseImpl(request);
+        injectObject(response);
+        return response;
     }
 }

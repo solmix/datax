@@ -1,2 +1,4 @@
 org.solmix.datax.support.DefaultDataServiceManager:org.solmix.datax.DataServiceManager:true:true
 org.solmix.datax.support.BaseDataServiceFactory::true:true
+org.solmix.datax.application.support.DefaultApplicationManager::true:true
+org.solmix.datax.application.support.BuiltInApplication::true:true

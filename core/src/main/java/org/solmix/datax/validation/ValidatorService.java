@@ -16,16 +16,21 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.validator;
+package org.solmix.datax.validation;
+
+import java.util.List;
+import java.util.Map;
+
+import org.solmix.datax.model.ValidatorInfo;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月29日
+ * @version $Id$  2015年7月20日
  */
 
-public interface Validator
+public interface ValidatorService
 {
-
+    ErrorReport validateField(Map<String, Object> currentRecord, String fieldName, List<ValidatorInfo> validators, ValidationContext context,Object value,ErrorReport errorReport);
 }

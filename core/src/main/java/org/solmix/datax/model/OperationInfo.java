@@ -48,6 +48,8 @@ public class OperationInfo
     
     protected Boolean autoJoinTransactions;
     
+    protected Boolean validate;
+    
     protected BatchOperations batch;
     
     protected List<TransformerInfo> transformers;
@@ -84,6 +86,10 @@ public class OperationInfo
         copy(oi, this);
         this.id=id;
     }
+    
+    public Boolean getValidate() {
+        return validate;
+    }
 
     public String getId() {
         return id;
@@ -118,6 +124,7 @@ public class OperationInfo
     private static void copy(OperationInfo source,OperationInfo target){
         target.type=source.type;
         target.autoJoinTransactions=source.autoJoinTransactions;
+        target.validate=source.validate;
         target.params=source.params;
         target.invoker=source.invoker;
         target.transformers=source.transformers;
@@ -214,6 +221,7 @@ public class OperationInfo
             
             
             Boolean autoJoinTransactions= node.getBooleanAttribute("autoJoinTransactions");
+            Boolean validate= node.getBooleanAttribute("validate");
             Map<String ,ParamInfo> params = parseParams(node.evalNode("params"), context);
             List<TransformerInfo> transformers=parseTransformers(node.evalNodes("transformer"), context);
             BatchOperations batch= parseBatch(node.evalNode("batch"),context);
@@ -223,6 +231,7 @@ public class OperationInfo
             oi.batch=batch;
             oi.transformers=transformers;
             oi.invoker=invoker;
+            oi.validate=validate;
             context.getRepositoryService().addOperationInfo(oi);
             return oi;
         }

@@ -56,7 +56,8 @@ public class DataServiceInfo
 
     protected String description;
 
-    protected List<FieldInfo> fields;
+    protected Map<String,FieldInfo> fields;
+    protected List<FieldInfo> fieldList;
 
     protected Map<String, OperationInfo> operations;
 
@@ -76,7 +77,7 @@ public class DataServiceInfo
     }
 
     public List<FieldInfo> getFields() {
-        return fields;
+        return fieldList;
     }
 
     public String getId() {
@@ -115,6 +116,9 @@ public class DataServiceInfo
     }
 
     public OperationInfo getOperationInfo(String id) {
+        if(operations==null){
+            return null;
+        }
         OperationInfo oi = operations.get(id);
         if (oi != null) {
             return oi;
@@ -139,7 +143,15 @@ public class DataServiceInfo
             try {
                 context.setCurrentService(id);
                 id = context.applyCurrentNamespace(id, false);
-                List<FieldInfo> fields = parseFields(id, node.evalNode("fields"), context);
+                Map<String,FieldInfo> fields = parseFields(id, node.evalNode("fields"), context);
+                List<FieldInfo> fieldList =null;
+                if(fields!=null){
+                    fieldList= new ArrayList<FieldInfo>(fields.size());
+                    for(FieldInfo fi:fields.values()){
+                        fieldList.add(fi);
+                    }
+                }
+                
                 Map<String, OperationInfo> operations = parseOperations(node.evalNode("operations"), context);
                 String description = node.evalString("description");
                 Class<?> clazz = paseClass(node, "serviceClass");
@@ -154,6 +166,7 @@ public class DataServiceInfo
                 String scope = node.getStringAttribute("scope",SCOPE_SINGLETON);
                 DataServiceInfo dsi = new DataServiceInfo(id,context.getServerType());
                 dsi.fields = fields;
+                dsi.fieldList=fieldList;
                 dsi.description = description;
                 dsi.operations = operations;
                 dsi.serviceClass = clazz;
@@ -168,6 +181,9 @@ public class DataServiceInfo
         }
 
         protected Map<String, OperationInfo> parseOperations(XMLNode node, XmlParserContext context) {
+            if(node==null){
+                return null;
+            }
             List<XMLNode> nodes = node.evalNodes("fetch|add|remove|update|custom");
             if (nodes == null || nodes.size() == 0) {
                 return null;
@@ -184,19 +200,23 @@ public class DataServiceInfo
             return operations;
         }
 
-        public List<FieldInfo> parseFields(String serviceId, XMLNode node, XmlParserContext context) {
+        public Map<String,FieldInfo> parseFields(String serviceId, XMLNode node, XmlParserContext context) {
+            if(node==null){
+                return null;
+            }
             // 处理Include
             include(node.getNode(), context);
             // 供别的服务Include.每个service只有一个Fields，所以使用Service id
             context.getRepositoryService().addInclude(serviceId, node);
             List<XMLNode> nodes = node.evalNodes("field");
-            List<FieldInfo> fields = new ArrayList<FieldInfo>(nodes.size());
+            Map<String,FieldInfo> fields = new LinkedHashMap<String, FieldInfo>(nodes.size());
+//            List<FieldInfo> fields = new ArrayList<FieldInfo>(nodes.size());
             for (XMLNode n : nodes) {
                 FieldInfo fi = context.parseNode(n, FieldInfo.class);
-                if (fields.contains(fi)) {
+                if (fields.containsValue(fi)) {
                     throw new BuilderException("Have duplicate field id:" + fi.getName());
                 }
-                fields.add(fi);
+                fields.put(fi.getName(), fi);
             }
             return fields;
 
@@ -246,6 +266,14 @@ public class DataServiceInfo
         private String getStringAttribute(Node node, String name) {
             return node.getAttributes().getNamedItem(name).getNodeValue();
         }
+    }
+
+    /**
+     * @param fieldName
+     * @return
+     */
+    public FieldInfo getField(String fieldName) {
+        return fields.get(fieldName);
     }
 
 }

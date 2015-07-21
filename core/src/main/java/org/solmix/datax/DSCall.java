@@ -29,4 +29,9 @@ package org.solmix.datax;
 public interface DSCall
 {
 
+    /**
+     * 
+     */
+    void freeDataSources();
+
 }

@@ -18,8 +18,14 @@
  */
 package org.solmix.datax.support;
 
+import java.util.List;
+import java.util.Map;
+
 import javax.annotation.Resource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.solmix.commons.util.DataUtils;
 import org.solmix.datax.DSCall;
 import org.solmix.datax.DSCallException;
 import org.solmix.datax.DSRequest;
@@ -29,6 +35,10 @@ import org.solmix.datax.DataService;
 import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.FreeResourcesHandler;
 import org.solmix.datax.RequestContext;
+import org.solmix.datax.application.Application;
+import org.solmix.datax.application.ApplicationManager;
+import org.solmix.datax.model.DataServiceInfo;
+import org.solmix.datax.model.OperationInfo;
 
 
 /**
@@ -40,31 +50,111 @@ import org.solmix.datax.RequestContext;
 public class DSRequestImpl extends PagedBean implements DSRequest
 {
 
+    private static final Logger LOG= LoggerFactory.getLogger(DSRequestImpl.class);
+    
     private String dataServiceId;
+    
+    private String appId;
+
     private DataService dataService;
-    
-    private String operationId;
-    
-   
+
+    private  String operationId;
+
     private boolean validated = false;
+
     FreeResourcesHandler freeResourcesHandler;
-    
+
     RequestContext requestContext;
+
     boolean requestStarted;
+
     private DSCall dsc;
+    
+    private Boolean freeOnExecute ;
+    
+    private Object rawValues;
+
+    private Object rawOldValues;
+    
     @Resource
     private DataServiceManager dataServiceManager;
+    
+    @Resource
+    private ApplicationManager applicationManager;
+    
+    public DSRequestImpl(){
+    }
+    
     @Override
     public DSResponse execute() throws DSCallException {
         DSResponse response = validateDSRequest();
-        return null;
+        if(response!=null){
+            return prepareReturn(response);
+        }
+        try {
+           
+            OperationInfo oi = getOperationInfo();
+            /*if(oi.getInvoker()!=null){
+                response = DMIDataService.execute(this, dsc, requestContext);
+            }*/
+            response=getApplication().execute(this, requestContext);
+        } finally {
+            if (isFreeOnExecute()) {
+                this.freeResources();
+                if (dsc != null)
+                    dsc.freeDataSources();
+            }
+        }
+        return response;
     }
+    /**
+     * @return
+     */
+    @Override
+    public Application getApplication() {
+        return applicationManager.findByID(getAppId());
+    }
+    /**
+     * @return
+     */
+    @Override
+    public OperationInfo getOperationInfo() {
+       DataServiceInfo dsi= getDataService().getDataServiceInfo();
+       return dsi.getOperationInfo(getOperationId());
+    }
+    
+    private DSResponse prepareReturn(DSResponse _dsResponse){
+        if (isFreeOnExecute()) {
+            freeResources();
+            if (dsc != null)
+                dsc.freeDataSources();
+        }
+        return _dsResponse;
+    }
+    public boolean isFreeOnExecute() {
+        if(freeOnExecute==null){
+            if(getDSCall()!=null)
+                return false;
+            else
+                return true;
+        }else{
+            return freeOnExecute.booleanValue();
+        }
+     }
+
+     public void setFreeOnExecute(boolean freeOnExecute) {
+         this.freeOnExecute = freeOnExecute;
+     }
     private DSResponse validateDSRequest()  {
+        if(operationId==null){
+            return createResponse(Status.STATUS_VALIDATION_ERROR, "DataService(DS) request operationid must be assigned");
+        }
         if (getDataServiceId() == null) {
             return createResponse(Status.STATUS_VALIDATION_ERROR, "DataService id must be assigned");
         }
         return null;
     }
+    
     private DSResponse createResponse(Status status, Object... errors)  {
         DSResponse dsResponse = new DSResponseImpl(getDataService(), this);
         dsResponse.setStatus(status);
@@ -135,8 +225,14 @@ public class DSRequestImpl extends PagedBean implements DSRequest
      */
     @Override
     public String getDataServiceId() {
-        if(this.dataServiceId==null&&this.dataService!=null){
-            this.dataServiceId=dataService.getId();
+        if (this.dataServiceId == null && this.dataService != null) {
+            this.dataServiceId = dataService.getId();
+        }
+        if (this.dataServiceId == null && operationId != null) {
+            int index = operationId.lastIndexOf(".");
+            if (index != -1) {
+                return operationId.substring(0,index);
+            }
         }
         return dataServiceId;
     }
@@ -153,16 +249,6 @@ public class DSRequestImpl extends PagedBean implements DSRequest
     }
 
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.solmix.datax.DSRequest#isInvoked()
-     */
-    @Override
-    public boolean isInvoked() {
-        // TODO Auto-generated method stub
-        return false;
-    }
 
 
     /**
@@ -172,7 +258,14 @@ public class DSRequestImpl extends PagedBean implements DSRequest
      */
     @Override
     public String getOperationId() {
-        return operationId;
+        if(operationId==null){
+            throw new IllegalStateException("operation id must be sepcified");
+        }
+        if(operationId.indexOf(".")!=-1){
+            return operationId;
+        }else{
+            return new StringBuilder().append(getDataServiceId()).append(".").append(operationId).toString();
+        }
     }
 
 
@@ -224,6 +317,110 @@ public class DSRequestImpl extends PagedBean implements DSRequest
         if (freeResourcesHandler != null)
             freeResourcesHandler.freeResources();
         dataService = null;
+    }
+    
+    public String getAppId() {
+        return appId;
+    }
+    
+    public void setAppId(String appId) {
+        this.appId = appId;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.solmix.datax.DSRequest#setOperationId(java.lang.String)
+     */
+    @Override
+    public void setOperationId(String operationId) {
+        this.operationId=operationId;
+    }
+
+    
+    public Object getRawValues() {
+        return rawValues;
+    }
+
+    
+    public void setRawValues(Object rawValues) {
+        this.rawValues = rawValues;
+    }
+
+    
+    public Object getRawOldValues() {
+        return rawOldValues;
+    }
+
+    
+    public void setRawOldValues(Object rawOldValues) {
+        this.rawOldValues = rawOldValues;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.solmix.datax.DSRequest#getValues()
+     */
+    
+    @Override
+    public Map<String, Object> getValues() {
+        Object values = getRawValues();
+        return getValuesInternal(values);
+    }
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> getValuesInternal(Object values) {
+        if (values instanceof List<?>) {
+            List<?> l = (List<?>) values;
+            if (l.size() == 0)
+                return null;
+            if (l.get(0) instanceof Map<?,?>) {
+                if (l.size() == 1) {
+                    return (Map<String, Object>) l.get(0);
+                } else {
+                    LOG.warn("getValues() called on dsRequest containing multiple sets of values, returning first in list.");
+                    return (Map<String, Object>) l.get(0);
+                }
+            } else {
+                LOG.debug("getValues() called on dsRequest,and the values is not the List of map.ignore this value.");
+                return null;
+            }
+        } else if (values instanceof Map<?, ?>) {
+            return (Map<String, Object>) values;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.solmix.datax.DSRequest#getValueSets()
+     */
+    @Override
+    public List<?> getValueSets() {
+        return DataUtils.makeListIfSingle(getRawValues());
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.solmix.datax.DSRequest#getOldValues()
+     */
+    @Override
+    public Map<String, Object> getOldValues() {
+        Object values = getOldValues();
+        return getValuesInternal(values);
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.solmix.datax.DSRequest#getOldValueSets()
+     */
+    @Override
+    public List<?> getOldValueSets() {
+        return DataUtils.makeListIfSingle(getRawOldValues());
     }
 
 }

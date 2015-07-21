@@ -70,6 +70,7 @@ import org.w3c.dom.Element;
 public class BaseDataService implements DataService
 {
     private static final Logger LOG = LoggerFactory.getLogger(BaseDataService.class);
+    private static final Logger VALIDATION =LoggerFactory.getLogger(DATAX.VALIDATION_LOGNAME);
     private Container container;
     private DataTypeMap properties;
     private DataServiceInfo info;
@@ -224,7 +225,7 @@ public class BaseDataService implements DataService
         req.setValidated(true);
         List<Object> errors = validateDSRequst( req);
         if (errors != null) {
-            LoggerFactory.getLogger(DATAX.VALIDATION_LOGNAME).info((new StringBuilder()).append("Validation error: ").append(errors).toString());
+            VALIDATION.info((new StringBuilder()).append("Validation error: ").append(errors).toString());
             DSResponse dsResponse = new DSResponseImpl(this, req);
             dsResponse.setStatus(Status.STATUS_VALIDATION_ERROR);
             dsResponse.setErrors(errors.toArray(new Object[errors.size()]));
@@ -317,14 +318,15 @@ public class BaseDataService implements DataService
     private Object validateRecord(Object data, ValidationContext vcontext) {
         if (data == null)
             return null;
-        if(LOG.isDebugEnabled()){
-            LOG.debug((new StringBuilder()).append("Validating a '").append(getId()).append("' at path '").append(vcontext.getPath()).append("'").toString());
-        }
-        vcontext.addPath(getId());
-        vcontext.addToTemplateContext(ValidationContext.TEMPLATE_DATASERVICE, this);
         if(data instanceof Element){
             throw new UnsupportedOperationException("data is element");
         }else if(data instanceof Map<?, ?>) {
+            vcontext.addPath(getId());
+            if(VALIDATION.isDebugEnabled()){
+                VALIDATION.debug((new StringBuilder()).append("Validating a '").append(getId()).append("' at path '").append(vcontext.getPath()).append("'").toString());
+            }
+            vcontext.addToTemplateContext(ValidationContext.TEMPLATE_DATASERVICE, this);
+            
             Map<String, Object> record = (Map<String, Object>) data;
             for (Object key : record.keySet()) {
                 String fieldName = (String) key;
@@ -418,8 +420,8 @@ public class BaseDataService implements DataService
             createAndFireValidationEvent(Level.WARNING, vinfo);
             return value;
         }
-        if (LoggerFactory.getLogger(DATAX.VALIDATION_LOGNAME).isDebugEnabled()) {
-            String vinfo = (new StringBuilder()).append("Validating field:")
+        if (VALIDATION.isDebugEnabled()) {
+            String vinfo = (new StringBuilder()).append("Validating field at path:")
                 .append(vcontext.getPath()).append(" as ")
                 .append(getId()).append(".")
                 .append( name).append(" type: ")
@@ -457,13 +459,15 @@ public class BaseDataService implements DataService
             ValidatorInfo vi = new ValidatorInfo("isOneOf", properties);
             allValidators.add(0, vi);
         }
-        if (LoggerFactory.getLogger(DATAX.VALIDATION_LOGNAME).isDebugEnabled()) {
-            LoggerFactory.getLogger(DATAX.VALIDATION_LOGNAME).debug(
+        if (VALIDATION.isDebugEnabled()) {
+            VALIDATION.debug(
                 (new StringBuilder()).append("Creating field validator for field ")
-                .append(getId()).append(".").append(field.getName()).append(
-                    ", of simple type: ").append(field.getType()).append(", with inline validators: ")
-                    .append(vls).append(
-                    ", and type validators: ").append(typeVs).toString());
+                .append(getId()).append(".").append(field.getName())
+                .append(", of simple type: ")
+                .append(field.getType())
+                .append(", with inline validators: ")
+                .append(vls).append(", and type validators: ")
+                .append(typeVs).toString());
         }
         creator = new BuiltinCreator(strType, allValidators);
         return creator;
@@ -474,7 +478,7 @@ public class BaseDataService implements DataService
      */
     protected void handleExtraValue(Map<String, Object> record, String fieldName, Object value, ValidationContext vcontext) {
         if (value != null) {
-            LoggerFactory.getLogger(DATAX.VALIDATION_LOGNAME).debug(
+            VALIDATION.debug(
                 (new StringBuilder()).append("Value provided for unknown field: ").append(getId()).append(".").append(fieldName).append(
                     ": value is: ").append(value).toString());
         }
@@ -495,6 +499,8 @@ public class BaseDataService implements DataService
         ValidationEvent event= new ValidationEvent(levle,msg);
         if(getEventService()!=null){
             getEventService().postEvent(event);
+        }else{
+            VALIDATION.debug(msg);
         }
     }
 

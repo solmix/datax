@@ -40,7 +40,7 @@ public class ErrorReport extends LinkedMap implements Serializable
 
     public ErrorReport()
     {
-
+      super(4);
     }
 
     protected void addError(String fieldName, ValidationEvent event) {
@@ -88,7 +88,7 @@ public class ErrorReport extends LinkedMap implements Serializable
      * 
      * @see org.solmix.api.datasource.IErrorReport#getErrors(java.lang.String)
      */
-    public List getErrors(String fieldName) {
+    public List<Object> getErrors(String fieldName) {
         return DataUtils.makeListIfSingle(get(fieldName));
     }
 

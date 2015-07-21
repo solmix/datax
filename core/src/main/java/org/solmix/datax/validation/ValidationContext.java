@@ -69,7 +69,7 @@ public class ValidationContext
 
     String fieldName;
 
-    String path;
+    String path="";
 
     protected Map<String, Object> templateContext;
 

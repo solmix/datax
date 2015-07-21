@@ -74,11 +74,18 @@ public class ValidatorInfo implements XMLSource
         this.id=id;
     }
     
+    @Override
+    public String toString(){
+        return new StringBuilder().append("type:").append(type).append(id==null?"":" id:"+id).toString();
+    }
     public Boolean getClientOnly() {
         return clientOnly;
     }
     public Object getProperty(String key) {
-        Object res= properties.get(key);
+        Object res= null;
+        if(properties!=null){
+            res= properties.get(key);
+        }
         if(res==null&&getXMLNode()!=null){
             res = getXMLNode().getBooleanAttribute(key);
         }

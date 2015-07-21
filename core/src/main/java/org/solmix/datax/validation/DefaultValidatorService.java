@@ -183,14 +183,14 @@ public class DefaultValidatorService implements ValidatorService
                         .append("your validator code.  Unable to proceed, assuming false.")
                         .toString();
                     log.warn(error);
-                    return new ErrorMessage(error);
+                    return new ErrorMessage(error,null,value);
                 }
             } catch (Exception e) {
-                return new ErrorMessage(e.getMessage());
+                return new ErrorMessage(e.getMessage(),null,value);
             }
             try {
                 if (!ds.hasRecord(relatedField, value))
-                    return new ErrorMessage(getErrorString(validatorInfo, "Related record does not exist"));
+                    return new ErrorMessage(getErrorString(validatorInfo, "Related record does not exist"),null,value);
             } catch (Exception e) {
                 throw new ValidationException(e);
             }
@@ -258,7 +258,7 @@ public class DefaultValidatorService implements ValidatorService
                 } else {
                     String message = (new StringBuilder()).append("No more than ").append(precision.intValue()).append(
                         " digits after the decimal point.").toString();
-                    return new ErrorMessage(getErrorString(validatorInfo, message), new Double(suggestedValue));
+                    return new ErrorMessage(getErrorString(validatorInfo, message), new Double(suggestedValue),value);
                 }
             } else {
                 return null;
@@ -297,7 +297,7 @@ public class DefaultValidatorService implements ValidatorService
                         .append(precision.intValue())
                         .append(" digits after the decimal point.")
                         .toString();
-                    return new ErrorMessage(getErrorString(validatorInfo, message), new Double(suggestedValue));
+                    return new ErrorMessage(getErrorString(validatorInfo, message), new Double(suggestedValue),value);
                 }
             } else {
                 return null;
@@ -317,7 +317,7 @@ public class DefaultValidatorService implements ValidatorService
                 throw new ValidationException( "mask validator called without valid mask");
             mask = (new StringBuilder()).append("/").append(mask).append("/").toString();
             if (Pattern.matches(mask, value.toString()))
-                return new ErrorMessage(getErrorString(validatorInfo));
+                return new ErrorMessage(getErrorString(validatorInfo),null,value);
             else
                 return null;
         }
@@ -380,7 +380,7 @@ public class DefaultValidatorService implements ValidatorService
                 getErrorString(
                     validatorInfo,
                     (new StringBuilder()).append("Must contain ").append(operator).append(" ").append(count).append(" instances of '").append(
-                        substring).append("'").toString()));
+                        substring).append("'").toString()),null,value);
         }
     }
     
@@ -396,7 +396,7 @@ public class DefaultValidatorService implements ValidatorService
                 throw new ValidationException( "doesntContain validator called without valid substring");
             if (value.toString().indexOf(substring) > -1)
                 return new ErrorMessage(getErrorString(validatorInfo,
-                    (new StringBuilder()).append("Must not contain '").append(substring).append("'").toString()));
+                    (new StringBuilder()).append("Must not contain '").append(substring).append("'").toString()),null,value);
             else
                 return null;
         }
@@ -414,7 +414,7 @@ public class DefaultValidatorService implements ValidatorService
                 throw new ValidationException("contains validator called without valid substring");
             if (value.toString().indexOf(substring) == -1)
                 return new ErrorMessage(getErrorString(validatorInfo,
-                    (new StringBuilder()).append("Must contain '").append(substring).append("'").toString()));
+                    (new StringBuilder()).append("Must contain '").append(substring).append("'").toString()),null,value);
             else
                 return null;
         }
@@ -435,7 +435,7 @@ public class DefaultValidatorService implements ValidatorService
                 return null;
             else
                 return new ErrorMessage(getErrorString(validatorInfo,
-                    (new StringBuilder()).append("Does not match value in field '").append(otherField).append("'").toString()));
+                    (new StringBuilder()).append("Does not match value in field '").append(otherField).append("'").toString()),null,value);
         }
     }
 
@@ -454,7 +454,7 @@ public class DefaultValidatorService implements ValidatorService
             String s = value.toString();
             if (max != null && s.length() > max.longValue() || min != null && s.length() < min.longValue())
                 return new ErrorMessage(getErrorString(validatorInfo,
-                    (new StringBuilder()).append("Must be between ").append(min).append("-").append(max).append(" characters long").toString()));
+                    (new StringBuilder()).append("Must be between ").append(min).append("-").append(max).append(" characters long").toString()),null,value);
             else
                 return null;
         }
@@ -473,7 +473,7 @@ public class DefaultValidatorService implements ValidatorService
                 throw new ValidationException("regex validator called without expression");
             expression = (new StringBuilder()).append("/").append(expression).append("/").toString();
             if (Pattern.matches(expression, value.toString()))
-                return new ErrorMessage(getErrorString(validatorInfo));
+                return new ErrorMessage(getErrorString(validatorInfo),null,value);
             else
                 return null;
         }
@@ -532,7 +532,7 @@ public class DefaultValidatorService implements ValidatorService
             }
             try {
                 if (ds.hasRecord(realFieldName, value))
-                    return new ErrorMessage(getErrorString(validatorInfo, "%validator_mustBeUnique"));
+                    return new ErrorMessage(getErrorString(validatorInfo, "%validator_mustBeUnique"),null,value);
             } catch (Exception e) {
                 return new ErrorMessage(e.getMessage());
             }
@@ -549,7 +549,7 @@ public class DefaultValidatorService implements ValidatorService
             try {
                 java.util.regex.Pattern.compile(value.toString());
             } catch (Exception e) {
-                return new ErrorMessage(getErrorString(validatorInfo, e.getMessage()));
+                return new ErrorMessage(getErrorString(validatorInfo, e.getMessage()),null,value);
             }
             return null;
         }
@@ -578,7 +578,7 @@ public class DefaultValidatorService implements ValidatorService
             try {
                 new URL(value.toString());
             } catch (MalformedURLException e) {
-                return new ErrorMessage(getErrorString(validatorInfo, e.getMessage()));
+                return new ErrorMessage(getErrorString(validatorInfo, e.getMessage()),null,value);
             }
             return null;
         }
@@ -594,7 +594,7 @@ public class DefaultValidatorService implements ValidatorService
             if (DataUtils.isIdentifier((String) value))
                 return null;
             else
-                return new ErrorMessage(getErrorString(validatorInfo, "%validator_notAnIdentifier"));
+                return new ErrorMessage(getErrorString(validatorInfo, "%validator_notAnIdentifier"),null,value);
         }
     }
     static class isFloat implements Validator
@@ -608,7 +608,7 @@ public class DefaultValidatorService implements ValidatorService
                 double num = DataUtils.asDouble(value);
                 context.setResultingValue(new Double(num));
             } catch (NumberFormatException e) {
-                return new ErrorMessage(getErrorString(validatorInfo, "%validator_notADecimal"));
+                return new ErrorMessage(getErrorString(validatorInfo, "%validator_notADecimal"),null,value);
             }
             return null; 
         }
@@ -630,7 +630,7 @@ public class DefaultValidatorService implements ValidatorService
                 context.setResultingValue(time);
                 return null;
             } catch (ParseException e) {
-                return new ErrorMessage(getErrorString(validatorInfo, "%validator_notATime"));
+                return new ErrorMessage(getErrorString(validatorInfo, "%validator_notATime"),null,value);
             }
         }
     }
@@ -671,7 +671,7 @@ public class DefaultValidatorService implements ValidatorService
                 context.setResultingValue(date);
                 return null;
             } catch (ParseException e) {
-                return new ErrorMessage(getErrorString(validatorInfo, "%validator_notADate"));
+                return new ErrorMessage(getErrorString(validatorInfo, "%validator_notADate"),null,value);
             }
         }
     }
@@ -686,10 +686,10 @@ public class DefaultValidatorService implements ValidatorService
             long longValue;
             try {
                 longValue = Long.parseLong(value.toString());
+                context.setResultingValue(new Long(longValue));
             } catch (NumberFormatException e) {
-                return new ErrorMessage(getErrorString(validatorInfo, "%validator_notAnInteger"));
+                return new ErrorMessage(getErrorString(validatorInfo, "%validator_notAnInteger"),null,value);
             }
-            context.setResultingValue(new Long(longValue));
             return null;
         }
     }
@@ -706,7 +706,7 @@ public class DefaultValidatorService implements ValidatorService
             } else if (value instanceof String){
                 context.setResultingValue(new Boolean((String) value));
             }else{
-                return new ErrorMessage(getErrorString(validatorInfo, "%validator_notABoolean"));
+                return new ErrorMessage(getErrorString(validatorInfo, "%validator_notABoolean"),null,value);
             }
             return null;
         }

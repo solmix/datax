@@ -32,7 +32,6 @@ import org.solmix.datax.repository.builder.XmlNodeParserProvider;
 import org.solmix.runtime.Container;
 import org.solmix.runtime.Extension;
 import org.solmix.runtime.event.EventService;
-import org.solmix.runtime.event.support.NullEventService;
 
 /**
  * 
@@ -79,9 +78,6 @@ public class BaseDataServiceFactory implements DataServiceFactory
         if (eventService == null) {
             synchronized (eventServicelock) {
                 eventService = container.getExtension(EventService.class);
-                if (eventService == null) {
-                    eventService = new NullEventService();
-                }
             }
         }
         return eventService;

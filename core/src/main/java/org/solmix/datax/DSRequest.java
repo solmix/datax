@@ -111,4 +111,14 @@ public interface DSRequest extends Pageable
 
     List<?> getOldValueSets();
 
+    /**
+     * @param rawValues
+     */
+    void setRawValues(Object rawValues);
+
+    /**
+     * @return
+     */
+    Object getRawValues();
+
 }

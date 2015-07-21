@@ -337,12 +337,12 @@ public class DSRequestImpl extends PagedBean implements DSRequest
         this.operationId=operationId;
     }
 
-    
+    @Override
     public Object getRawValues() {
         return rawValues;
     }
 
-    
+    @Override
     public void setRawValues(Object rawValues) {
         this.rawValues = rawValues;
     }

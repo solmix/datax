@@ -6,7 +6,7 @@
 
 		<service id="ds" lookup="container"
 			serviceClass="org.solmix.datax.service.MockDataService" serviceName="test"
-			scope="singleton">
+			scope="singleton" dropExtraFields="true">
 			<description>服务描述</description>
 			<fields>
 				<field name="field1" canEdit="true" canFilter="true"
@@ -17,7 +17,7 @@
 						count="1" errorMessage="验证错误" exclusive="true" expression="$dataUtils.validate(aa)"
 						lookup="container" mask="####00.##" max="100" min="2" name="v1"
 						operator="add" precision="20.0" serverOnly="true" substring="aa"
-						type="length" validateOnChange="true" />
+						type="length" validateOnChange="true" otherattr="otherattr"/>
 					<validator refid="##ds.check" />
 					<validator refid="#check" />
 					<valueMap>
@@ -48,7 +48,6 @@
 						<update></update>
 					</batch>
 				</add>
-				<dddd></dddd>
 			</operations>
 		</service>
 	</configuration>

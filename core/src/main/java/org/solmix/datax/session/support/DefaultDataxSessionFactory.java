@@ -16,22 +16,18 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax;
+package org.solmix.datax.session.support;
+
+import org.solmix.datax.session.DataxSessionFactory;
 
 
 /**
- * 代表一连串的DSRequest。
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年7月15日
+ * @version $Id$  2015年7月24日
  */
 
-public interface DSCall
+public class DefaultDataxSessionFactory implements DataxSessionFactory
 {
-
-    /**
-     * 
-     */
-    void freeDataSources();
 
 }

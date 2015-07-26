@@ -87,7 +87,7 @@ public class ValidatorInfo implements XMLSource
             res= properties.get(key);
         }
         if(res==null&&getXMLNode()!=null){
-            res = getXMLNode().getBooleanAttribute(key);
+            res = getXMLNode().getStringAttribute(key);
         }
         return res;
     }
@@ -134,6 +134,7 @@ public class ValidatorInfo implements XMLSource
         target.node=source.node;
         target.lookup=source.lookup;
         target.properties=source.properties;
+        target.node=source.node;
     }
     /**
      * @return

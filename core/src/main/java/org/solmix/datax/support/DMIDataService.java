@@ -20,11 +20,11 @@ package org.solmix.datax.support;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.solmix.datax.DSCall;
 import org.solmix.datax.DSCallException;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.RequestContext;
+import org.solmix.datax.call.DSCall;
 
 
 /**

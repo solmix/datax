@@ -16,37 +16,29 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.validation;
-
-import org.solmix.datax.DataxRuntimeException;
+package org.solmix.datax.call;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年7月19日
+ * @version $Id$  2015年7月24日
  */
 
-public class ValidationException extends DataxRuntimeException
+public interface Transaction
 {
-
-    private static final long serialVersionUID = 8229837256742427043L;
-
-    public ValidationException(String string, Throwable e)
-    {
-        super(string, e);
-    }
-
-    public ValidationException(String string)
-    {
-        super(string);
-    }
-
     /**
-     * @param e
+     * 实际的事物对象，比如 
+     * <li>JDBC Connection
+     * <li>sqlSession
+     * <li>EntityManager
+     * @return
      */
-    public ValidationException(Exception e)
-    {
-        super(e);
-    }
+    <T> T getTransactionObject(Class<T> type);
+    void begin();
+    
+    void end();
+    
+    void rollback();
+
 }

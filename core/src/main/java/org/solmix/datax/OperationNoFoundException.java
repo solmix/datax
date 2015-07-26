@@ -25,7 +25,7 @@ package org.solmix.datax;
  * @version $Id$ 2015年7月2日
  */
 
-public class OperationNoFoundException extends DataxException
+public class OperationNoFoundException extends DataxRuntimeException
 {
 
     private static final long serialVersionUID = 926315145307875736L;

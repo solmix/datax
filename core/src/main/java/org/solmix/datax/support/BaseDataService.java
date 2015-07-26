@@ -19,12 +19,17 @@
 package org.solmix.datax.support;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.collections.map.LinkedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.solmix.commons.collections.DataTypeMap;
@@ -38,11 +43,13 @@ import org.solmix.datax.DSResponse;
 import org.solmix.datax.DSResponse.Status;
 import org.solmix.datax.DataService;
 import org.solmix.datax.OperationNoFoundException;
+import org.solmix.datax.call.Transaction;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.model.FieldType;
 import org.solmix.datax.model.OperationInfo;
 import org.solmix.datax.model.OperationType;
+import org.solmix.datax.model.TransactionPolicy;
 import org.solmix.datax.model.ValidatorInfo;
 import org.solmix.datax.util.DataTools;
 import org.solmix.datax.validation.BuiltinCreator;
@@ -178,7 +185,7 @@ public class BaseDataService implements DataService
      * @param req
      * @return
      */
-    private DSResponse executeAdd(DSRequest req) {
+    protected DSResponse executeAdd(DSRequest req) {
         return notSupported(req);
     }
 
@@ -186,7 +193,7 @@ public class BaseDataService implements DataService
      * @param req
      * @return
      */
-    private DSResponse executeUpdate(DSRequest req) {
+    protected DSResponse executeUpdate(DSRequest req) {
         return notSupported(req);
     }
 
@@ -194,7 +201,7 @@ public class BaseDataService implements DataService
      * @param req
      * @return
      */
-    private DSResponse executeRemove(DSRequest req) {
+    protected DSResponse executeRemove(DSRequest req) {
         return notSupported(req);
     }
 
@@ -202,15 +209,17 @@ public class BaseDataService implements DataService
      * @param req
      * @return
      */
-    private DSResponse executeFetch(DSRequest req) {
+    protected DSResponse executeFetch(DSRequest req) {
         return notSupported(req);
     }
 
     /**
+     * 批量执行一系列请求.
+     * 
      * @param req
      * @return
      */
-    private DSResponse executeBatch(DSRequest req) {
+    protected DSResponse executeBatch(DSRequest req) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -339,7 +348,6 @@ public class BaseDataService implements DataService
                 }
             }
             checkStructure(record, vcontext);
-            checkAutoConstruct(record, vcontext);
             vcontext.removePathSegment();
             return record;
         }else{
@@ -354,15 +362,6 @@ public class BaseDataService implements DataService
             }
             return data;
         }
-        
-    }
-
-    /**
-     * @param record
-     * @param vcontext
-     */
-    private void checkAutoConstruct(Map<String, Object> record, ValidationContext vcontext) {
-        // TODO Auto-generated method stub
         
     }
 
@@ -533,9 +532,90 @@ public class BaseDataService implements DataService
      */
     @Override
     public Map<Object, Object> getProperties(Object data) {
-        return null;
+        boolean dropExtra = DataUtils.asBoolean(info.getProperty("dropExtraFields"));
+        return getProperties(data, dropExtra);
     }
 
+    public Map<Object, Object> getProperties(Object obj, boolean dropExtraFields) {
+        return getProperties(obj, ((Collection<String>) (null)), dropExtraFields);
+    }
+
+    public Map<Object, Object> getProperties(Object obj, Collection<String> propsToKeep) {
+        return getProperties(obj, propsToKeep, false);
+    }
+
+    public Map<Object, Object> getProperties(Object obj, Collection<String> propsToKeep, boolean dropExtraFields) {
+        return getProperties(obj, propsToKeep, dropExtraFields, null);
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public Map<Object, Object> getProperties(Object data, Collection<String> popToKeep, boolean dropExtraFields, ValidationContext validationContext) {
+        if (data == null)
+            return null;
+        if(!dropExtraFields){
+            if(Map.class.isAssignableFrom(data.getClass()))
+                return Map.class.cast(data);
+            else{
+                Map obj=null;
+                try {
+                    obj = DataUtils.getProperties(data);
+                } catch (Exception e) {
+                    //INGONE;
+                }
+                return obj;
+            }
+        }
+           
+        Map result = new LinkedMap();
+       
+        Map<Object, Object> source = null;
+        Set<String> outProperties = new HashSet<String>();
+        if (popToKeep != null)
+            outProperties.addAll(popToKeep);
+        List<String> prop = new ArrayList<String>();
+        //Map<String, String> xpaths = null;--XPATH
+        List<FieldInfo> fields =info.getFields();
+        if (fields == null)
+            return Collections.emptyMap();
+        for (FieldInfo field : fields) {
+          
+            if (dropExtraFields && field.getType() == FieldType.UNKNOWN)
+                continue;
+            prop.add(field.getName());
+            /*if (field.getValueXPath() != null) {
+                if (xpaths == null)
+                    xpaths = new HashMap<String, String>();
+                xpaths.put(field.getName(), field.getValueXPath());
+            }--XPATH*/
+        }
+        if (prop != null)
+            outProperties.addAll(prop);
+        if (data instanceof Map<?, ?>) {
+            source = (Map<Object, Object>) data;
+            for (Object key : source.keySet()) {
+                if (outProperties.contains(key)) {
+                    result.put(key, source.get(key));
+                }
+            }
+        } else {
+            try {
+                result = DataUtils.getProperties(data, outProperties);
+            } catch (Exception e) {
+                result = null;
+                LOG.warn("transform bean object to map failed .caused by" + e.getMessage());
+            }
+        }
+       /* if (xpaths != null) {
+            for (String key : xpaths.keySet()) {
+                Object value = result.get(key);
+                if (value != null) {
+                    JXPathContext context = JXPathContext.newContext(value);
+                    result.put(key, context.getValue(xpaths.get(key)));
+                }
+            }
+        }--XPATH*/
+        return result;
+    }
     /**
      * {@inheritDoc}
      * 
@@ -543,8 +623,155 @@ public class BaseDataService implements DataService
      */
     @Override
     public boolean hasRecord(String realFieldName, Object value) {
-        // TODO Auto-generated method stub
+        // XXX
         return false;
     }
+    
+    
+    public boolean canStartTransaction(DSRequest req, boolean ignoreExistingTransaction) {
+        if (req == null)
+            return false;
+        if (!canJoinTransaction(req))
+            return false;
+        if (req.getDSCall() == null)
+            return false;
+        boolean isModification = DataTools.isModificationRequest(req);
+        TransactionPolicy policy = req.getDSCall().getTransactionPolicy();
+        if (isModification) {
+            if (policy == TransactionPolicy.NONE) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            if (policy == null) {
+                return false;
+            } else {
+                switch (policy) {
+                    case NONE:
+                        return false;
+                    case ALL:
+                        return true;
+                    case ANY_CHANGE:
+                        return req.getDSCall().queueIncludesUpdates(req);
+                    case FROM_FIRST_CHANGE:
+                        return req.getDSCall().queueIncludesUpdates(req);
+                    default:
+                        return false;
+                }
+            }
+        }
+    }
+    
 
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.solmix.datax.DataService#canJoinTransaction(org.solmix.datax.DSRequest)
+     */
+    @Override
+    public boolean canJoinTransaction(DSRequest req) {
+        if (req != null && req.getDSCall() != null) {
+            Boolean reqOvrride = req.isCanJoinTransaction();
+            if (reqOvrride != null) {
+                return reqOvrride.booleanValue();
+            }
+        }
+        Boolean work = autoJoinAtOperationLevel(req);
+        if (work == null) {
+            // check datasource level
+            work = autoJoinAtDataServiceLevel();
+            if (work == null) {
+                if (req != null && req.getDSCall() != null) {
+                    TransactionPolicy policy = req.getDSCall().getTransactionPolicy();
+                    if (policy == TransactionPolicy.NONE)
+                        return false;
+                    if (policy == TransactionPolicy.ALL)
+                        return true;
+                }
+                work = autoJoinAtProviderLevel(req);
+                if (work == null)
+                    work = autoJoinAtGlobalLevel(req);
+            }
+        }
+        if (work == null)
+            return false;
+        else
+            return work.booleanValue();
+    }
+    
+    /**
+     * 全局配置。
+     * 
+     * @return
+     */
+    protected Boolean autoJoinAtGlobalLevel(DSRequest req){
+       String autoJoin= getConfigProperties().getString("autoJoinTransactions");
+       return parseAutoJoinTransactions(req,autoJoin);
+    }
+    
+    protected Boolean parseAutoJoinTransactions(DSRequest req,Object join){
+        if (join == null)
+            return null;
+        String autoJoin=join.toString();
+        if (autoJoin.toLowerCase().equals("true") || autoJoin.toLowerCase().equals("ALL"))
+            return Boolean.TRUE;
+        if (autoJoin.toLowerCase().equals("false") || autoJoin.toLowerCase().equals("NONE"))
+            return Boolean.FALSE;
+        if (req != null && req.getDSCall() != null) {
+            if (autoJoin.equals("FROM_FIRST_CHANGE"))
+                return Boolean.valueOf(req.getDSCall().queueIncludesUpdates(req));
+            if (autoJoin.equals("ANY_CHANGE"))
+                return Boolean.valueOf(req.getDSCall().queueIncludesUpdates(req));
+        }
+        return null;
+    }
+    /**
+     * DataService实现默认。
+     * 
+     * @return
+     */
+    protected Boolean autoJoinAtProviderLevel(DSRequest req) {
+        return false;
+    }
+    
+    /**
+     * 检查DataService配置
+     * @return
+     */
+    protected Boolean autoJoinAtDataServiceLevel() {
+        Object aj= info.getProperty("autoJoinTransactions");
+        if(aj==null){
+            return null;
+        }else{
+            return Boolean.valueOf(aj.toString());
+        }
+    }
+
+    /**
+     * 检查operation配置
+     */
+    protected Boolean autoJoinAtOperationLevel(DSRequest req) {
+        OperationInfo oi=   req.getOperationInfo();
+        Object aj= oi.getProperty("autoJoinTransactions");
+        if(aj==null){
+            return null;
+        }else{
+            return Boolean.valueOf(aj.toString());
+        }
+    }
+    //需要根据DSrequest中配置的服务命名空间和参数规则(rule)决定使用的数据源。
+    protected String getTransactionObjectKey(DSRequest req){
+        return null;
+    }
+    
+    protected Transaction getTransactionObject(DSRequest req) {
+        if (req == null){
+            return null;
+        }
+        if (req.getDSCall() == null)
+            return null;
+        else
+            return (Transaction) req.getDSCall().getAttribute(getTransactionObjectKey(req));
+    }
 }

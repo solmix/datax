@@ -26,7 +26,7 @@ package org.solmix.datax;
  * @version $Id$ 2015年7月15日
  */
 
-public class DSCallException extends Exception
+public class DSCallException extends DataxException
 {
 
     private static final long serialVersionUID = 903779250691622632L;

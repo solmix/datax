@@ -31,7 +31,6 @@ import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.DSResponse.Status;
 import org.solmix.datax.DataService;
-import org.solmix.datax.DataServiceNoFoundException;
 import org.solmix.datax.RequestContext;
 import org.solmix.datax.application.Application;
 import org.solmix.datax.application.ApplicationManager;
@@ -106,9 +105,6 @@ public class BuiltInApplication implements Application
                 result.setStatus(Status.STATUS_AUTHORIZATION_FAILURE);
             }else{
                 DataService ds =request.getDataService();
-                if(ds==null){
-                    throw new DataServiceNoFoundException("Not found dataservice :"+request.getDataServiceId()+" for request");
-                }
                 result=ds.execute(request);
             }
             if (result != null && result.getStatus() == Status.UNSET) {

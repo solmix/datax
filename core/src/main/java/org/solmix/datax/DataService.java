@@ -75,4 +75,12 @@ public interface DataService extends FreeResourcesHandler
      * @return
      */
     List<Object> validateDSRequst(DSRequest req) throws ValidationException;
+
+    /**
+     * 请求是否应该加入事物处理中。
+     * 
+     * @param req
+     * @return
+     */
+    boolean canJoinTransaction(DSRequest req);
 }

@@ -62,7 +62,7 @@ public class DSRequestCallTest
            DSResponse res= fetch.execute();
            res.getStatus();
           
-        } catch (DSCallException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

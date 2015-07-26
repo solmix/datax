@@ -94,16 +94,20 @@ public interface DSResponse extends Pageable
     void setDataService(DataService dataService);
 
     /**
-     * filter data by {@link org.solmix.api.datasource.DataSource#getProperties(Object)} if need original data ,use
-     * <code> getContext().getData()</code>
+     * filter data by {@link org.solmix.api.datasource.DataSource#getProperties(Object)} 
+     * <li>if need original data ,use {@link #getRawData()}
+     * <li>if need original  single data ,use {@link #getSingleResult(Class)}
+     * <li>if need original list data use {@link #getResultList(Class)}
      * 
      * @return
      */
     Map<Object, Object> getSingleRecord();
 
     /**
-     * filter data by {@link org.solmix.api.datasource.DataSource#getProperties(Object)} if need original data ,use
-     * <code> getContext().getData()</code>
+     * filter data by {@link org.solmix.api.datasource.DataSource#getProperties(Object)} 
+     * <li>if need original data ,use {@link #getRawData()}
+     * <li>if need original  single data ,use {@link #getSingleResult(Class)}
+     * <li>if need original list data use {@link #getResultList(Class)}
      * 
      * @return
      */

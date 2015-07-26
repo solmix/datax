@@ -26,7 +26,6 @@ import javax.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.solmix.commons.util.DataUtils;
-import org.solmix.datax.DSCall;
 import org.solmix.datax.DSCallException;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
@@ -34,9 +33,12 @@ import org.solmix.datax.DSResponse.Status;
 import org.solmix.datax.DataService;
 import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.FreeResourcesHandler;
+import org.solmix.datax.OperationNoFoundException;
 import org.solmix.datax.RequestContext;
 import org.solmix.datax.application.Application;
 import org.solmix.datax.application.ApplicationManager;
+import org.solmix.datax.call.DSCall;
+import org.solmix.datax.call.TransactionException;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.model.OperationInfo;
 
@@ -59,7 +61,11 @@ public class DSRequestImpl extends PagedBean implements DSRequest
     private DataService dataService;
 
     private  String operationId;
-
+    
+    private Boolean joinTransaction;
+    
+    private boolean partsOfTransaction;
+    
     private boolean validated = false;
 
     FreeResourcesHandler freeResourcesHandler;
@@ -93,8 +99,8 @@ public class DSRequestImpl extends PagedBean implements DSRequest
         }
         try {
            
-            OperationInfo oi = getOperationInfo();
-            /*if(oi.getInvoker()!=null){
+            /*OperationInfo oi = getOperationInfo();
+            if(oi.getInvoker()!=null){
                 response = DMIDataService.execute(this, dsc, requestContext);
             }*/
             response=getApplication().execute(this, requestContext);
@@ -102,7 +108,7 @@ public class DSRequestImpl extends PagedBean implements DSRequest
             if (isFreeOnExecute()) {
                 this.freeResources();
                 if (dsc != null)
-                    dsc.freeDataSources();
+                    dsc.freeResources();
             }
         }
         return response;
@@ -120,14 +126,19 @@ public class DSRequestImpl extends PagedBean implements DSRequest
     @Override
     public OperationInfo getOperationInfo() {
        DataServiceInfo dsi= getDataService().getDataServiceInfo();
-       return dsi.getOperationInfo(getOperationId());
+       OperationInfo oi= dsi.getOperationInfo(getOperationId());
+       if(oi==null){
+           throw new OperationNoFoundException("operation: "+getOperationId()+"not sepcified in:"+getDataServiceId());
+       }
+       return oi;
     }
     
     private DSResponse prepareReturn(DSResponse _dsResponse){
         if (isFreeOnExecute()) {
             freeResources();
-            if (dsc != null)
-                dsc.freeDataSources();
+            if (dsc != null){
+                dsc.freeResources();
+            }
         }
         return _dsResponse;
     }
@@ -200,7 +211,7 @@ public class DSRequestImpl extends PagedBean implements DSRequest
     /**
      * {@inheritDoc}
      * 
-     * @see org.solmix.datax.DSRequest#setDSCall(org.solmix.datax.DSCall)
+     * @see org.solmix.datax.DSRequest#setDSCall(org.solmix.datax.call.DSCall)
      */
     @Override
     public void setDSCall(DSCall call) {
@@ -294,7 +305,10 @@ public class DSRequestImpl extends PagedBean implements DSRequest
         this.requestStarted = started;
     }
 
-
+    @Override
+    public boolean isRequestStarted() {
+        return requestStarted;
+    }
     /**
      * {@inheritDoc}
      * 
@@ -421,6 +435,50 @@ public class DSRequestImpl extends PagedBean implements DSRequest
     @Override
     public List<?> getOldValueSets() {
         return DataUtils.makeListIfSingle(getRawOldValues());
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.solmix.datax.DSRequest#isCanJoinTransaction()
+     */
+    @Override
+    public Boolean isCanJoinTransaction() {
+        return joinTransaction;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.solmix.datax.DSRequest#setCanJoinTransaction(java.lang.Boolean)
+     */
+    @Override
+    public void setCanJoinTransaction(Boolean canJoinTransaction) {
+        if(requestStarted){
+            throw new TransactionException("Request processing has started;  join transactions setting cannot be changed");
+        }else{
+            this.joinTransaction=canJoinTransaction;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.solmix.datax.DSRequest#setPartsOfTransaction(boolean)
+     */
+    @Override
+    public void setPartsOfTransaction(boolean partsOfTransaction) {
+       this.partsOfTransaction=partsOfTransaction;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.solmix.datax.DSRequest#isPartsOfTransaction()
+     */
+    @Override
+    public boolean isPartsOfTransaction() {
+        return partsOfTransaction;
     }
 
 }

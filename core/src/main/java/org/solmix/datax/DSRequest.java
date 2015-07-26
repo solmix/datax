@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.solmix.datax.application.Application;
+import org.solmix.datax.call.DSCall;
 import org.solmix.datax.model.OperationInfo;
 
 /**
@@ -63,14 +64,14 @@ public interface DSRequest extends Pageable
     void registerFreeResourcesHandler(FreeResourcesHandler handler);
 
     /**
-     * 全称 XXX.XXX.fetch
+     * 全称 xxx.xxx.fetch
      * 
      * @return
      */
     String getOperationId();
 
     /**
-     * 全称 XXX.XXX.fetch 相对：fetch
+     * 全称 xxx.xxx.fetch 相对：fetch
      * 
      * @param operationId
      */
@@ -120,5 +121,38 @@ public interface DSRequest extends Pageable
      * @return
      */
     Object getRawValues();
+    
+    /**
+     * 代表请求是否允许加入事物。
+     * 
+     * @return
+     */
+    Boolean isCanJoinTransaction();
+    
+    /**
+     * 设置请求是否能够加入事物。
+     * 
+     * @param canJoinTransaction
+     */
+    void setCanJoinTransaction(Boolean canJoinTransaction);
+    
+    /**
+     * 设置是否为事物中的一部分。
+     * 
+     * @param partsOfTransaction
+     */
+    void setPartsOfTransaction(boolean partsOfTransaction);
+    
+    /**
+     * 为真，代表该请求在事物中,否则未加入事物。
+     * 
+     * @return
+     */
+    boolean isPartsOfTransaction();
 
+    /**
+     * @return
+     */
+    boolean isRequestStarted();
+    
 }

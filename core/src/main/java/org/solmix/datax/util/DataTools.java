@@ -18,6 +18,7 @@
  */
 package org.solmix.datax.util;
 
+import org.solmix.datax.DSRequest;
 import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.model.FieldType;
 import org.solmix.datax.model.OperationType;
@@ -113,5 +114,16 @@ public class DataTools
             return true;
         else
             return false;
+    }
+
+    /**
+     * @param req
+     * @return
+     */
+    public static boolean isModificationRequest(DSRequest req) {
+        if(req==null){
+            return false;
+        }
+        return isModificationOperation(req.getOperationInfo().getType());
     }
 }

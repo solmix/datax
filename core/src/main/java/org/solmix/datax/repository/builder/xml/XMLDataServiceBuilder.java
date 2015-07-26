@@ -93,7 +93,7 @@ public class XMLDataServiceBuilder extends AbstractBuilder
         }
         resolverReference();
         if(LOG.isTraceEnabled())
-            LOG.trace("<<<<END");
+            LOG.trace("<<<<CLOSED");
     }
     /**
      * 

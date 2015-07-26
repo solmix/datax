@@ -25,8 +25,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
 import org.solmix.commons.annotation.Immutable;
+import org.solmix.commons.util.Assert;
 import org.solmix.commons.xml.VariablesParser;
 import org.solmix.commons.xml.XMLNode;
 import org.solmix.datax.DATAX;
@@ -68,6 +68,8 @@ public class DataServiceInfo
     protected String scope;
 
     protected String serviceName;
+    
+    protected XMLNode node;
 
     public DataServiceInfo(String id,String serverType)
     {
@@ -97,8 +99,20 @@ public class DataServiceInfo
     public LookupType getLookup() {
         return lookup;
     }
-
+    public Object getProperty(String key) {
+        if(getXMLNode()!=null){
+            return getXMLNode().getStringAttribute(key);
+        }
+        return null;
+    }
     
+    /**
+     * @return
+     */
+    public XMLNode getXMLNode() {
+        return node;
+    }
+
     public String getScope() {
         return scope;
     }
@@ -156,16 +170,15 @@ public class DataServiceInfo
                 String description = node.evalString("description");
                 Class<?> clazz = paseClass(node, "serviceClass");
                 String strlookup = node.getStringAttribute("lookup");
-                LookupType lookup;
-                if (strlookup == null) {
-                    lookup = LookupType.NEW;
-                } else {
+                LookupType lookup = null;
+                if (strlookup != null) {
                     lookup = LookupType.fromValue(strlookup);
                 }
                 String name = node.getStringAttribute("serviceName");
                 String scope = node.getStringAttribute("scope",SCOPE_SINGLETON);
                 DataServiceInfo dsi = new DataServiceInfo(id,context.getServerType());
                 dsi.fields = fields;
+                dsi.node=node;
                 dsi.fieldList=fieldList;
                 dsi.description = description;
                 dsi.operations = operations;

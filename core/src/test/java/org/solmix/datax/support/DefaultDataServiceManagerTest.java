@@ -63,6 +63,7 @@ public class DefaultDataServiceManagerTest
 
     @Before
     public void setup() {
+        System.out.println(new MonitorServiceImpl().getMonitorInfo().getUsedMemory());
         c = ContainerFactory.getDefaultContainer(true);
         dsm = c.getExtension(DefaultDataServiceManager.class);
         Assert.assertNotNull(dsm);
@@ -84,8 +85,9 @@ public class DefaultDataServiceManagerTest
     }
     @Test
     public void testDefinitionResources() {
-        dsm.addResource("classpath:META-INF/dataservice1/ds2.xml");
         dsm.setLoadDefault(false);
+        dsm.addResource("classpath:META-INF/dataservice1/ds2.xml");
+       
         dsm.init();
         DataServiceInfo dsi = dsm.getRepositoryService().getDataService("com.example.ds.aa");
         assertNotNull(dsi);
@@ -110,9 +112,10 @@ public class DefaultDataServiceManagerTest
 
     @Test
     public void testResolver() {
+        dsm.setLoadDefault(false);
         dsm.addResource("classpath:META-INF/resolver/ds2.xml");
         dsm.addResource("classpath:META-INF/resolver/ds1.xml");
-        dsm.setLoadDefault(false);
+        
         dsm.init();
         DataServiceInfo dsi = dsm.getRepositoryService().getDataService("com.example.ds.aa");
         assertNotNull(dsi);
@@ -126,9 +129,9 @@ public class DefaultDataServiceManagerTest
     public void testLoading() {
         MonitorServiceImpl ms = new MonitorServiceImpl();
         MonitorInfo old = new MonitorServiceImpl().getMonitorInfo();
-        
-        dsm.addResource("classpath:META-INF/dataservice1/load.xml");
         dsm.setLoadDefault(false);
+        dsm.addResource("classpath:META-INF/dataservice1/load.xml");
+       
         dsm.init();
         MonitorInfo last = ms.getMonitorInfo();
         System.out.println("memery used:" + (last.getUsedMemory() - old.getUsedMemory()));
@@ -137,6 +140,7 @@ public class DefaultDataServiceManagerTest
         assertEquals(1, dsi.getFields().size());
         assertEquals(BaseDataServiceFactory.BASE, dsi.getServerType());
         assertEquals("load.ds", dsi.getId());
+        assertEquals("true", dsi.getProperty("dropExtraFields"));
         assertEquals(LookupType.CONTAINER, dsi.getLookup());
         assertEquals(DataServiceInfo.SCOPE_SINGLETON, dsi.getScope());
         assertEquals(org.solmix.datax.service.MockDataService.class, dsi.getServiceClass());
@@ -162,7 +166,8 @@ public class DefaultDataServiceManagerTest
         
         ValidatorInfo v= field.getValidators().get(0);
         assertEquals("load.ds.check", v.getId());
-        assertEquals(LookupType.CONTAINER, dsi.getLookup());
+        assertEquals(LookupType.CONTAINER, v.getLookup());
+        assertEquals("otherattr", v.getProperty("otherattr"));
         assertEquals(org.solmix.datax.service.MockValidator.class, v.getClazz());
         assertEquals(Long.valueOf(1), v.getCount());
         assertEquals("验证错误", v.getErrorMessage());
@@ -222,8 +227,9 @@ public class DefaultDataServiceManagerTest
     }
     @Test
     public void testContainerResolver() {
-        dsm.addResource("classpath:META-INF/dataservice1/load.xml");
         dsm.setLoadDefault(false);
+        dsm.addResource("classpath:META-INF/dataservice1/load.xml");
+        
         dsm.init();
         ResourceManager cbp= c.getExtension(ResourceManager.class);
         

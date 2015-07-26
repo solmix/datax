@@ -71,6 +71,14 @@ public class TransformerInfo implements XMLSource
         target.name=source.name;
         target.node=source.node;
         target.lookup=source.lookup;
+        target.node=source.node;
+    }
+    
+    public Object getProperty(String key) {
+        if(getXMLNode()!=null){
+            return getXMLNode().getStringAttribute(key);
+        }
+        return null;
     }
     
     public String getId() {

@@ -16,28 +16,37 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.validation;
 
-import org.solmix.datax.DataxRuntimeException;
+package org.solmix.datax;
 
 
 /**
+ * 运行异常。
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年7月19日
+ * @version $Id$ 2015年6月18日
  */
 
-public class ValidationException extends DataxRuntimeException
+public class DataxRuntimeException extends RuntimeException
 {
 
-    private static final long serialVersionUID = 8229837256742427043L;
+    private static final long serialVersionUID = 4014907223048817109L;
 
-    public ValidationException(String string, Throwable e)
+    public DataxRuntimeException()
+    {
+
+    }
+
+    /**
+     * @param string
+     * @param e
+     */
+    public DataxRuntimeException(String string, Throwable e)
     {
         super(string, e);
     }
 
-    public ValidationException(String string)
+    public DataxRuntimeException(String string)
     {
         super(string);
     }
@@ -45,8 +54,9 @@ public class ValidationException extends DataxRuntimeException
     /**
      * @param e
      */
-    public ValidationException(Exception e)
+    public DataxRuntimeException(Throwable e)
     {
         super(e);
     }
+
 }

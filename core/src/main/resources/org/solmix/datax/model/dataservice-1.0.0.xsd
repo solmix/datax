@@ -88,7 +88,7 @@
 				<attribute name="substring" type="string"></attribute>
 				<attribute name="operator" type="string"></attribute>
 				<attribute name="count" type="long"></attribute>
-				<anyAttribute></anyAttribute>
+				<anyAttribute processContents="lax" namespace="##any"></anyAttribute>
 			</extension>
 		</complexContent>
 	</complexType>
@@ -247,7 +247,7 @@
 					</complexType>
 				</element>
 				<element name="invoker" type="ds:invokerType"></element>
-				<any namespace="##other" processContents="lax"></any>
+				<any processContents="lax" namespace="##other" minOccurs="0" maxOccurs="unbounded"></any>
 			</choice>
 			<element name="batch">
 				<complexType>

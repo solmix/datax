@@ -16,37 +16,21 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.validation;
+package org.solmix.datax.call.criteria;
 
-import org.solmix.datax.DataxRuntimeException;
+import java.util.HashMap;
 
 
 /**
+ * 高级查询条件
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年7月19日
+ * @version $Id$  2015年7月22日
  */
 
-public class ValidationException extends DataxRuntimeException
+public class AdvanceCriteria extends HashMap<String, Object>
 {
 
-    private static final long serialVersionUID = 8229837256742427043L;
+    private static final long serialVersionUID = 5201129181991864436L;
 
-    public ValidationException(String string, Throwable e)
-    {
-        super(string, e);
-    }
-
-    public ValidationException(String string)
-    {
-        super(string);
-    }
-
-    /**
-     * @param e
-     */
-    public ValidationException(Exception e)
-    {
-        super(e);
-    }
 }

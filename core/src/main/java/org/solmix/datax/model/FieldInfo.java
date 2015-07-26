@@ -23,8 +23,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
 import org.solmix.commons.annotation.Immutable;
+import org.solmix.commons.util.Assert;
 import org.solmix.commons.util.StringUtils;
 import org.solmix.commons.xml.VariablesParser;
 import org.solmix.commons.xml.XMLNode;
@@ -72,6 +72,8 @@ public class FieldInfo
     protected Map<String,String> valueMap;
     
     protected List<ValidatorInfo> validators;
+    
+    protected XMLNode node;
     
     public FieldInfo(String name,FieldType type){
         Assert.assertNotNull(name);
@@ -146,8 +148,18 @@ public class FieldInfo
         return rootValue;
     }
 
-
+    public Object getProperty(String key) {
+        if(getXMLNode()!=null){
+            return getXMLNode().getStringAttribute(key);
+        }
+        return null;
+    }
     
+    public XMLNode getXMLNode() {
+        return node;
+    }
+
+
     public String getDateFormat() {
         return dateFormat;
     }
@@ -211,6 +223,7 @@ public class FieldInfo
             Map<String,String> valueMap=parseValueMap(node.evalNode("valueMap"),context);
             List<ValidatorInfo> validators=parseValidators(node.evalNodes("validator"),context);
             FieldInfo fi= new FieldInfo(name,ftype);
+            fi.node=node;
             fi.required=required;
             fi.canEdit=canEdit;
             fi.title=title;

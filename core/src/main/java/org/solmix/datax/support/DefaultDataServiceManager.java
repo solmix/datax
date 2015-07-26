@@ -29,8 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.solmix.commons.annotation.ThreadSafe;
@@ -41,7 +39,7 @@ import org.solmix.datax.DataService;
 import org.solmix.datax.DataServiceFactory;
 import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.DataServiceNoFoundException;
-import org.solmix.datax.DataxException;
+import org.solmix.datax.DataxRuntimeException;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.repository.DefaultRepository;
 import org.solmix.datax.repository.RepositoryService;
@@ -278,7 +276,7 @@ public class DefaultDataServiceManager implements DataServiceManager
     /**
      * 
      */
-    @PostConstruct
+//    @PostConstruct
     public synchronized void init() {
         if (init) {
             return;
@@ -355,7 +353,7 @@ public class DefaultDataServiceManager implements DataServiceManager
                 }
             }
         } catch (IOException e) {
-            throw new DataxException("load definition dataservice configuration file failed.", e);
+            throw new DataxRuntimeException("load definition dataservice configuration file failed.", e);
         }
         return configs;
     }
@@ -374,7 +372,7 @@ public class DefaultDataServiceManager implements DataServiceManager
                 }
             }
         } catch (IOException e) {
-            throw new DataxException("lookup dataservice configuration file failed.", e);
+            throw new DataxRuntimeException("lookup dataservice configuration file failed.", e);
         }
         return configs;
 

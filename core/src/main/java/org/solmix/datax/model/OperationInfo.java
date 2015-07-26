@@ -60,7 +60,9 @@ public class OperationInfo
     protected static int COUNT=0;
 
     private Map<String, ParamInfo> params;
-
+    
+    protected XMLNode node;
+    
     OperationInfo()
     {
     }
@@ -103,7 +105,17 @@ public class OperationInfo
         return type;
     }
 
-    
+    public Object getProperty(String key) {
+        if(getXMLNode()!=null){
+            return getXMLNode().getStringAttribute(key);
+        }
+        return null;
+    }
+   
+    private XMLNode getXMLNode() {
+        return node;
+    }
+
     public Boolean getAutoJoinTransactions() {
         return autoJoinTransactions;
     }
@@ -128,6 +140,7 @@ public class OperationInfo
         target.params=source.params;
         target.invoker=source.invoker;
         target.transformers=source.transformers;
+        target.node=source.node;
     }
     public Map<String, ParamInfo> getParams() {
         return params;
@@ -136,7 +149,7 @@ public class OperationInfo
 
         private final String ref;
         private XmlParserContext context;
-        private String serviceid;
+//        private String serviceid;
         public OperationInfoResolver(String id,String serviceid,OperationType type,String refid,XmlParserContext context){
             this.ref=refid;
             this.context=context;
@@ -227,6 +240,7 @@ public class OperationInfo
             BatchOperations batch= parseBatch(node.evalNode("batch"),context);
             InvokerInfo invoker = parseInvoker(node.evalNode("invoker"),context);
             oi.autoJoinTransactions=autoJoinTransactions;
+            oi.node=node;
             oi.params=params;
             oi.batch=batch;
             oi.transformers=transformers;

@@ -41,7 +41,12 @@ public interface DataServiceManager
     
     DataService getDataService(String serviceName);
     
-     Map<String, Object> getProperties();
+     /**
+      * <li>locale:Locale
+      * <li>autoJoinTransactions:string
+     * @return
+     */
+    Map<String, Object> getProperties();
 
     
      void setProperties(Map<String, Object> properties) ;

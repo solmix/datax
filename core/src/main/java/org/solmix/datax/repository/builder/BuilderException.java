@@ -18,7 +18,7 @@
  */
 package org.solmix.datax.repository.builder;
 
-import org.solmix.datax.DataxException;
+import org.solmix.datax.DataxRuntimeException;
 
 
 /**
@@ -27,7 +27,7 @@ import org.solmix.datax.DataxException;
  * @version $Id$  2015年6月25日
  */
 
-public class BuilderException extends DataxException
+public class BuilderException extends DataxRuntimeException
 {
 
     private static final long serialVersionUID = -4416769309453806197L;

@@ -27,7 +27,7 @@ package org.solmix.datax;
  * @version $Id$ 2015年6月18日
  */
 
-public class DataxException extends RuntimeException
+public class DataxException extends Exception
 {
 
     private static final long serialVersionUID = 4014907223048817109L;

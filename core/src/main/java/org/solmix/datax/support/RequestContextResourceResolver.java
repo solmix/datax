@@ -18,48 +18,31 @@
  */
 package org.solmix.datax.support;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.annotation.Resource;
-
 import org.solmix.datax.RequestContext;
-import org.solmix.datax.annotation.Param;
-import org.solmix.datax.service.MockDataService;
-
+import org.solmix.runtime.resource.support.ResourceResolverAdaptor;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年7月18日
+ * @version $Id$  2015年7月26日
  */
 
-public class CallDataService
+public class RequestContextResourceResolver extends ResourceResolverAdaptor
 {
+    private final RequestContext context;
+    public RequestContextResourceResolver(RequestContext context){
+        this.context=context;
+    }
 
-    @Resource
-    private RequestContext context;
-    @Resource
-    private MockDataService mockDataService;
-    public String fetch1(){
-        return "hello";
-    }
-    
-    public MockDataService getRequestContext(){
-        return context.get(MockDataService.class);
-    }
-    public MockDataService getInjectResource(){
-        return mockDataService;
-    }
-    
-    public Map<String,Object> fetchWithParams(@Param(expression="") String name,Map key){
-        Map<String,Object> res = new HashMap<String, Object>();
-        res.put(name, key);
-        return res;
-    }
-    
-    public void add1(@Param String name){
-        
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T resolve(String resourceName, Class<T> resourceType) {
+        if(resourceType==RequestContext.class){
+            return (T) context;
+        }else if(context!=null){
+            return context.get(resourceType);
+        }
+        return null;
     }
 }

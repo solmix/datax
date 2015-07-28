@@ -16,36 +16,28 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.model;
+package org.solmix.datax.application;
+
+import org.solmix.datax.DataxRuntimeException;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年7月1日
+ * @version $Id$  2015年7月26日
  */
 
-public enum LookupType implements ValueEnum
+public class ApplicationNotFoundException extends DataxRuntimeException
 {
-    NEW("new"),
-    REQUEST("request"),
-    CONTAINER("container");
-    
-    private final String value;
-    LookupType(String v) {
-        value = v;
+    private static final long serialVersionUID = -6548604699511608232L;
+
+    public ApplicationNotFoundException(String string, Throwable e)
+    {
+        super(string, e);
     }
 
-    public String value() {
-        return value;
-    }
-
-    public static LookupType fromValue(String v) {
-        for (LookupType c: LookupType.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-        throw new IllegalArgumentException(v);
+    public ApplicationNotFoundException(String string)
+    {
+        super(string);
     }
 }

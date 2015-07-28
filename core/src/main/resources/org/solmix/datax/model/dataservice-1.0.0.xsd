@@ -310,7 +310,7 @@
 
 		<attribute name="class" type="string"></attribute>
 		<attribute name="name" type="string"></attribute>
-		<attribute name="method" type="string" use="required"></attribute>
+		<attribute name="method" type="string"></attribute>
 		<attribute name="lookup" type="ds:lookupType"></attribute>
 		<anyAttribute processContents="lax" namespace="##any"></anyAttribute>
 	</complexType>

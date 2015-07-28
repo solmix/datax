@@ -73,6 +73,8 @@ public class DSRequestImpl extends PagedBean implements DSRequest
     RequestContext requestContext;
 
     boolean requestStarted;
+    
+    boolean  invoked;
 
     private DSCall dsc;
     
@@ -118,7 +120,7 @@ public class DSRequestImpl extends PagedBean implements DSRequest
      */
     @Override
     public Application getApplication() {
-        return applicationManager.findByID(getAppId());
+        return applicationManager.findByID(getApplicationId());
     }
     /**
      * @return
@@ -290,6 +292,7 @@ public class DSRequestImpl extends PagedBean implements DSRequest
         return requestContext;
     }
     
+    @Override
     public void setRequestContext(RequestContext rc){
         this.requestContext=rc;
     }
@@ -333,11 +336,13 @@ public class DSRequestImpl extends PagedBean implements DSRequest
         dataService = null;
     }
     
-    public String getAppId() {
+    @Override
+    public String getApplicationId() {
         return appId;
     }
     
-    public void setAppId(String appId) {
+    @Override
+    public void setApplicationId(String appId) {
         this.appId = appId;
     }
 
@@ -479,6 +484,26 @@ public class DSRequestImpl extends PagedBean implements DSRequest
     @Override
     public boolean isPartsOfTransaction() {
         return partsOfTransaction;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.solmix.datax.DSRequest#isInvoked()
+     */
+    @Override
+    public boolean isInvoked() {
+        return invoked;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.solmix.datax.DSRequest#setInvoked(boolean)
+     */
+    @Override
+    public void setInvoked(boolean invoked) {
+       this.invoked=invoked;
     }
 
 }

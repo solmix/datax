@@ -4,16 +4,60 @@
 	xsi:schemaLocation="http://www.solmix.org/schema/dataservice-1.0.0 http://www.solmix.org/xmlns/dataservice/v1.0.0">
 	<configuration namespace="com.call">
 		<service id="ds" serviceClass="org.solmix.datax.support.CallDataService">
-		<fields>
-		<field name="text" type="text"/>
-		<field name="float" type="float"/>
-		<field name="float2" type="float"/>
-		<field name="date" type="date"/>
-		</fields>
+			<fields>
+			<field name="text" type="text"/>
+			<field name="float" type="float"/>
+			<field name="float2" type="float"/>
+			<field name="date" type="date"/>
+			</fields>
 			<operations>
 				<fetch>
 				</fetch>
 				<add validate="true"></add>
+			</operations>
+		</service>
+		<service id="ds2" serviceClass="org.solmix.datax.support.CallDataService">
+			<fields>
+			<field name="text" type="text"/>
+			<field name="float" type="float"/>
+			<field name="float2" type="float"/>
+			<field name="date" type="date"/>
+			</fields>
+			<operations>
+				<custom>
+					<batch>
+						<fetch autoJoinTransactions="true"></fetch>
+						<fetch></fetch>
+					</batch>
+				</custom>
+			</operations>
+		</service>
+		<service id="invoke" serviceClass="org.solmix.datax.support.CallDataService">
+			<fields>
+			<field name="text" type="text"/>
+			<field name="float" type="float"/>
+			<field name="float2" type="float"/>
+			<field name="date" type="date"/>
+			</fields>
+			<operations>
+				<fetch id="fetch_1">
+					<invoker method="fetch1"/>
+				</fetch>
+				<fetch id="fetch_2">
+					<invoker method="getRepositoryService" class="org.solmix.datax.DataServiceManager" lookup="container"/>
+				</fetch>
+				<fetch id="getRequestContext">
+					<invoker/>
+				</fetch>
+				<fetch id="getInjectResource">
+					<invoker/>
+				</fetch>
+				<fetch id="fetchWithParams">
+					<invoker/>
+				</fetch>
+				<add id="add_1">
+					<invoker method="add1"/>
+				</add>
 			</operations>
 		</service>
 	</configuration>

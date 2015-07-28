@@ -29,6 +29,10 @@ import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.DSResponse.Status;
 import org.solmix.datax.DataServiceManager;
+import org.solmix.datax.DataServiceNoFoundException;
+import org.solmix.datax.OperationNoFoundException;
+import org.solmix.datax.application.ApplicationNotFoundException;
+import org.solmix.datax.service.MockDataService;
 import org.solmix.datax.validation.ErrorReport;
 import org.solmix.runtime.Container;
 import org.solmix.runtime.ContainerFactory;
@@ -61,10 +65,14 @@ public class DSRequestCallTest
         try {
            DSResponse res= fetch.execute();
            res.getStatus();
-          
         } catch (Exception e) {
-            e.printStackTrace();
-        }
+       }
+    }
+    private DSRequest createDSRequest(String id){
+        DataServiceManager dsm=   c.getExtension(DataServiceManager.class);
+        DSRequest req= dsm.createDSRequest();
+        req.setOperationId(id);
+        return req;
     }
     @Test
     public void testValidateRequest() {
@@ -138,5 +146,72 @@ public class DSRequestCallTest
             this.float2 = float2;
         }
         
+    }
+   @Test(expected = DataServiceNoFoundException.class)
+   public void testDataServiceNoFound() throws DSCallException {
+       DSRequest fetch = createDSRequest("com.call.12.aa");
+       fetch.execute();
+   }
+   @Test(expected = OperationNoFoundException.class)
+   public void testOperationidNotFound() throws DSCallException {
+       DSRequest fetch = createDSRequest("com.call.ds.aa");
+       fetch.execute();
+   }
+    @Test(expected = ApplicationNotFoundException.class)
+    public void testappNotFound() throws DSCallException {
+        DSRequest fetch = createDSRequest("com.call.ds.fetch");
+        fetch.setApplicationId("aaa_");
+        fetch.execute();
+    }
+    @Test
+    public void testbatch() throws DSCallException{
+        DSRequest custom = createDSRequest("com.call.ds2.custom");
+        
+        custom.execute();
+    }
+   @Test
+   public void testInvoker() throws DSCallException{
+       //lookup=new 
+       DSResponse fetch1 = request("com.call.invoke.fetch_1");
+       Assert.assertEquals("hello", fetch1.getRawData());
+       
+     //lookup=container
+       DSResponse fetch2 = request("com.call.invoke.fetch_2");
+       Assert.assertNotNull(fetch2.getRawData());
+       Object o=c.getExtension(DataServiceManager.class).getRepositoryService();
+       Assert.assertSame(o, fetch2.getRawData());
+       
+       //lookup=new 并注入request
+       DSRequest getre = createDSRequest("com.call.invoke.getRequestContext");
+       MappedRequestContext mrc = new MappedRequestContext();
+       MockDataService mock = new MockDataService();
+       mrc.put(MockDataService.class,mock);
+       getre.setRequestContext(mrc);
+       DSResponse getRequestContext= getre.execute();
+       Assert.assertSame(mock, getRequestContext.getRawData());
+   }
+   
+   @Test
+   public void fetchWithParams() throws DSCallException{
+       //lookup=new 
+       DSResponse fetch1 = request("com.call.invoke.fetchWithParams");
+       Map map= fetch1.getSingleResult(Map.class);
+   }
+   
+   @Test
+   public void getInjectResource() throws DSCallException{
+       //lookup=new 使用 requestContext resource resolver
+       DSRequest getre = createDSRequest("com.call.invoke.getInjectResource");
+       MappedRequestContext mrc = new MappedRequestContext();
+       MockDataService mock = new MockDataService();
+       mrc.put(MockDataService.class,mock);
+       getre.setRequestContext(mrc);
+       DSResponse getRequestContext= getre.execute();
+       Assert.assertSame(mock, getRequestContext.getRawData());
+   }
+   
+    private DSResponse request(String id) throws DSCallException {
+        DSRequest custom = createDSRequest(id);
+        return custom.execute();
     }
 }

@@ -54,6 +54,24 @@ public interface DSRequest extends Pageable
      * @return
      */
     boolean isValidated();
+    
+    
+    /**
+     * 指明当前请求是否已经调用了Invoker。
+     * 当使用自定义Invoker时，如果在Invoke Method中重用DSrequest并对DSRequest执行调用时
+     * 避免进入死循环。
+     * 
+     * @return
+     */
+    boolean isInvoked();
+    
+    /**
+     * 设置当前请求是否已经调用了Invoker。
+     * 当使用自定义Invoker时，如果在Invoke Method中重用DSrequest并对DSRequest执行调用时
+     * 避免进入死循环。
+     * 
+     */
+    void setInvoked(boolean invoked);
 
     void freeResources();
 
@@ -121,28 +139,28 @@ public interface DSRequest extends Pageable
      * @return
      */
     Object getRawValues();
-    
+
     /**
      * 代表请求是否允许加入事物。
      * 
      * @return
      */
     Boolean isCanJoinTransaction();
-    
+
     /**
      * 设置请求是否能够加入事物。
      * 
      * @param canJoinTransaction
      */
     void setCanJoinTransaction(Boolean canJoinTransaction);
-    
+
     /**
      * 设置是否为事物中的一部分。
      * 
      * @param partsOfTransaction
      */
     void setPartsOfTransaction(boolean partsOfTransaction);
-    
+
     /**
      * 为真，代表该请求在事物中,否则未加入事物。
      * 
@@ -154,5 +172,20 @@ public interface DSRequest extends Pageable
      * @return
      */
     boolean isRequestStarted();
-    
+
+    /**
+     * @return
+     */
+    String getApplicationId();
+
+    /**
+     * @param appId
+     */
+    void setApplicationId(String appId);
+
+    /**
+     * @param rc
+     */
+    void setRequestContext(RequestContext rc);
+
 }

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * 代表一次DataService(DS)请求返回的结果。
  * 
  * @author solmix.f@gmail.com
  * @version $Id$ 2015年6月18日

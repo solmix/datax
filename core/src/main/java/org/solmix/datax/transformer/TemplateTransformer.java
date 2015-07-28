@@ -16,36 +16,16 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.model;
+package org.solmix.datax.transformer;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年7月1日
+ * @version $Id$  2015年7月28日
  */
 
-public enum LookupType implements ValueEnum
+public class TemplateTransformer implements Transformer
 {
-    NEW("new"),
-    REQUEST("request"),
-    CONTAINER("container");
-    
-    private final String value;
-    LookupType(String v) {
-        value = v;
-    }
 
-    public String value() {
-        return value;
-    }
-
-    public static LookupType fromValue(String v) {
-        for (LookupType c: LookupType.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-        throw new IllegalArgumentException(v);
-    }
 }

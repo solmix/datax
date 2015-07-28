@@ -16,33 +16,107 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+
 package org.solmix.datax.support;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.solmix.commons.util.DataUtils;
 import org.solmix.datax.DSCallException;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
-import org.solmix.datax.RequestContext;
+import org.solmix.datax.DSResponse.Status;
+import org.solmix.datax.application.Application;
 import org.solmix.datax.call.DSCall;
-
+import org.solmix.datax.model.DataServiceInfo;
+import org.solmix.datax.model.InvokerInfo;
+import org.solmix.datax.model.OperationInfo;
+import org.solmix.runtime.Container;
 
 /**
  * Direct Method Invoke DataService.
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年7月15日
+ * @version $Id$ 2015年7月15日
  */
 
 public class DMIDataService
 {
 
     private static final Logger LOG = LoggerFactory.getLogger(DMIDataService.class.getName());
-    
-    public static DSResponse execute(final DSRequest dsRequest, DSCall rpc, RequestContext requestContext) throws DSCallException {
-        
-        
-        return null;
-        
+
+    protected final Container container;
+
+    protected final DSCall dsCall;
+
+    protected final DSRequest dsRequest;
+
+    protected final Application application;
+
+    public DMIDataService(Container container, DSRequest dsRequest, DSCall dscall, Application application)
+    {
+        this.container = container;
+        this.dsRequest = dsRequest;
+        this.dsCall = dscall;
+        this.application = application;
+    }
+
+    public static DSResponse execute(final Container container, final DSRequest dsRequest, DSCall dscall) throws DSCallException {
+        return execute(container, dsRequest, dscall, dsRequest.getApplication());
+    }
+
+    public static DSResponse execute(Container container, DSRequest dsRequest, DSCall dscall, Application application) throws DSCallException {
+
+        return new DMIDataService(container, dsRequest, dscall, application).execute();
+
+    }
+
+    /**
+     * @return
+     */
+    public DSResponse execute() {
+        dsRequest.setInvoked(true);
+        DataServiceInfo ds = dsRequest.getDataService().getDataServiceInfo();
+        OperationInfo oi= dsRequest.getOperationInfo();
+        if(oi.getInvoker()==null){
+            return null;
+        }
+        InvokerInfo ino = oi.getInvoker();
+        String methodName= ino.getMethodName();
+        if(methodName==null){
+            methodName=oi.getLocalId();
+        }
+        if(DataUtils.isNullOrEmpty(methodName)){
+            throw new InvokerException("Invoker method is null");
+        }
+        Class<?> serviceClass = ino.getClazz();
+        String serviceName= ino.getName();
+        if(serviceClass==null){
+            serviceClass = ds.getServiceClass();
+            serviceName=ds.getServiceName();
+        }
+        if(serviceClass==null){
+            throw new IllegalArgumentException("Invoker service class is null");
+        }
+        InvokerObject invoker = new InvokerObject(container,dsRequest, ino.getLookup(), serviceClass, serviceName,methodName);
+        Object result=null;
+        DSResponse dsResponse = null;
+        try{
+            result= invoker.invoke();
+        }catch(Exception  e){
+            //XXX ${tmplate}
+            //XXX
+            dsResponse = new DSResponseImpl(dsRequest,Status.STATUS_FAILURE);
+            dsResponse.setRawData(e.getMessage());
+            LOG.error("DMI error:",e);
+            return dsResponse;
+        }
+        if (result != null && DSResponse.class.isAssignableFrom(result.getClass())) {
+            dsResponse = DSResponse.class.cast(result);
+        } else {
+            dsResponse = new DSResponseImpl(dsRequest, Status.STATUS_SUCCESS);
+            dsResponse.setRawData(result);
+        }
+        return dsResponse;
     }
 }

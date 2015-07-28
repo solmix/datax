@@ -16,7 +16,9 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.model;
+package org.solmix.datax.annotation;
+
+import org.solmix.datax.model.ValueEnum;
 
 
 /**
@@ -25,14 +27,13 @@ package org.solmix.datax.model;
  * @version $Id$  2015年7月1日
  */
 
-public enum LookupType implements ValueEnum
+public enum ParamType implements ValueEnum
 {
-    NEW("new"),
-    REQUEST("request"),
-    CONTAINER("container");
+    DATA("new"),
+    RESOURCE("request");
     
     private final String value;
-    LookupType(String v) {
+    ParamType(String v) {
         value = v;
     }
 
@@ -40,8 +41,8 @@ public enum LookupType implements ValueEnum
         return value;
     }
 
-    public static LookupType fromValue(String v) {
-        for (LookupType c: LookupType.values()) {
+    public static ParamType fromValue(String v) {
+        for (ParamType c: ParamType.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

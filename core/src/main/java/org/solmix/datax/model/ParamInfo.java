@@ -71,6 +71,9 @@ public class ParamInfo implements XMLSource
     public Boolean getIsOverride() {
         return isOverride;
     }
+    public boolean isOverride(){
+        return isOverride==null?false:isOverride.booleanValue();
+    }
     
     public static class Parser extends BaseXmlNodeParser<ParamInfo>{
 

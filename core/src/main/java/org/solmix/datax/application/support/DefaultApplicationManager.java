@@ -27,6 +27,7 @@ import org.solmix.commons.collections.DataTypeMap;
 import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.application.Application;
 import org.solmix.datax.application.ApplicationManager;
+import org.solmix.datax.application.ApplicationNotFoundException;
 import org.solmix.datax.application.ApplicationSecurity;
 import org.solmix.runtime.Container;
 
@@ -82,9 +83,12 @@ public class DefaultApplicationManager implements ApplicationManager
     public Application findByID(String appID) {
         if (appID == null)
             appID = BUILT_IN_APPLICATION;
-        Application application = providers.get(BUILT_IN_APPLICATION);
+        Application application = providers.get(appID);
         if (application == null) {
             application = container.getExtensionLoader(Application.class).getExtension(appID);
+            if(application==null){
+                throw  new ApplicationNotFoundException(appID);
+            }
             application.init(getApplicationProperties());
             application.setApplicationSecurity(findApplicationSecurity());
             providers.putIfAbsent(appID, application);

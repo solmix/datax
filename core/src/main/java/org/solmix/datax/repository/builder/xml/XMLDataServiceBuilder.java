@@ -86,14 +86,14 @@ public class XMLDataServiceBuilder extends AbstractBuilder
     
     public void build(){
         if(LOG.isTraceEnabled())
-            LOG.trace(">>>>Starting build dataservice from uri:{}",uri);
+            LOG.trace(">>START :{}",uri);
         if(!repository.isResourceLoaded(uri)){
             parseConfigurationElement(xmlParser.evalNode("/datax/configuration"));
             repository.addLoadedResource(uri);
         }
         resolverReference();
         if(LOG.isTraceEnabled())
-            LOG.trace("<<<<CLOSED");
+            LOG.trace("<<END   :{}" ,uri);
     }
     /**
      * 
@@ -144,7 +144,7 @@ public class XMLDataServiceBuilder extends AbstractBuilder
         for (XMLNode node : nodes) {
             try {
                 if(LOG.isTraceEnabled())
-                    LOG.trace(">>>>Starting parse dataservice xpath:{},name:{}",node.getPath(),node.getStringAttribute("id"));
+                    LOG.trace(">>Starting parse dataservice xpath:{},name:{}",node.getPath(),node.getStringAttribute("id"));
                 DataServiceInfo dsi = parser.parse(node, context);
                 repository.addDataService(dsi);
             } catch (IncludeNoFoundException e) {

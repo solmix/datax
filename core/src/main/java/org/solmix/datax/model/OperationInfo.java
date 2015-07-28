@@ -43,7 +43,7 @@ public class OperationInfo
 {
     protected String id;
     
-    
+    protected String localId;
     protected OperationType type;
     
     protected Boolean autoJoinTransactions;
@@ -72,14 +72,20 @@ public class OperationInfo
      * 
      * @param id
      */
-    public OperationInfo(String id,OperationType type){
+    public OperationInfo(String id,String localId,OperationType type){
         if(id==null){
             id=this.getClass().getName()+"#"+(++COUNT);
         }
         this.id=id;
+        this.localId=localId;
         this.type=type;
     }
     
+    
+    public String getLocalId() {
+        return localId;
+    }
+
     /**
      * @param oi
      */
@@ -112,7 +118,7 @@ public class OperationInfo
         return null;
     }
    
-    private XMLNode getXMLNode() {
+    public XMLNode getXMLNode() {
         return node;
     }
 
@@ -164,6 +170,7 @@ public class OperationInfo
                 throw new BuilderException("operation:"+id+" type is "+type+" but ref:"+vi.id+" type is "+vi.type);
             }
             refid=vi.getId();
+            copy(vi, this);
             context.getRepositoryService().addOperationInfo(this);
         }
         
@@ -192,20 +199,21 @@ public class OperationInfo
         @Override
         public OperationInfo parse(XMLNode node, XmlParserContext context) {
             String refid= node.getStringAttribute("refid");
-            String id= node.getStringAttribute("id");
+            String localId= node.getStringAttribute("id");
             String strType = node.getName();
             //如果没有设置约定为类型名，约定大于配置。
+            String id=null;
             if(!batch){
-                if(id==null){
-                    id=strType;
-                }if(!validateId(id)){
-                    throw new BuilderException("Invalid Operation id  ("+id+") at:"+node.getPath());
+                if(localId==null){
+                    localId=strType;
+                }if(!validateId(localId)){
+                    throw new BuilderException("Invalid Operation id  ("+localId+") at:"+node.getPath());
                 }
-                id=context.applyCurrentService(id, false);
+                id=context.applyCurrentService(localId, false);
             }
             OperationType type = OperationType.fromValue(strType);
             
-            OperationInfo oi= new OperationInfo(id,type);
+            OperationInfo oi= new OperationInfo(id,localId,type);
             if(refid!=null){
                 OperationInfo refoi = null;
                 try {
@@ -222,6 +230,7 @@ public class OperationInfo
                         throw new BuilderException("operation:"+oi.id+" type is "+oi.type+" but ref:"+refoi.id+" type is "+refoi.type);
                     }
                     oi.refid=refoi.getId();
+                    copy(refoi, oi);
                     //batch中配置的不能被引用，不要加入引用列表。
                     if(!batch){
                         context.getRepositoryService().addOperationInfo(oi);

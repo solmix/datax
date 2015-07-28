@@ -69,7 +69,6 @@ public class BaseDataServiceFactory implements DataServiceFactory
         DataTypeMap prop = new DataTypeMap(Collections.unmodifiableMap(properties));
         BaseDataService bds = new BaseDataService(info, container, prop);
         bds.setEventService(getEventService());
-        bds.init();
         return bds;
     }
     

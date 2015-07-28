@@ -121,6 +121,9 @@ public class DSResponseImpl  extends PagedBean implements DSResponse
      */
     @Override
     public Map<Object, Object> getSingleRecord() {
+        if(status!=Status.STATUS_SUCCESS){
+            return null;
+        }
         if(getDataService()==null){
             throw new java.lang.IllegalStateException("Attempted to call getSingleRecord() on a DSResponse with null DataSource");
         }
@@ -142,6 +145,9 @@ public class DSResponseImpl  extends PagedBean implements DSResponse
     public List<Map<Object, Object>> getRecordList() {
         if (getDataService() == null) {
             throw new java.lang.IllegalStateException("Attempted to call getSingleRecord() on a DSResponse with null DataSource");
+        }
+        if(status!=Status.STATUS_SUCCESS){
+            return null;
         }
         List<Map<Object, Object>> target = new ArrayList<Map<Object, Object>>();
         List<Object> sources = DataUtils.makeListIfSingle(rawData);
@@ -223,6 +229,9 @@ public class DSResponseImpl  extends PagedBean implements DSResponse
      */
     @Override
     public <T> List<T> getResultList(Class<T> type) {
+        if (status != Status.STATUS_SUCCESS) {
+            return null;
+        }
         List<T> res = new ArrayList<T>();
         if (List.class.isAssignableFrom(rawData.getClass())) {
             for (Object obj : List.class.cast(rawData)) {
@@ -242,6 +251,9 @@ public class DSResponseImpl  extends PagedBean implements DSResponse
     protected <T> T getResultInternal(Class<T> type, Object data) {
         if (data == null)
             return null;
+        if(status!=Status.STATUS_SUCCESS){
+            return null;
+        }
         if (type.isInstance(data))
             return (T) data;
         // First, assume that the type is Map.

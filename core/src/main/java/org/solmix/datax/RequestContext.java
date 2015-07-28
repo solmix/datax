@@ -43,4 +43,8 @@ public interface RequestContext
 
     /** 取得所有key的集合。 */
     Set<String> keySet();
+    
+    <T> T get(Class<T> key);
+
+    <T> void put(Class<T> key, T value);
 }

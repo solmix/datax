@@ -42,6 +42,7 @@ import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.DSResponse.Status;
 import org.solmix.datax.DataService;
+import org.solmix.datax.DataServiceNoFoundException;
 import org.solmix.datax.OperationNoFoundException;
 import org.solmix.datax.call.Transaction;
 import org.solmix.datax.model.DataServiceInfo;
@@ -49,8 +50,11 @@ import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.model.FieldType;
 import org.solmix.datax.model.OperationInfo;
 import org.solmix.datax.model.OperationType;
+import org.solmix.datax.model.ParamInfo;
 import org.solmix.datax.model.TransactionPolicy;
+import org.solmix.datax.model.TransformerInfo;
 import org.solmix.datax.model.ValidatorInfo;
+import org.solmix.datax.transformer.Transformer;
 import org.solmix.datax.util.DataTools;
 import org.solmix.datax.validation.BuiltinCreator;
 import org.solmix.datax.validation.DefaultValidatorService;
@@ -134,23 +138,123 @@ public class BaseDataService implements DataService
         if (oi == null) {
             throw new OperationNoFoundException("Not found operation：" + req.getOperationId() + " in datasource:" + getId());
         }
-        // 配置了invoker优先处理
-        if (oi.getInvoker() != null) {
-            DSResponse response = DMIDataService.execute(req, req.getDSCall(), req.getRequestContext());
-            if (response != null) {
-                return response;
-            }
-        }
         if (oi.getBatch() != null) {
             return executeBatch(req);
         }
-        OperationType type = oi.getType();
-        if (type != OperationType.CUSTOM) {
-            DSResponse validationFailure = validateDSRequest(req);
-            if (validationFailure != null)
-                return validationFailure;
+        //param info
+        Map<String,ParamInfo> params = oi.getParams();
+        if (params!= null && !params.isEmpty()) {
+            prepareParams(req,params);
         }
+        //转换请求
+        List<TransformerInfo> trans = oi.getTransformers();
+        List<Transformer> transformers = prepareTransformer(oi,trans);
+        if (trans != null && !trans.isEmpty()) {
+            transformers = transformRequest(req, trans);
+        }
+       //验证
+        OperationType type = oi.getType();
+        DSResponse response = null;
+        if (type != OperationType.CUSTOM) {
+            response = validateDSRequest(req);
+            if (response != null) {
+                return transformResponse(response, transformers);
+            }
+        }
+
         req.setRequestStarted(true);
+        // 配置了invoker优先处理
+        if ((!req.isInvoked()) && oi.getInvoker() != null) {
+            response = DMIDataService.execute(container, req, req.getDSCall());
+            return transformResponse(response, transformers);
+        } else {
+            response = executeDefault(req, type);
+            return transformResponse(response, transformers);
+        }
+    }
+   
+    /**
+     * 根据配置准备Transformers
+     */
+    private List<Transformer> prepareTransformer(OperationInfo oi, List<TransformerInfo> trans) {
+
+        if(oi.getProperty("template")!=null){
+            
+        }else if(oi.getProperty("template-file")!=null){
+            
+        }
+        return null;
+    }
+
+    private List<Transformer> transformRequest(DSRequest req, List<TransformerInfo> trans) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    private DSResponse transformResponse(DSResponse response, List<Transformer> transformers) {
+        if (transformers==null) {
+            return response;
+        }
+        return response;
+    }
+
+    protected DSRequest prepareParams(DSRequest req, Map<String, ParamInfo> params) throws DSCallException {
+        Object values = req.getRawValues();
+        // 如果为空，就不做处理
+        if (values == null) {
+            return req;
+        }
+        List<?> list = null;
+        try {
+            if (values instanceof List<?> && values.getClass().isArray()) {
+                list = req.getValueSets();
+                List<Object> afters = new ArrayList<Object>();
+                for (Object o : list) {
+                    afters.add(injectParma(o, params));
+                }
+                req.setRawValues(afters);
+            } else {
+                req.setRawValues(injectParma(values, params));
+            }
+        } catch (Exception e) {
+            throw new DSCallException("prepare params error", e);
+        }
+        return req;
+    }
+    
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private Object injectParma(Object values, Map<String, ParamInfo> params) throws Exception {
+        Map map=TransformUtils.transformType(Map.class, values);
+        for(String name:params.keySet()){
+            ParamInfo param  = params.get(name);
+            if(map.containsKey(name)&&param.isOverride()){
+                map.put(name, param.getValue());
+            }else{
+                map.put(name, param.getValue());
+            }
+        }
+        return DataUtils.setProperties(map, values);
+    }
+
+    /**
+     * 批量执行一系列请求.
+     * 
+     * @param req
+     * @return
+     */
+    protected DSResponse executeBatch(DSRequest req) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+  
+    
+    /**
+     * 执行带Transformer的请求
+     * 
+     * @param req
+     * @return
+     */
+    protected DSResponse executeDefault(DSRequest req,OperationType type) {
         if (DataTools.isFetch(type)) {
             return executeFetch(req);
         } else if (DataTools.isRemove(type)) {
@@ -164,7 +268,6 @@ public class BaseDataService implements DataService
         }
     }
 
-  
     protected DSResponse executeCustomer(DSRequest req) {
         return notSupported(req);
     }
@@ -176,7 +279,7 @@ public class BaseDataService implements DataService
     private DSResponse notSupported(DSRequest req) {
         OperationInfo oi = info.getOperationInfo(req.getOperationId());
         throw new UnsupportedOperationException(
-            new StringBuilder().append("Operation type '")
+            new StringBuilder().append("Default operation type '")
             .append(oi.getType()).append("' not supported by this DataSource (")
             .append(getServerType()).append(")").toString());
     }
@@ -214,17 +317,6 @@ public class BaseDataService implements DataService
     }
 
     /**
-     * 批量执行一系列请求.
-     * 
-     * @param req
-     * @return
-     */
-    protected DSResponse executeBatch(DSRequest req) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    /**
      * @param req
      * @return
      */
@@ -251,6 +343,14 @@ public class BaseDataService implements DataService
      */
     @Override
     public List<Object> validateDSRequst(DSRequest req) throws ValidationException{
+         if(req.getDataService()==null){
+             throw new DataServiceNoFoundException("Not found dataservice:"+req.getDataServiceId());
+         }
+        List<FieldInfo> fields= req.getDataService().getDataServiceInfo().getFields();
+       //如果没有配置Fields,不能验证。
+        if(fields==null||fields.isEmpty()){
+            return null;
+        }
         OperationInfo oi= req.getOperationInfo();
         Boolean validate = oi.getValidate();
         OperationType type =oi.getType();

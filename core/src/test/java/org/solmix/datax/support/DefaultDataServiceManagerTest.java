@@ -40,6 +40,7 @@ import org.solmix.datax.model.ParamInfo;
 import org.solmix.datax.model.TransactionPolicy;
 import org.solmix.datax.model.TransformerInfo;
 import org.solmix.datax.model.ValidatorInfo;
+import org.solmix.datax.repository.builder.BuilderException;
 import org.solmix.datax.service.MockDataService;
 import org.solmix.runtime.Container;
 import org.solmix.runtime.ContainerFactory;
@@ -109,7 +110,16 @@ public class DefaultDataServiceManagerTest
         BatchOperations bo = ai.getBatch();
         assertNotNull(bo);
     }
-
+    
+    @Test(expected=BuilderException.class)
+    public void testXMLBatchException() {
+        //配置了batch就不能配置其他的选项
+        dsm.setLoadDefault(false);
+        dsm.addResource("classpath:META-INF/dataservice1/ds3.xml");
+       
+        dsm.init();
+        
+    }
     @Test
     public void testResolver() {
         dsm.setLoadDefault(false);
@@ -193,6 +203,7 @@ public class DefaultDataServiceManagerTest
         //关联
         OperationInfo oi2=dsi.getOperationInfo("#feth2");
         assertEquals(oi.getId(), oi2.getRefid());
+        assertEquals(Boolean.TRUE,oi2.getAutoJoinTransactions());
         
        Map<String,ParamInfo> params= oi.getParams();
        assertEquals("key", params.get("key").getKey());

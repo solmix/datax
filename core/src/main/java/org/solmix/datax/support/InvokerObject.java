@@ -27,6 +27,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -36,15 +37,21 @@ import java.util.Set;
 import org.apache.commons.collections.map.LinkedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.solmix.commons.annotation.NotThreadSafe;
 import org.solmix.commons.util.DataUtils;
 import org.solmix.commons.util.ObjectUtils;
+import org.solmix.commons.util.TransformUtils;
 import org.solmix.commons.util.ObjectUtils.NullObject;
 import org.solmix.commons.util.Reflection;
 import org.solmix.datax.DSRequest;
+import org.solmix.datax.DataService;
 import org.solmix.datax.RequestContext;
 import org.solmix.datax.annotation.Param;
-import org.solmix.datax.annotation.ParamType;
+import org.solmix.datax.call.DSCall;
+import org.solmix.datax.model.InvokerInfo;
 import org.solmix.datax.model.LookupType;
+import org.solmix.datax.model.MethodArgInfo;
+import org.solmix.datax.script.VelocityExpression;
 import org.solmix.runtime.Container;
 import org.solmix.runtime.bean.ConfiguredBeanProvider;
 import org.solmix.runtime.resource.ResourceInjector;
@@ -57,7 +64,7 @@ import org.solmix.runtime.resource.support.ResourceManagerImpl;
  * @author solmix.f@gmail.com
  * @version $Id$ 2015年7月26日
  */
-
+@NotThreadSafe
 public class InvokerObject
 {
     private static final  Logger LOG = LoggerFactory.getLogger(InvokerObject.class);
@@ -78,13 +85,19 @@ public class InvokerObject
     
     private final RequestContext requestContext;
     private final DSRequest request;
+    private final InvokerInfo invokerInfo;
+    
+    private VelocityExpression velocity;
 
-    public InvokerObject(Container container,DSRequest req, LookupType lookup, Class<?> clazz, String serviceName, String methodName)
+    private Map<String, Object> vmContext;
+
+    public InvokerObject(Container container,DSRequest req, InvokerInfo invokerInfo, Class<?> clazz, String serviceName, String methodName)
     {
         this.container = container;
         this.request=req;
         this.requestContext=req.getRequestContext();
-        this.lookup = lookup;
+        this.invokerInfo=invokerInfo;
+        this.lookup = invokerInfo.getLookup();
         this.clazz = clazz;
         this.serviceName = serviceName;
         this.methodName = methodName;
@@ -137,42 +150,31 @@ public class InvokerObject
         Method method = getServiceMethod();
         Object instance = getServiceInstance();
         List<Object> methodArgs = new ArrayList<Object>();
-        //XXX ${template} 配置调用方法的参数
-        
         Class<?>[] parameterTypes = method.getParameterTypes();
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
         GenericParameterNode[] genericParamTypes = getGenericParameterTypes(method);
+        Map<Integer,MethodArgInfo> argsInfo=  invokerInfo.getMethodArgs();
         for (int i = 0; i < parameterTypes.length; i++) {
             Class<?> paramType = parameterTypes[i];
+            MethodArgInfo argInfo = (argsInfo == null ? null : argsInfo.get(i));
             GenericParameterNode genericParamInfo = genericParamTypes[i];
             Annotation[] parameterannotation=parameterAnnotations[i];
             if (genericParamInfo != null && genericParamInfo.getClassByIndex(0) == paramType)
                 genericParamInfo = genericParamInfo.getChildNode();
-            boolean discoveried = false;
             try {
-                methodArgs.add(lookupValue(paramType,parameterannotation, genericParamInfo));
-                discoveried=true;
+                methodArgs.add(lookupValue(paramType,argInfo,parameterannotation, genericParamInfo));
             } catch (Exception e) {
-                if(LOG.isWarnEnabled()){
-                    LOG.warn(new StringBuilder()
-                    .append("Exception occurred attempting to map arguments: ")
-                    .append(e.toString()).append(" in ")
-                    .append(e.getStackTrace()[0].toString())
-                    .toString());
-                }
-            }
-            if(discoveried){
-                continue;
-            }
-            String errorString = new StringBuilder()
+                String errorString = new StringBuilder()
                 .append("Unable to assign a  argument to slot #")
                 .append(i + 1)
                 .append(" taking type: ")
                 .append(paramType.getName())
                 .append(" of method:")
                 .append(method.toString())
-                .append( "Can't lookup arguments match this type").toString();
-            throw new InvokerException(errorString);
+                .append(" Can't lookup arguments match this type").toString();
+                throw new InvokerException(errorString,e);
+            }
+            
         }
         
         Object args[] = DataUtils.listToArray(methodArgs);
@@ -197,85 +199,180 @@ public class InvokerObject
         }
 
     }
-   
-    protected Object lookupValue(Class<?> targetType,Annotation[] annotaions, GenericParameterNode node) {
+    
+    protected Object lookupValue(Class<?> targetType,MethodArgInfo invokerInfo,Annotation[] annotaions, GenericParameterNode node) {
         Param param= findParam(annotaions);
         Object founded = null;
-        if(param!=null){
-            if (isCollection(targetType)) {
-                if(param.type()==ParamType.RESOURCE){
-                    throw new InvokerException(new StringBuilder()
-                    .append("Annotate @Param(type=ParamType.RESOURCE) can't parse Collection resource:")
-                    .append(targetType.getClass()).toString());
-                }
-                try {
-                    // XXX ${template} expression  配置调用方法的参数
-                    Object newArgValue;
-                    if (param.collectionClass() != NullObject.class) {
-                        newArgValue = param.collectionClass().newInstance();
-                    } else if (targetType.isInterface() || Modifier.isAbstract(targetType.getModifiers())) {
-                        if (Map.class.isAssignableFrom(targetType)) {
-                            newArgValue = new LinkedMap();
-                        } else if (List.class.isAssignableFrom(targetType)) {
-                            newArgValue = new ArrayList<Object>();
-                        } else if (Set.class.isAssignableFrom(targetType)) {
-                            newArgValue = new HashSet<Object>();
-                        } else if (Queue.class.isAssignableFrom(targetType)) {
-                            newArgValue = new LinkedList<Object>();
-                        } else if (Collection.class.isAssignableFrom(targetType)) {
-                            newArgValue = new ArrayList<Object>();
-                        }
-                    } else {
-                        newArgValue = targetType.newInstance();
-                    }
-                } catch (InstantiationException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-
-            } else {
-                ParamType type = param.type();
-                switch (type) {
-                    case DATA:
-                        founded = lookupData(targetType, param,null);
-                        break;
-                    case RESOURCE:
-                        founded = lookupResource(targetType, param);
-                        break;
-                    default:
-                        break;
-                }
+        Object argument=null;
+        String expression = invokerInfo == null ? null : invokerInfo.getExpression();
+        if(expression==null){
+            expression=param==null?null:param.expression();
+        }
+        if(expression!=null){
+            if(velocity==null){
+                velocity=new VelocityExpression(container);
+                vmContext=velocity.prepareContext(request, requestContext);
             }
+            argument=velocity.evaluateValue(expression, vmContext);
+        }
+        if (invokerInfo != null && invokerInfo.getValue() != null) {
+            argument = invokerInfo.getValue();
+        }
+        //根据表达式和value已经指定了值
+        if(argument!=null){
+         return adaptValue(targetType, argument, node, 
+             param==null?null:param.javaClass(), 
+                 param==null?null:param.collectionClass(), 
+                     param==null?null:param.javaKeyClass());
         }else{
-             //不是集合类型
-            if(!isCollection(targetType)){
-                //现在请求域查找
-                if(requestContext!=null){
-                    founded = requestContext.get(targetType); 
-                }
-                 //container中查找
-                if(founded==null){
-                    founded = container.getExtension(targetType);
-                }
-            }else{
+            //根据需要的类型自动查找
+            if (isCollection(targetType)) {
                 throw new InvokerException(new StringBuilder()
-                .append("Not annotate @Param, default @Param(type=ParamType.RESOURCE) can't parse Collection resource:")
+                .append("Not specify data ,can't parse Collection resource:")
                 .append(targetType.getClass()).toString());
+            }else{
+                //简单对象
+                founded = lookupResource(targetType, param);
             }
         }
         return founded;
     }
     
-    /**
-     * @param targetType
-     * @param param
-     * @return
-     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    protected Object adaptValue(Class<?> targetType, Object argument, GenericParameterNode node, Class<?> javaClass, Class<?> javaCollectionClass,
+        Class<?> javaKeyClass) {
+
+        if (isCollection(targetType)) {
+            try {
+                Object newArgValue;
+                if (javaCollectionClass != NullObject.class) {
+                    newArgValue = javaCollectionClass.newInstance();
+                } else if (targetType.isInterface() || Modifier.isAbstract(targetType.getModifiers())) {
+                    if (Map.class.isAssignableFrom(targetType)) {
+                        newArgValue = new LinkedMap();
+                    } else if (List.class.isAssignableFrom(targetType)) {
+                        newArgValue = new ArrayList<Object>();
+                    } else if (Set.class.isAssignableFrom(targetType)) {
+                        newArgValue = new HashSet<Object>();
+                    } else if (Queue.class.isAssignableFrom(targetType)) {
+                        newArgValue = new LinkedList<Object>();
+                    } else if (Collection.class.isAssignableFrom(targetType)) {
+                        newArgValue = new ArrayList<Object>();
+                    } else
+                        newArgValue = argument.getClass().newInstance();
+                } else {
+                    newArgValue = targetType.newInstance();
+                }
+                Iterator<Object> i = null;
+                Object key = null;
+                Class<?> keyClass = Object.class;
+                Class<?> valueClass = null;
+                Class<?> argType = argument.getClass();
+                if (Collection.class.isAssignableFrom(targetType)) {
+                    if (argument instanceof Map) {
+                        Map map = (Map) argument;
+                        if (map.size() == 1) {
+                            Iterator mapi = map.entrySet().iterator();
+                            java.util.Map.Entry mape = (java.util.Map.Entry) mapi.next();
+                            if (mape.getValue() instanceof Collection) {
+                                argument = mape.getValue();
+                                argType = argument.getClass();
+                            } else if (mape.getValue() instanceof Map) {
+                                argument = new ArrayList();
+                                ((List) argument).add(mape.getValue());
+                                argType = argument.getClass();
+                            }
+                        }
+                    }
+                    i = ((Collection) argument).iterator();
+                    if (node != null)
+                        valueClass = node.getClassByIndex(0);
+                } else if (Collection.class.isAssignableFrom(argType) && Map.class.isAssignableFrom(targetType)) {
+                    if (((Collection) argument).size() == 1) {
+                        argument = ((Collection) argument).iterator().next();
+                        argType = argument.getClass();
+                        i = ((Map) argument).keySet().iterator();
+                    }
+                } else {
+                    i = ((Map) argument).keySet().iterator();
+                    if (node != null) {
+                        keyClass = node.getClassByIndex(0);
+                        valueClass = node.getClassByIndex(1);
+                    }
+                }
+                if (javaClass != null)
+                    valueClass = javaClass;
+                if (javaKeyClass != null)
+                    keyClass = javaKeyClass;
+                boolean resetValueClass = false;
+                if (valueClass == null)
+                    resetValueClass = true;
+                while (i.hasNext()) {
+                    Object value = null;
+                    if (resetValueClass)
+                        valueClass = null;
+                    if (Collection.class.isAssignableFrom(targetType)) {
+                        value = i.next();
+                    } else {
+                        key = i.next();
+                        value = ((Map) argument).get(key);
+                    }
+                    if (valueClass == null && value != null)
+                        valueClass = value.getClass();
+                    Object newValue = null;
+                    if (value != null) {
+                        newValue = adaptValue(valueClass, value, node != null ? node.getChildNode() : null, javaClass, javaCollectionClass,
+                            javaKeyClass);
+                    }
+                    Object newKey = key;
+                    if (keyClass != Object.class) {
+                        newKey = adaptValue(keyClass, value, node != null ? node.getChildNode() : null, null, null, null);
+                    }
+                    if (Collection.class.isAssignableFrom(targetType))
+                        ((Collection) newArgValue).add(newValue);
+                    else
+                        ((Map) argument).put(newKey, newValue);
+                }
+                return newArgValue;
+            } catch (Exception e) {
+                throw new InvokerException("transform argumnt type:" + targetType.getName() + " to value:" + argument.getClass().getName(), e);
+            }
+
+        } else {
+            if (targetType.isAssignableFrom(argument.getClass())) {
+                return targetType.cast(argument);
+            } else {
+                try {
+                    return TransformUtils.transformType(targetType, argument);
+                } catch (Exception e) {
+                    throw new InvokerException("transform argument value", e);
+                }
+            }
+        }
+    }
+   
+    
+    
+  
     private Object lookupResource(Class<?> targetType, Param param) {
         Object founded=null;
-        if(ObjectUtils.EMPTY_STRING.equals(param.name())){
-            
+        if (param == null || ObjectUtils.EMPTY_STRING.equals(param.name())) {
+
+            if(DSCall.class.isAssignableFrom(targetType)){
+                return request.getDSCall();
+            } else if(DSRequest.class.isAssignableFrom(targetType)){
+                return request;
+            } else if(DataService.class.isAssignableFrom(targetType)){
+                return request.getDataService();
+            } else if(Logger.class.isAssignableFrom(targetType)){
+                return LOG;
+            } else if(DSCall.class.isAssignableFrom(targetType)){
+                return request.getDSCall();
+            }else if(RequestContext.class.isAssignableFrom(targetType)){
+                return requestContext;
+            }else if(Container.class.isAssignableFrom(targetType)){
+                return container;
+            }
             //现在请求域查找
             if(requestContext!=null){
                 founded = requestContext.get(targetType); 
@@ -292,43 +389,9 @@ public class InvokerObject
         }
         return founded;
     }
+    
 
-    /**
-     * @param targetType
-     * @param param
-     * @return
-     * @throws Exception 
-     */
-    private Object lookupData(Class<?> targetType, Param param,Object argValue) {
-       if(argValue==null){
-           argValue=request.getRawValues();
-       }
-       if(argValue==null){
-           return null;
-       }
-       Class<?> argType = argValue.getClass();
-        if (targetType.isAssignableFrom(argType)){
-            return param.javaClass() != NullObject.class ? param.javaClass().cast(argValue) : argType.cast(argValue);
-        }else if(Map.class.isAssignableFrom(argType)){
-            Object beanInstance = null;
-            try {
-                beanInstance = Reflection.newInstance(targetType);
-                DataUtils.setProperties(Map.class.cast(argType), beanInstance);
-                return beanInstance;
-            } catch (Exception e) {
-                Throwable rte = Reflection.getRealTargetException(e);
-                throw new InvokerException(new StringBuilder()
-                .append("Failed to convert Map arg to bean of type: ")
-                .append(targetType.getName())
-                .append(" - because instantiation of ")
-                .append(targetType.getName())
-                .append(" threw the following Exception: ")
-                .append(rte.toString())
-                .toString(),rte);
-            }
-        }
-        return null;
-    }
+
 
     private boolean isCollection(Class<?> targetType) {
         if ((Collection.class.isAssignableFrom(targetType) || Map.class.isAssignableFrom(targetType))) {
@@ -405,7 +468,7 @@ public class InvokerObject
                         }
                     }
                     if(serviceInstance!=null){
-                        ResourceManagerImpl rm = new ResourceManagerImpl(new RequestContextResourceResolver(requestContext));
+                        ResourceManagerImpl rm = new ResourceManagerImpl(new DSRequestResolver(request),new RequestContextResourceResolver(requestContext));
                         ResourceInjector injector = new ResourceInjector(rm);
                         injector.inject(serviceInstance);
                     }
@@ -420,6 +483,7 @@ public class InvokerObject
                         ResourceManager rma= container.getExtension(ResourceManager.class);
                         ResourceManagerImpl rm = new ResourceManagerImpl(rma.getResourceResolvers());
                         rm.addResourceResolver( new RequestContextResourceResolver(requestContext));
+                        rm.addResourceResolver( new DSRequestResolver(request));
                         ResourceInjector injector = new ResourceInjector(rm);
                         injector.inject(serviceInstance);
                     }

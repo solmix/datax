@@ -32,7 +32,9 @@
 						<param key="key2" value="v2"  />
 					</params>
 					<transformer id="trans" class="org.solmix.datax.transformer.MockTransformer" lookup="container" name="trans"/>
-					<invoker class="org.solmix.datax.transformer.MockTransformer" name="invoker" lookup="container" method="ink"/>
+					<invoker class="org.solmix.datax.transformer.MockTransformer" name="invoker" lookup="container" method="ink">
+					<method-arg order="5" value="5xxx" expression="$request"/>
+					</invoker>
 					<transformer refid="#trans"></transformer>
 				</fetch>
 				<fetch id="feth2" refid="#fetch"></fetch>

@@ -98,7 +98,7 @@ public class DMIDataService
         if(serviceClass==null){
             throw new IllegalArgumentException("Invoker service class is null");
         }
-        InvokerObject invoker = new InvokerObject(container,dsRequest, ino.getLookup(), serviceClass, serviceName,methodName);
+        InvokerObject invoker = new InvokerObject(container,dsRequest, ino, serviceClass, serviceName,methodName);
         Object result=null;
         DSResponse dsResponse = null;
         try{

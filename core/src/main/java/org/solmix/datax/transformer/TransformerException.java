@@ -16,23 +16,29 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+
 package org.solmix.datax.transformer;
 
-import org.solmix.datax.DSRequest;
-import org.solmix.datax.DSResponse;
-
+import org.solmix.datax.DataxRuntimeException;
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月29日
+ * @version $Id$ 2015年8月1日
  */
 
-public interface Transformer
+public class TransformerException extends DataxRuntimeException
 {
 
-    DSRequest     transformRequest(DSRequest request)throws  Exception;
-    
-    DSResponse    transformResponse(DSResponse response)throws  Exception;
-    
+    private static final long serialVersionUID = -7005296622228056867L;
+
+    public TransformerException(String string, Throwable e)
+    {
+        super(string, e);
+    }
+
+    public TransformerException(String string)
+    {
+        super(string);
+    }
 }

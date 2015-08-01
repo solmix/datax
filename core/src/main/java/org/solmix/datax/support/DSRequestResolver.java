@@ -18,30 +18,35 @@
  */
 package org.solmix.datax.support;
 
+import org.solmix.datax.DSRequest;
+import org.solmix.datax.DataService;
 import org.solmix.datax.RequestContext;
+import org.solmix.datax.call.DSCall;
 import org.solmix.runtime.resource.support.ResourceResolverAdaptor;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年7月26日
+ * @version $Id$  2015年8月1日
  */
 
-public class RequestContextResourceResolver extends ResourceResolverAdaptor
+public class DSRequestResolver extends ResourceResolverAdaptor
 {
-    private final RequestContext context;
-    public RequestContextResourceResolver(RequestContext context){
-        this.context=context;
+    private final DSRequest request;
+    public DSRequestResolver(DSRequest request){
+        this.request=request;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <T> T resolve(String resourceName, Class<T> resourceType) {
-        if (resourceType == RequestContext.class) {
-            return (T) context;
-        } else if (context != null) {
-            return context.get(resourceType);
+        if (resourceType == DSRequest.class) {
+            return (T) request;
+        } else if (resourceType == DSCall.class) {
+            return (T) request.getDSCall();
+        } else if (resourceName==null&&resourceType == DataService.class) {
+            return (T) request.getDataService();
         }
         return null;
     }

@@ -25,14 +25,19 @@ import org.solmix.datax.DSResponse;
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月29日
+ * @version $Id$  2015年8月1日
  */
 
-public interface Transformer
+public class TransformerAdaptor implements Transformer
 {
+    @Override
+    public DSRequest transformRequest(DSRequest request) {
+        return request;
+    }
 
-    DSRequest     transformRequest(DSRequest request)throws  Exception;
-    
-    DSResponse    transformResponse(DSResponse response)throws  Exception;
-    
+    @Override
+    public DSResponse transformResponse(DSResponse response) {
+        return response;
+    }
+
 }

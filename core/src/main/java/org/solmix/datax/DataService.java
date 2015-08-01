@@ -83,4 +83,13 @@ public interface DataService extends FreeResourcesHandler
      * @return
      */
     boolean canJoinTransaction(DSRequest req);
+
+    /**
+     * 为Velocity提供的接口，允许Velocity将不识别的引用交给DataService做特殊处理
+     * 
+     * @param data
+     * @param reference
+     * @return
+     */
+    Object escapeValue(Object data, String reference);
 }

@@ -51,6 +51,8 @@ public interface XmlNodeParserProvider
     public static final String TRANSFORMER = OPERATION + "/transformer";
 
     public static final String INVOKER = OPERATION + "/invoker";
+
+    public static final String METHOD_ARG = INVOKER+"/method-arg";
     
     <T> XmlNodeParser<T> getXmlNodeParser(String path,Class<T> clz);
 

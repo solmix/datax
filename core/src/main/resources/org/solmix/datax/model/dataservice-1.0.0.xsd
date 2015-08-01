@@ -74,7 +74,7 @@
 					<any namespace="##any" processContents="lax"></any>
 				</sequence>
 				<attribute name="id" type="string"></attribute>
-				<attribute name="type" type="string"></attribute>
+				<attribute name="type" type="string" use="required"></attribute>
 				<attribute name="errorMessage" type="string"></attribute>
 				<attribute name="serverOnly" type="boolean"></attribute>
 				<attribute name="validateOnChange" type="boolean">
@@ -308,6 +308,17 @@
 
 	<complexType name="invokerType">
 
+		<sequence minOccurs="0" maxOccurs="unbounded">
+			<element name="method-arg">
+			<complexType>
+
+				<attribute name="value" type="string"></attribute>
+				<attribute name="order" type="string"></attribute>
+				<attribute name="expression" type="string"></attribute>
+				<anyAttribute></anyAttribute>
+			</complexType>
+			</element>
+		</sequence>
 		<attribute name="class" type="string"></attribute>
 		<attribute name="name" type="string"></attribute>
 		<attribute name="method" type="string"></attribute>

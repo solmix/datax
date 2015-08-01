@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<datax xmlns="http://www.solmix.org/schema/dataservice-1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.solmix.org/schema/dataservice-1.0.0 http://www.solmix.org/xmlns/dataservice/v1.0.0">
+	<configuration namespace="com.validate">
+		<service id="default">
+			<fields>
+			<field name="text" type="text"/>
+			<field name="boolean" type="boolean"/>
+			<field name="integer" type="integer"/>
+			<field name="float" type="float"/>
+			<field name="date" type="date"/>
+			<field name="time" type="time"/>
+			<field name="datetime2" type="datetime"/>
+			<field name="datetime" type="datetime" dateFormat="yyyy-MM-dd HH:mm:ss"/>
+			<field name="sequence" type="sequence"/>
+			<field name="intEnum" type="intEnum">
+				<valueMap>
+					<value id="aaa"/>
+					<value id="2"/>
+					<value id="3"/>
+				</valueMap>
+			</field>
+			<field name="enum" type="enum">
+				<valueMap>
+					<value id="aaa"/>
+					<value id="bbb"/>
+					<value id="ccc"/>
+				</valueMap>
+			</field>
+			
+			</fields>
+			<operations>
+				<fetch>
+				</fetch>
+				<add validate="true">
+				<invoker class="org.solmix.datax.support.CallDataService" method="addforv"></invoker>
+				</add>
+			</operations>
+		</service>
+		<service id="validator">
+			<fields>
+			<field name="text" type="text">
+			<validator type="custom" expression="$values.text=='aaa'"></validator>
+			</field>
+			<field name="boolean" type="boolean">
+			<validator  type="custom" class="org.solmix.datax.service.MockValidator"></validator>
+			</field>
+			<field name="integer" type="integer"/>
+			<field name="float" type="float"/>
+			<field name="date" type="date"/>
+			<field name="time" type="time"/>
+			<field name="datetime2" type="datetime"/>
+			<field name="datetime" type="datetime" dateFormat="yyyy-MM-dd HH:mm:ss"/>
+			<field name="sequence" type="sequence"/>
+			<field name="intEnum" type="intEnum">
+				<valueMap>
+					<value id="aaa"/>
+					<value id="2"/>
+					<value id="3"/>
+				</valueMap>
+			</field>
+			<field name="enum" type="enum">
+				<valueMap>
+					<value id="aaa"/>
+					<value id="bbb"/>
+					<value id="ccc"/>
+				</valueMap>
+			</field>
+			
+			</fields>
+			<operations>
+				<fetch>
+				</fetch>
+				<add validate="true">
+				<invoker class="org.solmix.datax.support.CallDataService" method="addforv"></invoker>
+				</add>
+			</operations>
+		</service>
+	</configuration>
+</datax>

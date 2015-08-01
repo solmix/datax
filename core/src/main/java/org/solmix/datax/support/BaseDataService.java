@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import org.solmix.commons.collections.DataTypeMap;
 import org.solmix.commons.util.Assert;
 import org.solmix.commons.util.DataUtils;
+import org.solmix.commons.util.Reflection;
 import org.solmix.commons.util.TransformUtils;
 import org.solmix.datax.DATAX;
 import org.solmix.datax.DSCallException;
@@ -48,13 +49,16 @@ import org.solmix.datax.call.Transaction;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.model.FieldType;
+import org.solmix.datax.model.LookupType;
 import org.solmix.datax.model.OperationInfo;
 import org.solmix.datax.model.OperationType;
 import org.solmix.datax.model.ParamInfo;
 import org.solmix.datax.model.TransactionPolicy;
 import org.solmix.datax.model.TransformerInfo;
 import org.solmix.datax.model.ValidatorInfo;
+import org.solmix.datax.transformer.TemplateTransformer;
 import org.solmix.datax.transformer.Transformer;
+import org.solmix.datax.transformer.TransformerException;
 import org.solmix.datax.util.DataTools;
 import org.solmix.datax.validation.BuiltinCreator;
 import org.solmix.datax.validation.DefaultValidatorService;
@@ -62,13 +66,18 @@ import org.solmix.datax.validation.ErrorMessage;
 import org.solmix.datax.validation.ValidationContext;
 import org.solmix.datax.validation.ValidationCreator;
 import org.solmix.datax.validation.ValidationEvent;
+import org.solmix.datax.validation.Validator;
 import org.solmix.datax.validation.ValidationEvent.Level;
 import org.solmix.datax.validation.ValidationEventFactory;
 import org.solmix.datax.validation.ValidationException;
 import org.solmix.runtime.Container;
+import org.solmix.runtime.bean.ConfiguredBeanProvider;
 import org.solmix.runtime.event.EventService;
 import org.solmix.runtime.event.TimeMonitorEvent;
 import org.solmix.runtime.i18n.ResourceBundleManager;
+import org.solmix.runtime.resource.ResourceInjector;
+import org.solmix.runtime.resource.ResourceManager;
+import org.solmix.runtime.resource.support.ResourceManagerImpl;
 import org.w3c.dom.Element;
 
 
@@ -112,7 +121,6 @@ public class BaseDataService implements DataService
     public void freeResources() {
 
     }
-
     
     @Override
     public String getId() {
@@ -141,16 +149,16 @@ public class BaseDataService implements DataService
         if (oi.getBatch() != null) {
             return executeBatch(req);
         }
-        //param info
+        //附加的参数
         Map<String,ParamInfo> params = oi.getParams();
         if (params!= null && !params.isEmpty()) {
             prepareParams(req,params);
         }
         //转换请求
         List<TransformerInfo> trans = oi.getTransformers();
-        List<Transformer> transformers = prepareTransformer(oi,trans);
-        if (trans != null && !trans.isEmpty()) {
-            transformers = transformRequest(req, trans);
+        List<Transformer> transformers = prepareTransformer(oi,req,trans);
+        if (transformers != null && !transformers.isEmpty()) {
+            transformRequest(req, transformers);
         }
        //验证
         OperationType type = oi.getType();
@@ -176,23 +184,71 @@ public class BaseDataService implements DataService
     /**
      * 根据配置准备Transformers
      */
-    private List<Transformer> prepareTransformer(OperationInfo oi, List<TransformerInfo> trans) {
-
-        if(oi.getProperty("template")!=null){
-            
-        }else if(oi.getProperty("template-file")!=null){
-            
+    private List<Transformer> prepareTransformer(OperationInfo oi, DSRequest req,List<TransformerInfo> trans) {
+        List<Transformer> transformers= new ArrayList<Transformer>();
+        for(TransformerInfo tran:trans){
+            Transformer transformer=null;
+           LookupType type= tran.getLookup();
+           String serviceName=tran.getName();
+           Class<? extends Transformer> serviceClass= tran.getClazz();
+           if(type==LookupType.CONTAINER){
+               if(serviceName==null){
+                   if(serviceClass==null||serviceClass==Validator.class){
+                       //通常有多个validator
+                       throw new ValidationException("transformer must specify name to determine validator service ");
+                   }else{
+                       transformer=container.getExtension(serviceClass);
+                   }
+                   
+               }else{
+                   ConfiguredBeanProvider provider = container.getExtension(ConfiguredBeanProvider.class);
+                   if(provider!=null){
+                       transformer= provider.getBeanOfType(serviceName, serviceClass==null?Transformer.class:serviceClass);
+                   }
+               }
+           } else if(serviceClass!=null&&type==LookupType.NEW){
+               try {
+                   transformer = Reflection.newInstance(serviceClass);
+               } catch (Exception e) {
+                  throw new ValidationException("Instance object",e);
+               }
+           }
+           if(transformer!=null){
+               ResourceManager rma= container.getExtension(ResourceManager.class);
+               ResourceManagerImpl rm = new ResourceManagerImpl(rma.getResourceResolvers());
+               rm.addResourceResolver( new RequestContextResourceResolver(req.getRequestContext()));
+               rm.addResourceResolver( new DSRequestResolver(req));
+               ResourceInjector injector = new ResourceInjector(rm);
+               injector.inject(transformer);
+               transformers.add(transformer);
+              
+           }
         }
-        return null;
+        customTransformer(transformers,req,oi);
+        return transformers;
     }
 
-    private List<Transformer> transformRequest(DSRequest req, List<TransformerInfo> trans) {
-        // TODO Auto-generated method stub
-        return null;
+    
+    protected void customTransformer(List<Transformer> transformers, DSRequest req, OperationInfo oi) {
+        if (oi.getProperty("template") != null) {
+            transformers.add(new TemplateTransformer(oi.getProperty("template").toString(), false));
+        } else if (oi.getProperty("template-file") != null) {
+            transformers.add(new TemplateTransformer(oi.getProperty("template-file").toString(), true));
+        }
     }
 
-    private DSResponse transformResponse(DSResponse response, List<Transformer> transformers) {
-        if (transformers==null) {
+    protected void transformRequest(DSRequest req, List<Transformer> trans) {
+        for(Transformer transformer :trans){
+            try {
+                transformer.transformRequest(req);
+            } catch (Exception e) {
+                throw new TransformerException("Transformer DSRequest",e);
+            }
+        }
+    }
+
+    protected DSResponse transformResponse(DSResponse response, List<Transformer> transformers) {
+        if (transformers==null||transformers.size()==0) {
             return response;
         }
         return response;
@@ -217,7 +273,7 @@ public class BaseDataService implements DataService
                 req.setRawValues(injectParma(values, params));
             }
         } catch (Exception e) {
-            throw new DSCallException("prepare params error", e);
+            throw new DSCallException("Prepare params error", e);
         }
         return req;
     }
@@ -366,6 +422,7 @@ public class BaseDataService implements DataService
         }
         ValidationContext vcontext = ValidationContext.instance();
         vcontext.setContainer(this.container);
+        vcontext.setDSRequest(req);
         vcontext.setDSCall(req.getDSCall());
         vcontext.setRequestContext(req.getRequestContext());
         vcontext.setValidationEventFactory(ValidationEventFactory.instance());
@@ -538,7 +595,7 @@ public class BaseDataService implements DataService
     protected ValidationCreator getFieldCreator(FieldInfo field, ValidationContext vcontext) {
         String strType = field.getType().value();
         boolean isEnum = false;
-        if (field.getType() == FieldType.ENUM) {
+        if (field.getType() == FieldType.ENUM||field.getType() == FieldType.INT_ENUM) {
             isEnum = true;
         }
         List<ValidatorInfo> vls = field.getValidators();
@@ -611,6 +668,7 @@ public class BaseDataService implements DataService
         this.eventService = eventService;
     }
    
+    @Override
     public DataServiceInfo getDataServiceInfo(){
         return info;
     }
@@ -873,5 +931,12 @@ public class BaseDataService implements DataService
             return null;
         else
             return (Transaction) req.getDSCall().getAttribute(getTransactionObjectKey(req));
+    }
+
+    
+    @Override
+    public Object escapeValue(Object data, String reference) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

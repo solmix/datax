@@ -428,8 +428,7 @@ public class DSRequestImpl extends PagedBean implements DSRequest
      */
     @Override
     public Map<String, Object> getOldValues() {
-        Object values = getOldValues();
-        return getValuesInternal(values);
+        return getValuesInternal( getRawOldValues());
     }
 
     /**

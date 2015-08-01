@@ -19,7 +19,10 @@
 package org.solmix.datax.support;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static org.junit.Assert.*;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,6 +36,7 @@ import org.solmix.datax.DataServiceNoFoundException;
 import org.solmix.datax.OperationNoFoundException;
 import org.solmix.datax.application.ApplicationNotFoundException;
 import org.solmix.datax.service.MockDataService;
+import org.solmix.datax.validation.ErrorMessage;
 import org.solmix.datax.validation.ErrorReport;
 import org.solmix.runtime.Container;
 import org.solmix.runtime.ContainerFactory;
@@ -94,6 +98,33 @@ public class DSRequestCallTest
             Assert.fail(e.getMessage());
         }
     }
+    @Test
+    public void testValidate() {
+        DataServiceManager dsm=   c.getExtension(DataServiceManager.class);
+        DSRequest add=dsm.createDSRequest();
+        Map<String,Object> values= new LinkedHashMap<String,Object>();
+        values.put("text", "aaa");
+        values.put("float", "0.12a");
+        values.put("date", "2012sd21-2a");
+        add.setOperationId("com.validate.ds.add");
+        add.setRawValues(values);
+        try {
+            DSResponse addres= add.execute();
+            Assert.assertEquals(Status.STATUS_VALIDATION_ERROR,addres.getStatus());
+            Object[] errors=addres.getErrors();
+            Assert.assertNotNull(errors);
+            Assert.assertEquals(1, errors.length);
+            ErrorReport re = (ErrorReport)errors[0];
+           ErrorMessage fl= (ErrorMessage) re.get("float");
+           assertTrue(fl.toString().indexOf("arememts:[0.12a]")!=-1);
+           
+           ErrorMessage f2= (ErrorMessage) re.get("date");
+           assertTrue(f2.toString().indexOf("arememts:[2012sd21-2a]")!=-1);
+        } catch (DSCallException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+    
     @Test
     public void testValidateRequestWithBean() {
         DataServiceManager dsm=   c.getExtension(DataServiceManager.class);
@@ -193,9 +224,25 @@ public class DSRequestCallTest
    
    @Test
    public void fetchWithParams() throws DSCallException{
-       //lookup=new 
-       DSResponse fetch1 = request("com.call.invoke.fetchWithParams");
-       Map map= fetch1.getSingleResult(Map.class);
+       DSRequest getre = createDSRequest("com.call.invoke.fetchWithParams");
+       Bean value= new Bean();
+       value.setText("aaa");
+       getre.setRawValues(value);
+       MappedRequestContext mrc = new MappedRequestContext();
+       MockDataService mock = new MockDataService();
+       mrc.put(MockDataService.class,mock);
+       mrc.put("xxxx", mock);
+       getre.setRequestContext(mrc);
+       DSResponse getRequestContext= getre.execute();
+       Map<Object,Object> result=getRequestContext.getSingleRecord();
+       assertEquals(result.get("aaa"), value);
+       assertEquals(result.get("request"), getre);
+       assertSame(result.get("dsrequest"), result.get("request"));
+       assertSame(result.get("c1"), result.get("c2"));
+       assertSame(result.get("dsc"), getre.getDSCall());
+       assertSame(result.get("ds"), getre.getDataService());
+       assertSame(result.get("mock"), mock);
+       assertEquals(result.get("dsid"), getre.getDataService().getId());
    }
    
    @Test

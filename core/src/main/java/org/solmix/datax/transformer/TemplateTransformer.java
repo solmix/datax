@@ -25,7 +25,13 @@ package org.solmix.datax.transformer;
  * @version $Id$  2015年7月28日
  */
 
-public class TemplateTransformer implements Transformer
+public class TemplateTransformer extends TransformerAdaptor
 {
+    private final String template;
+    private final boolean isFile;
+    public TemplateTransformer(String name,boolean isFile){
+        this.template=name;
+        this.isFile=isFile;
+    }
 
 }

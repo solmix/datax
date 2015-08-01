@@ -43,11 +43,11 @@ public @interface Param {
      */
     String name() default "";
     
-    /**
+   /* *//**
      * 指明该参数是请求数据还是服务资源。
      * @return
-     */
-    ParamType type() default ParamType.RESOURCE;
+     *//*
+    ParamType type() default ParamType.RESOURCE;*/
     
     String expression() default "";
     
@@ -57,4 +57,6 @@ public @interface Param {
      * @return
      */
     Class<?> javaClass() default NullObject.class;
+    
+    Class<?> javaKeyClass() default NullObject.class;
 }

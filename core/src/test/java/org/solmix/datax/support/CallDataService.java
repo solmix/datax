@@ -23,9 +23,14 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
+import org.solmix.datax.DSRequest;
+import org.solmix.datax.DataService;
 import org.solmix.datax.RequestContext;
 import org.solmix.datax.annotation.Param;
+import org.solmix.datax.call.DSCall;
 import org.solmix.datax.service.MockDataService;
+import org.solmix.datax.support.DSRequestCallTest.Bean;
+import org.solmix.runtime.Container;
 
 
 
@@ -53,13 +58,36 @@ public class CallDataService
         return mockDataService;
     }
     
-    public Map<String,Object> fetchWithParams(@Param(expression="") String name,Map key){
+    public Map<String,Object> fetchWithParams(
+        @Param(expression="$values.text") String name,
+        @Param(expression="$values") Bean key,
+        @Param(expression="$dsrequest") Object request,
+        @Param(expression="$ds.id") String id,
+        @Param(expression="$container") Object c2,
+        @Param(expression="$xxxx") Object mock,
+        Container c1,
+        DSCall dscall,
+        DataService ds,
+        DSRequest dsrequest){
         Map<String,Object> res = new HashMap<String, Object>();
         res.put(name, key);
+        res.put("request", request);
+        res.put("dsrequest", dsrequest);
+        res.put("dsc", dscall);
+        res.put("ds", ds);
+        res.put("dsid", id);
+        res.put("c1", c1);
+        res.put("c2", c2);
+        res.put("mock", mock);
         return res;
     }
     
     public void add1(@Param String name){
         
+    }
+    
+    
+    public boolean addforv(DSRequest req){
+        return true;
     }
 }

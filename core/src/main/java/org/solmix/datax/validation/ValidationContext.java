@@ -29,6 +29,7 @@ import java.util.ResourceBundle;
 import org.slf4j.LoggerFactory;
 import org.solmix.commons.util.DataUtils;
 import org.solmix.datax.DATAX;
+import org.solmix.datax.DSRequest;
 import org.solmix.datax.DataService;
 import org.solmix.datax.RequestContext;
 import org.solmix.datax.call.DSCall;
@@ -64,6 +65,8 @@ public class ValidationContext
     private DSCall dsCall;
 
     private RequestContext requestContext;
+    
+    private DSRequest dsRequest;
 
     Map<String, Object> errors;
 
@@ -132,6 +135,14 @@ public class ValidationContext
         this.errors = errors;
     }
 
+    
+    public DSRequest getDSRequest() {
+        return dsRequest;
+    }
+    
+    public void setDSRequest(DSRequest dsRequest) {
+        this.dsRequest = dsRequest;
+    }
     /**
      * @param dsCall
      */

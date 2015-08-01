@@ -18,8 +18,14 @@
  */
 package org.solmix.datax.model;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.solmix.commons.annotation.Immutable;
 import org.solmix.commons.xml.XMLNode;
+import org.solmix.datax.repository.builder.BuilderException;
+import org.solmix.datax.repository.builder.XmlNodeParserProvider;
 import org.solmix.datax.repository.builder.XmlParserContext;
 import org.solmix.datax.repository.builder.xml.BaseXmlNodeParser;
 
@@ -39,6 +45,8 @@ public class InvokerInfo implements XMLSource
     protected String methodName;
     
     protected LookupType lookup;
+    
+    protected Map<Integer,MethodArgInfo> methodArgs;
     
     public InvokerInfo(){
         
@@ -62,6 +70,11 @@ public class InvokerInfo implements XMLSource
     }
     
     
+    
+    public Map<Integer, MethodArgInfo> getMethodArgs() {
+        return methodArgs;
+    }
+
     public LookupType getLookup() {
         return lookup;
     }
@@ -86,12 +99,33 @@ public class InvokerInfo implements XMLSource
                 lookup=LookupType.fromValue(strlookup);
             }
             Class<?> clzz = super.paseClass(node);
+            Map<Integer,MethodArgInfo> args = parseMethodArgs(node.evalNodes("method-arg"),context);
             ti.name = name;
             ti.methodName=method;
+            ti.methodArgs=args;
             ti.lookup=lookup;
             ti.clazz = clzz;
             return ti;
 
+        }
+
+        private Map<Integer, MethodArgInfo> parseMethodArgs(List<XMLNode> nodes, XmlParserContext context) {
+            if (nodes == null || nodes.size() == 0) {
+                return null;
+            }
+            Map<Integer, MethodArgInfo> operations = new LinkedHashMap<Integer, MethodArgInfo>(nodes.size());
+            for (int i=0;i<nodes.size();i++) {
+                XMLNode n= nodes.get(i);
+                MethodArgInfo oi = context.parseNode(XmlNodeParserProvider.METHOD_ARG, n, MethodArgInfo.class);
+                if(oi.getOrder()==-1){
+                    oi.order=i;
+                }
+                if (operations.containsKey(oi.getOrder())) {
+                    throw new BuilderException("Have duplicate Order id:" + oi.getOrder());
+                }
+                operations.put(oi.getOrder(), oi);
+            }
+            return operations;
         }
     }
 }

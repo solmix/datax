@@ -35,6 +35,7 @@ import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.model.FieldType;
 import org.solmix.datax.model.InvokerInfo;
 import org.solmix.datax.model.LookupType;
+import org.solmix.datax.model.MethodArgInfo;
 import org.solmix.datax.model.OperationInfo;
 import org.solmix.datax.model.ParamInfo;
 import org.solmix.datax.model.TransactionPolicy;
@@ -225,6 +226,15 @@ public class DefaultDataServiceManagerTest
        assertEquals(LookupType.CONTAINER, vi.getLookup());
        assertEquals("invoker", vi.getName());
        assertEquals("ink", vi.getMethodName());
+       //method-arg
+      Map<Integer,MethodArgInfo> args= vi.getMethodArgs();
+       assertNotNull(args);
+       assertEquals(1, args.size());
+       MethodArgInfo arg = args.get(5);
+       assertNotNull(arg);
+       assertEquals("5xxx", arg.getValue());
+       assertEquals(5, arg.getOrder());
+       assertEquals("$request", arg.getExpression());
        
        BatchOperations bi=dsi.getOperationInfo("#add").getBatch();
        assertEquals(TransactionPolicy.FROM_FIRST_CHANGE, bi.getTransactionPolicy());

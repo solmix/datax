@@ -39,7 +39,6 @@ public class MockValidator implements Validator
     @Override
     public ErrorMessage validate(ValidatorInfo validatorInfo, Object value, String fieldName, Map<String, Object> record, ValidationContext context)
         throws ValidationException {
-        // TODO Auto-generated method stub
         return null;
     }
 

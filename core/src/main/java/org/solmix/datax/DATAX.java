@@ -21,6 +21,9 @@ package org.solmix.datax;
 
 import java.util.regex.Pattern;
 
+import org.solmix.datax.call.DSCall;
+import org.solmix.runtime.Container;
+
 /**
  * Datax常量
  * 
@@ -63,4 +66,38 @@ public final class DATAX
     public static final String VALIDATION_LOGNAME = "org.solmix.datax.VALIDATION";
 
     public static final String VALIDATION_TOPIC_PREFIX = "org/solmix/datax/validation/";;
+    
+    /**
+     * Velocity 中{@link Container} 的名称
+     */
+    public static final String VM_CONTAINER = "container";
+    
+    /**
+     * Velocity 中{@link RequestContext} 的名称
+     */
+    public static final String VM_REQUESTCONTEXT = "requestContext";
+    
+    /**
+     * Velocity 中{@link DSCall} 的名称
+     */
+    public static final String VM_DSC = "dsc";
+    
+    /**
+     * Velocity 中{@link DSRequest} 的名称
+     */
+    public static final String VM_DSREQUEST = "dsrequest";
+
+    /**
+     * Velocity 中{@link DataService} 的名称
+     */
+    public static final String VM_DS = "ds";
+
+    public static final String VM_VALUES = "values";
+
+    public static final String VM_OLD_VALUES = "oldValues";
+    
+    
+
+    public static final String VT_TMP_NAME = "_d_vm_result";
+    
 }

@@ -29,15 +29,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.apache.velocity.VelocityContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.solmix.commons.util.DataUtils;
+import org.solmix.commons.util.Reflection;
+import org.solmix.commons.util.StringUtils;
 import org.solmix.datax.DataService;
 import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.model.FieldType;
+import org.solmix.datax.model.InvokerInfo;
+import org.solmix.datax.model.LookupType;
 import org.solmix.datax.model.ValidatorInfo;
+import org.solmix.datax.script.VelocityExpression;
+import org.solmix.datax.support.DSRequestResolver;
+import org.solmix.datax.support.InvokerException;
+import org.solmix.datax.support.RequestContextResourceResolver;
 import org.solmix.runtime.Container;
+import org.solmix.runtime.bean.ConfiguredBeanProvider;
+import org.solmix.runtime.resource.ResourceInjector;
+import org.solmix.runtime.resource.ResourceManager;
+import org.solmix.runtime.resource.support.ResourceManagerImpl;
 
 /**
  * 
@@ -81,7 +94,7 @@ public class DefaultValidatorService implements ValidatorService
         defaultValidators.put("floatPrecision", new floatPrecision());
         defaultValidators.put("floatRange", new floatRange());
         defaultValidators.put("integerOrAuto", new integerOrAuto());
-        defaultValidators.put("serverCustom", new custom());
+        defaultValidators.put("custom", new custom());
         defaultValidators.put("hasRelatedRecord", new hasRelatedRecord());
     }
 
@@ -94,9 +107,9 @@ public class DefaultValidatorService implements ValidatorService
         buildInValidator.put(FieldType.FLOAT, new ValidatorInfo("isFloat"));
         buildInValidator.put(FieldType.DATE, new ValidatorInfo("isDate"));
         buildInValidator.put(FieldType.TIME, new ValidatorInfo("isTime"));
-        buildInValidator.put(FieldType.DATETIME, new ValidatorInfo("isTime"));
+        buildInValidator.put(FieldType.DATETIME, new ValidatorInfo("isDate"));
         buildInValidator.put(FieldType.ENUM, null);
-        buildInValidator.put(FieldType.INT_ENUM, new ValidatorInfo("integer"));
+        buildInValidator.put(FieldType.INT_ENUM, new ValidatorInfo("isInteger"));
         buildInValidator.put(FieldType.SEQUENCE, new ValidatorInfo("isInteger"));
         buildInValidator.put(FieldType.LINK, null);
         buildInValidator.put(FieldType.IMAGE, null);
@@ -119,10 +132,72 @@ public class DefaultValidatorService implements ValidatorService
     static class custom implements Validator
     {
 
+        @SuppressWarnings("unchecked")
         @Override
         public ErrorMessage validate(ValidatorInfo validatorInfo,Object value, String fieldName, Map<String, Object> record, ValidationContext context) throws ValidationException {
-            return null;
            
+            
+         
+          Object rawResult = null;
+          String expression=  validatorInfo.getExpression();
+          //velocity表达式验证
+          if(expression!=null){
+              Map<String, Object> template=  context.getTemplateContext();
+              VelocityExpression velocityExpression;
+              Map<String,Object> vcontext;
+              if(template.get(VelocityExpression.class.getName())!=null){
+                  velocityExpression=(VelocityExpression) template.get(VelocityExpression.class.getName());
+                  vcontext=(Map<String,Object>)template.get(VelocityContext.class.getName());
+              }else{
+                  velocityExpression=new VelocityExpression(context.getContainer());
+                  vcontext=velocityExpression.prepareContext(context.getDSRequest(), context.getRequestContext());
+                  context.addToTemplateContext(VelocityExpression.class.getName(), velocityExpression);
+                  context.addToTemplateContext(VelocityContext.class.getName(),vcontext);
+              }
+              rawResult=velocityExpression.evaluateValue(expression, vcontext);
+              Boolean rtnValue= DataUtils.asBooleanObject(rawResult);
+              if (Boolean.TRUE.equals(rtnValue))
+                  return null;
+              else
+                  return new ErrorMessage(getErrorString(validatorInfo, "Failed custom validation"));
+         
+          }else {
+              Container container = context.getContainer();
+              Validator validator=null;
+              Class<? extends Validator> serviceClass= validatorInfo.getClazz();
+              if(validatorInfo.getLookup()==LookupType.CONTAINER){
+                  String serviceName= validatorInfo.getName();
+                  if(serviceName==null){
+                      if(serviceClass==null||serviceClass==Validator.class){
+                          //通常有多个validator
+                          throw new ValidationException("custom validator must specify name to determine validator service ");
+                      }else{
+                          validator=container.getExtension(serviceClass);
+                      }
+                      
+                  }else{
+                      ConfiguredBeanProvider provider = container.getExtension(ConfiguredBeanProvider.class);
+                      if(provider!=null){
+                          validator= provider.getBeanOfType(serviceName, serviceClass==null?Validator.class:serviceClass);
+                      }
+                  }
+              } else if(serviceClass!=null&&validatorInfo.getLookup()==LookupType.NEW){
+                  try {
+                      validator = Reflection.newInstance(serviceClass);
+                  } catch (Exception e) {
+                     throw new ValidationException("Instance object",e);
+                  }
+              }
+              if(validator!=null){
+                  ResourceManager rma= container.getExtension(ResourceManager.class);
+                  ResourceManagerImpl rm = new ResourceManagerImpl(rma.getResourceResolvers());
+                  rm.addResourceResolver( new RequestContextResourceResolver(context.getRequestContext()));
+                  rm.addResourceResolver( new DSRequestResolver(context.getDSRequest()));
+                  ResourceInjector injector = new ResourceInjector(rm);
+                  injector.inject(validator);
+              }
+             return validator.validate(validatorInfo, value, fieldName, record, context);
+          }
         }
     }
     
@@ -657,9 +732,9 @@ public class DefaultValidatorService implements ValidatorService
             if(parttern==null){
                 if (dateString.length() == 19) {
                     if (dateString.charAt(10) == 'T'){
-                        parttern="yyyy-MM-dd'T'HH:mm:ss Z";
+                        parttern="yyyy-MM-dd'T'HH:mm:ss";
                     }else{
-                        parttern="yyyy-MM-dd HH:mm:ss Z";
+                        parttern="yyyy-MM-dd HH:mm:ss";
                     }
                 }else{
                     parttern="yyyy-MM-dd";
@@ -703,10 +778,14 @@ public class DefaultValidatorService implements ValidatorService
             if (value instanceof Number) {
                 double number = ((Number) value).doubleValue();
                 context.setResultingValue(new Boolean(number != 0.0D));
-            } else if (value instanceof String){
-                context.setResultingValue(new Boolean((String) value));
-            }else{
-                return new ErrorMessage(getErrorString(validatorInfo, "%validator_notABoolean"),null,value);
+            } else{
+              Boolean b=  DataUtils.asBooleanObject(value);
+                if(b!=null){
+                    context.setResultingValue(new Boolean((String) value));
+                }else{
+                    return new ErrorMessage(getErrorString(validatorInfo, "%validator_notABoolean"),null,value);
+                }
+                
             }
             return null;
         }

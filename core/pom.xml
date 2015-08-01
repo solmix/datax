@@ -24,5 +24,10 @@
 			<artifactId>logback-classic</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.solmix.services</groupId>
+			<artifactId>solmix-service-velocity</artifactId>
+			<version>0.6.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 </project>

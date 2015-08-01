@@ -22,6 +22,7 @@ import org.solmix.datax.model.BatchOperations;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.model.InvokerInfo;
+import org.solmix.datax.model.MethodArgInfo;
 import org.solmix.datax.model.OperationInfo;
 import org.solmix.datax.model.ParamInfo;
 import org.solmix.datax.model.TransformerInfo;
@@ -53,5 +54,6 @@ public class BaseXmlNodeParserProvider extends AbstractXmlNodeParserProvider imp
        bind(BATCH,BatchOperations.Parser.class);
        bind(TRANSFORMER,TransformerInfo.Parser.class);
        bind(INVOKER,InvokerInfo.Parser.class);
+       bind(METHOD_ARG,MethodArgInfo.Parser.class);
     }
 }

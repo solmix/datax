@@ -6,10 +6,6 @@ import java.util.HashMap;
 
 public class ErrorMessage extends HashMap<Object,Object> implements Serializable
 {
-
-   /**
-    * 
-    */
    private static final long serialVersionUID = 3444176638479218950L;
 
    public ErrorMessage()

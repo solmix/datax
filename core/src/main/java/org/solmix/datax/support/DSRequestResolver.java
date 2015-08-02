@@ -20,7 +20,6 @@ package org.solmix.datax.support;
 
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DataService;
-import org.solmix.datax.RequestContext;
 import org.solmix.datax.call.DSCall;
 import org.solmix.runtime.resource.support.ResourceResolverAdaptor;
 

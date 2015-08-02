@@ -96,8 +96,10 @@ public final class DATAX
 
     public static final String VM_OLD_VALUES = "oldValues";
     
-    
 
+    /**
+     * Velocity 表达式生成的临时结果标示
+     */
     public static final String VT_TMP_NAME = "_d_vm_result";
     
 }

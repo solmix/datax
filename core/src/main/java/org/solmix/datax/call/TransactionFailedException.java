@@ -19,6 +19,7 @@
 
 package org.solmix.datax.call;
 
+import org.solmix.datax.DSCallException;
 import org.solmix.datax.DataxException;
 
 /**
@@ -27,7 +28,7 @@ import org.solmix.datax.DataxException;
  * @version $Id$ 2015年7月22日
  */
 
-public class TransactionFailedException extends DataxException
+public class TransactionFailedException extends DSCallException
 {
 
     private static final long serialVersionUID = -1248050088587800869L;

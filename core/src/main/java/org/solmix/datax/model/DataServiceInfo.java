@@ -167,6 +167,18 @@ public class DataServiceInfo
                 }
                 
                 Map<String, OperationInfo> operations = parseOperations(node.evalNode("operations"), context);
+                //BATCH中配置的也放入operaions中，方便索引
+                if (operations != null) {
+                    for (OperationInfo oi : operations.values()) {
+                        BatchOperations bos = oi.getBatch();
+                        if (bos != null && bos.getOperations() != null) {
+                            for (OperationInfo o : bos.getOperations()) {
+                                operations.put(o.getId(), o);
+                            }
+                        }
+                    }
+                }
+                
                 String description = node.evalString("description");
                 Class<?> clazz = paseClass(node, "serviceClass");
                 String strlookup = node.getStringAttribute("lookup");

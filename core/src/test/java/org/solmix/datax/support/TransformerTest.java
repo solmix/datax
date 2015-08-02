@@ -30,11 +30,13 @@ import static org.junit.Assert.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.solmix.commons.util.DateUtils;
 import org.solmix.datax.DSCallException;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.DSResponse.Status;
+import org.solmix.datax.service.MockDataService;
 import org.solmix.datax.validation.ErrorMessage;
 import org.solmix.datax.validation.ErrorReport;
 import org.solmix.runtime.Container;
@@ -47,7 +49,7 @@ import org.solmix.runtime.ContainerFactory;
  * @version $Id$  2015年8月1日
  */
 
-public class ValidatorTest
+public class TransformerTest
 {
     Container c;
 
@@ -56,7 +58,6 @@ public class ValidatorTest
         c = ContainerFactory.getDefaultContainer(true);
         Assert.assertNotNull(c);
     }
-  
     @After
     public void tearDown(){
         if(c!=null){
@@ -67,11 +68,14 @@ public class ValidatorTest
     public void testDefaultScucess() {
         DataServiceManager dsm=   c.getExtension(DataServiceManager.class);
         DSRequest add=dsm.createDSRequest();
+        MappedRequestContext mrc = new MappedRequestContext();
+        MockDataService mock = new MockDataService();
+        mrc.put("dateUtil",new DateUtils());
+        add.setRequestContext(mrc);
         Map<String,Object> values= new LinkedHashMap<String,Object>();
         values.put("text", "aaa");
         values.put("boolean", "true");
         values.put("integer", "1");
-        values.put("float", "0.12");
         values.put("date", "2012-21-2");
         values.put("time", "12:22:01");
         values.put("datetime", "2012-21-2 12:22:01");
@@ -81,15 +85,20 @@ public class ValidatorTest
         values.put("enum", "bbb");
        
        
-        add.setOperationId("com.validate.default.add");
+        add.setOperationId("com.transformer.default.add");
         add.setRawValues(values);
         try {
             DSResponse addres= add.execute();
             Assert.assertEquals(Status.STATUS_SUCCESS,addres.getStatus());
-           
+          String res= addres.getSingleResult(String.class);
+          assertEquals(res, "aaa-transformRequest-transformResponse");
+          @SuppressWarnings("unchecked")
+        Map<String,Object> request=(Map<String, Object>) add.getRawValues();
+          assertEquals("5", request.get("integer").toString());
+          assertEquals("5.1", request.get("float").toString());
         } catch (DSCallException e) {
             Assert.fail(e.getMessage());
         }
     }
-   
+  
 }

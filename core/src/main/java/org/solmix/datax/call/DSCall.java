@@ -20,6 +20,7 @@ package org.solmix.datax.call;
 
 import java.util.List;
 
+import org.solmix.datax.DSCallException;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.DataxException;
@@ -65,7 +66,7 @@ public interface DSCall extends FreeResourcesHandler
      * @param request
      * @return
      */
-    DSResponse execute(DSRequest request) throws DataxException;
+    DSResponse execute(DSRequest request) throws DSCallException;
 
 
     /**
@@ -100,5 +101,13 @@ public interface DSCall extends FreeResourcesHandler
      * @return
      */
     Object getAttribute(Object key);
+
+ 
+    /**
+     * 结束DSCall事物  并 返回DSCall已经执行了的所有结果的一个合并集。
+     * 
+     * @return
+     */
+    DSResponse getMergedResponse()throws DSCallException;
     
 }

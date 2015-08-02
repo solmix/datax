@@ -24,6 +24,7 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,7 +59,12 @@ public class DSRequestCallTest
         c = ContainerFactory.getDefaultContainer(true);
         Assert.assertNotNull(c);
     }
-    
+    @After
+    public void tearDown(){
+        if(c!=null){
+            c.close();
+        }
+    }
     @Test
     public void test() {
         DataServiceManager dsm=   c.getExtension(DataServiceManager.class);
@@ -98,32 +104,7 @@ public class DSRequestCallTest
             Assert.fail(e.getMessage());
         }
     }
-    @Test
-    public void testValidate() {
-        DataServiceManager dsm=   c.getExtension(DataServiceManager.class);
-        DSRequest add=dsm.createDSRequest();
-        Map<String,Object> values= new LinkedHashMap<String,Object>();
-        values.put("text", "aaa");
-        values.put("float", "0.12a");
-        values.put("date", "2012sd21-2a");
-        add.setOperationId("com.validate.ds.add");
-        add.setRawValues(values);
-        try {
-            DSResponse addres= add.execute();
-            Assert.assertEquals(Status.STATUS_VALIDATION_ERROR,addres.getStatus());
-            Object[] errors=addres.getErrors();
-            Assert.assertNotNull(errors);
-            Assert.assertEquals(1, errors.length);
-            ErrorReport re = (ErrorReport)errors[0];
-           ErrorMessage fl= (ErrorMessage) re.get("float");
-           assertTrue(fl.toString().indexOf("arememts:[0.12a]")!=-1);
-           
-           ErrorMessage f2= (ErrorMessage) re.get("date");
-           assertTrue(f2.toString().indexOf("arememts:[2012sd21-2a]")!=-1);
-        } catch (DSCallException e) {
-            Assert.fail(e.getMessage());
-        }
-    }
+   
     
     @Test
     public void testValidateRequestWithBean() {

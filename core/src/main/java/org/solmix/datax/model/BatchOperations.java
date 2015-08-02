@@ -51,6 +51,10 @@ public class BatchOperations
     }
 
     
+    /**
+     * 如果为空使用{@link TransactionPolicy.ANY_CHANGE}
+     * @return
+     */
     public TransactionPolicy getTransactionPolicy() {
         return transactionPolicy;
     }
@@ -68,7 +72,6 @@ public class BatchOperations
             if(transPolicy!=null){
                 transactionPolicy=TransactionPolicy.fromValue(transPolicy);
             }else{
-                //所有更改错字加入事物处理
                 transactionPolicy=TransactionPolicy.ANY_CHANGE;
             }
             List<OperationInfo> operations = new ArrayList<OperationInfo>(nodes.size());

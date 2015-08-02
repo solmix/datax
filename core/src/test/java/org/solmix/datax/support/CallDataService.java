@@ -90,4 +90,8 @@ public class CallDataService
     public boolean addforv(DSRequest req){
         return true;
     }
+    
+    public String addfort(DSRequest req){
+        return req.getValues().get("text").toString();
+    }
 }

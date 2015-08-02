@@ -65,7 +65,7 @@ public interface DataService extends FreeResourcesHandler
      * @param value
      * @return
      */
-    @Deprecated
+//    @Deprecated
     boolean hasRecord(String realFieldName, Object value);
 
     /**

@@ -39,9 +39,9 @@ import org.solmix.datax.support.BaseDataService;
 import org.solmix.datax.util.DataTools;
 
 /**
- * 支持多个请求一起执行
- * 或者
- * 一个请求一个请求的执行，但支持事物
+ * 支持带事物机制的请求执行，但是只支持简单的事物，当出错时自动回滚，正常执行完毕时自动提交
+ * <br><B>注意：</b><br>
+ * 不是所有的DataService都支持如同jdbc的事物机制，如需这写机制可以采用其他方式去实现。
  * 
  * @author solmix.f@gmail.com
  * @version $Id$ 2015年7月22日
@@ -50,7 +50,7 @@ import org.solmix.datax.util.DataTools;
 public class DSCallImpl implements DSCall
 {
 
-    private List<DSRequest> requests;
+    private List<DSRequest> requests = new ArrayList<DSRequest>();
 
     private TransactionPolicy transactionPolicy;
 
@@ -61,17 +61,27 @@ public class DSCallImpl implements DSCall
 
     private final HashSet<DSCallCompleteCallback> callbacks = new HashSet<DSCallCompleteCallback>();
 
-    private enum STATUS
+    public enum STATUS
     {
         INIT , BEGIN , SUCCESS , FAILED , CLOSED;
     }
 
-    private STATUS status = STATUS.INIT;
+    private STATUS status;
 
+    public DSCallImpl()
+    {
+        this(STATUS.INIT,null);
+    }
+
+    public DSCallImpl(STATUS status,TransactionPolicy policy)
+    {
+        this.status = status;
+        this.transactionPolicy=policy;
+    }
     public void addRequest(DSRequest req) {
-        if (requests == null)
-            requests = new ArrayList<DSRequest>();
-        requests.add(req);
+        if(!requests.contains(req)){
+            requests.add(req);
+        }
     }
 
 
@@ -130,11 +140,6 @@ public class DSCallImpl implements DSCall
         this.transactionNum = transactionNum;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.solmix.datax.call.DSCall#registerCallback(org.solmix.datax.call.DSCallCompleteCallback)
-     */
     @Override
     public void registerCallback(DSCallCompleteCallback callback) {
         if (!callbacks.contains(callback))
@@ -143,11 +148,12 @@ public class DSCallImpl implements DSCall
 
    
     @Override
-    public DSResponse execute(DSRequest request) throws DataxException {
+    public DSResponse execute(DSRequest request) throws DSCallException {
         if (status != STATUS.BEGIN) {
             throw new TransactionException("Transaction not started ,you should call method begin()");
         }
         request.setDSCall(this);
+        addRequest(request);
         request.setCanJoinTransaction(true);
         DSResponse res = null;
         try {
@@ -167,13 +173,15 @@ public class DSCallImpl implements DSCall
             transactionFailed(request, res);
             throw new TransactionFailedException("transaction breaken because of one request failure.");
         }
+        responseMap.put(request, res);
         return res;
     }
     
     protected void transactionFailed(DSRequest request, DSResponse resp) throws DSCallException  {
         if (request.isPartsOfTransaction()) {
-            if (resp != null && resp.getStatus() == DSResponse.Status.STATUS_SUCCESS)
+            if (resp != null && resp.getStatus() == DSResponse.Status.STATUS_SUCCESS){
                 resp.setStatus(DSResponse.Status.STATUS_TRANSACTION_FAILED);
+            }
         }
         onFailure();
     }
@@ -202,8 +210,9 @@ public class DSCallImpl implements DSCall
                 for (DSRequest req : requests) {
                     if (req.isPartsOfTransaction()) {
                         DSResponse resp = getResponse(req);
-                        if (resp != null && resp.getStatus() == DSResponse.Status.STATUS_SUCCESS)
+                        if (resp != null && resp.getStatus() == DSResponse.Status.STATUS_SUCCESS){
                             resp.setStatus(DSResponse.Status.STATUS_TRANSACTION_FAILED);
+                        }
                     }
                 }
             }
@@ -241,6 +250,9 @@ public class DSCallImpl implements DSCall
     }
     
     public void end(){
+        //TODO
+        //请求和返回个数是否一致
+        //返回结果状态是否都为成功
         status = STATUS.SUCCESS;
         onSuccess();
     }
@@ -269,5 +281,33 @@ public class DSCallImpl implements DSCall
 
     @Override
     public void freeResources() {
+    }
+
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.solmix.datax.call.DSCall#getMergedResponse()
+     */
+    @Override
+    public DSResponse getMergedResponse()throws DSCallException {
+        if(responseMap.size()!=requests.size()){
+            throw new TransactionFailedException(new StringBuilder()
+            .append("Having ")
+            .append(requests.size())
+            .append(" requests,But having ")
+            .append(responseMap.size())
+            .append(" responses").toString());
+        }
+        boolean failure=false;
+        for (DSRequest req : requests) {
+            DSResponse res = getResponse(req);
+            if (res.getStatus().value() < 0) {
+                failure = true;
+                break;
+            }
+        }
+        
+        return null;
     }
 }

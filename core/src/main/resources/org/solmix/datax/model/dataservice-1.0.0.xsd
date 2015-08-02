@@ -74,7 +74,7 @@
 					<any namespace="##any" processContents="lax"></any>
 				</sequence>
 				<attribute name="id" type="string"></attribute>
-				<attribute name="type" type="string" use="required"></attribute>
+				<attribute name="type" type="string"></attribute>
 				<attribute name="errorMessage" type="string"></attribute>
 				<attribute name="serverOnly" type="boolean"></attribute>
 				<attribute name="validateOnChange" type="boolean">

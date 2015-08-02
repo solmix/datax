@@ -16,30 +16,36 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.call;
+package org.solmix.datax.service;
+
+import java.util.Map;
+
+import org.solmix.datax.DSRequest;
+import org.solmix.datax.DSResponse;
+import org.solmix.datax.transformer.TransformerAdaptor;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年7月24日
+ * @version $Id$  2015年8月2日
  */
 
-public interface Transaction
+public class MockTransformer extends TransformerAdaptor
 {
-    /**
-     * 实际的事物对象，比如 
-     * <li>JDBC Connection
-     * <li>sqlSession
-     * <li>EntityManager
-     * @return
-     */
-    <T> T getTransactionObject(Class<T> type);
-    
-    void begin();
-    
-    void end();
-    
-    void rollback();
+    @Override
+    public DSRequest transformRequest(DSRequest request) {
+       Map<String,Object> value= request.getValues();
+       value.put("text", value.get("text")+"-transformRequest");
+       request.setRawValues(value);
+        return request;
+    }
+
+    @Override
+    public DSResponse transformResponse(DSResponse response) {
+        String tt=response.getSingleResult(String.class);
+         response.setRawData(tt+"-transformResponse");
+        return response;
+    }
 
 }

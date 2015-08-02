@@ -18,6 +18,7 @@
  */
 package org.solmix.datax.support;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +50,7 @@ import org.solmix.datax.model.OperationInfo;
  * @version $Id$  2015年7月15日
  */
 
-public class DSRequestImpl extends PagedBean implements DSRequest
+public class DSRequestImpl extends PagedBean implements DSRequest,Cloneable
 {
 
     private static final Logger LOG= LoggerFactory.getLogger(DSRequestImpl.class);
@@ -90,7 +91,20 @@ public class DSRequestImpl extends PagedBean implements DSRequest
     @Resource
     private ApplicationManager applicationManager;
     
+    private Map<String ,Object> attributes;
+    
     public DSRequestImpl(){
+    }
+    
+    @Override
+    public DSRequestImpl clone(){
+        DSRequestImpl req=null;
+        try {
+            req= (DSRequestImpl) super.clone();
+        } catch (CloneNotSupportedException e) {
+           //ignore
+        }
+        return req;
     }
     
     @Override
@@ -503,6 +517,40 @@ public class DSRequestImpl extends PagedBean implements DSRequest
     @Override
     public void setInvoked(boolean invoked) {
        this.invoked=invoked;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.solmix.datax.DSRequest#getAttribute(java.lang.String)
+     */
+    @Override
+    public Object getAttribute(String name) {
+        if(attributes!=null){
+            attributes.get(name);
+        }
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.solmix.datax.DSRequest#setAttribute(java.lang.String, java.lang.Object)
+     */
+    @Override
+    public void setAttribute(String name, Object value) {
+        if(name==null){
+            return;
+        }
+        if(attributes==null){
+                attributes=new HashMap<String, Object>();
+        }
+        if(value==null){
+            attributes.remove(name);
+        }else{
+            attributes.put(name, value);
+        }
+        
     }
 
 }

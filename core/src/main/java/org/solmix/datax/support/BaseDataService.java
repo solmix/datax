@@ -44,8 +44,13 @@ import org.solmix.datax.DSResponse;
 import org.solmix.datax.DSResponse.Status;
 import org.solmix.datax.DataService;
 import org.solmix.datax.DataServiceNoFoundException;
+import org.solmix.datax.DataxException;
 import org.solmix.datax.OperationNoFoundException;
+import org.solmix.datax.call.DSCall;
 import org.solmix.datax.call.Transaction;
+import org.solmix.datax.call.support.DSCallImpl;
+import org.solmix.datax.call.support.DSCallImpl.STATUS;
+import org.solmix.datax.model.BatchOperations;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.model.FieldType;
@@ -66,7 +71,6 @@ import org.solmix.datax.validation.ErrorMessage;
 import org.solmix.datax.validation.ValidationContext;
 import org.solmix.datax.validation.ValidationCreator;
 import org.solmix.datax.validation.ValidationEvent;
-import org.solmix.datax.validation.Validator;
 import org.solmix.datax.validation.ValidationEvent.Level;
 import org.solmix.datax.validation.ValidationEventFactory;
 import org.solmix.datax.validation.ValidationException;
@@ -147,7 +151,7 @@ public class BaseDataService implements DataService
             throw new OperationNoFoundException("Not found operation：" + req.getOperationId() + " in datasource:" + getId());
         }
         if (oi.getBatch() != null) {
-            return executeBatch(req);
+                return executeBatch(req,oi);
         }
         //附加的参数
         Map<String,ParamInfo> params = oi.getParams();
@@ -185,44 +189,47 @@ public class BaseDataService implements DataService
      * 根据配置准备Transformers
      */
     private List<Transformer> prepareTransformer(OperationInfo oi, DSRequest req,List<TransformerInfo> trans) {
-        List<Transformer> transformers= new ArrayList<Transformer>();
-        for(TransformerInfo tran:trans){
-            Transformer transformer=null;
-           LookupType type= tran.getLookup();
-           String serviceName=tran.getName();
-           Class<? extends Transformer> serviceClass= tran.getClazz();
-           if(type==LookupType.CONTAINER){
-               if(serviceName==null){
-                   if(serviceClass==null||serviceClass==Validator.class){
-                       //通常有多个validator
-                       throw new ValidationException("transformer must specify name to determine validator service ");
+        List<Transformer> transformers=null;
+        if(trans!=null){
+            transformers= new ArrayList<Transformer>();
+            for(TransformerInfo tran:trans){
+                Transformer transformer=null;
+               LookupType type= tran.getLookup();
+               String serviceName=tran.getName();
+               Class<? extends Transformer> serviceClass= tran.getClazz();
+               if(type==LookupType.CONTAINER){
+                   if(serviceName==null){
+                       if(serviceClass==null||serviceClass==Transformer.class){
+                           //通常有多个validator
+                           throw new ValidationException("transformer must specify name to determine validator service ");
+                       }else{
+                           transformer=container.getExtension(serviceClass);
+                       }
+                       
                    }else{
-                       transformer=container.getExtension(serviceClass);
+                       ConfiguredBeanProvider provider = container.getExtension(ConfiguredBeanProvider.class);
+                       if(provider!=null){
+                           transformer= provider.getBeanOfType(serviceName, serviceClass==null?Transformer.class:serviceClass);
+                       }
                    }
-                   
-               }else{
-                   ConfiguredBeanProvider provider = container.getExtension(ConfiguredBeanProvider.class);
-                   if(provider!=null){
-                       transformer= provider.getBeanOfType(serviceName, serviceClass==null?Transformer.class:serviceClass);
+               } else if(serviceClass!=null&&type==LookupType.NEW){
+                   try {
+                       transformer = Reflection.newInstance(serviceClass);
+                   } catch (Exception e) {
+                      throw new ValidationException("Instance object",e);
                    }
                }
-           } else if(serviceClass!=null&&type==LookupType.NEW){
-               try {
-                   transformer = Reflection.newInstance(serviceClass);
-               } catch (Exception e) {
-                  throw new ValidationException("Instance object",e);
+               if(transformer!=null){
+                   ResourceManager rma= container.getExtension(ResourceManager.class);
+                   ResourceManagerImpl rm = new ResourceManagerImpl(rma.getResourceResolvers());
+                   rm.addResourceResolver( new RequestContextResourceResolver(req.getRequestContext()));
+                   rm.addResourceResolver( new DSRequestResolver(req));
+                   ResourceInjector injector = new ResourceInjector(rm);
+                   injector.inject(transformer);
+                   transformers.add(transformer);
+                  
                }
-           }
-           if(transformer!=null){
-               ResourceManager rma= container.getExtension(ResourceManager.class);
-               ResourceManagerImpl rm = new ResourceManagerImpl(rma.getResourceResolvers());
-               rm.addResourceResolver( new RequestContextResourceResolver(req.getRequestContext()));
-               rm.addResourceResolver( new DSRequestResolver(req));
-               ResourceInjector injector = new ResourceInjector(rm);
-               injector.inject(transformer);
-               transformers.add(transformer);
-              
-           }
+            }
         }
         customTransformer(transformers,req,oi);
         return transformers;
@@ -230,6 +237,9 @@ public class BaseDataService implements DataService
 
     
     protected void customTransformer(List<Transformer> transformers, DSRequest req, OperationInfo oi) {
+        if(transformers==null){
+            transformers= new ArrayList<Transformer>();
+        }
         if (oi.getProperty("template") != null) {
             transformers.add(new TemplateTransformer(oi.getProperty("template").toString(), false));
         } else if (oi.getProperty("template-file") != null) {
@@ -240,7 +250,7 @@ public class BaseDataService implements DataService
     protected void transformRequest(DSRequest req, List<Transformer> trans) {
         for(Transformer transformer :trans){
             try {
-                transformer.transformRequest(req);
+                req= transformer.transformRequest(req);
             } catch (Exception e) {
                 throw new TransformerException("Transformer DSRequest",e);
             }
@@ -250,6 +260,13 @@ public class BaseDataService implements DataService
     protected DSResponse transformResponse(DSResponse response, List<Transformer> transformers) {
         if (transformers==null||transformers.size()==0) {
             return response;
+        }
+        for(Transformer transformer :transformers){
+            try {
+                response= transformer.transformResponse(response);
+            } catch (Exception e) {
+                throw new TransformerException("Transformer DSRequest",e);
+            }
         }
         return response;
     }
@@ -280,7 +297,14 @@ public class BaseDataService implements DataService
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private Object injectParma(Object values, Map<String, ParamInfo> params) throws Exception {
-        Map map=TransformUtils.transformType(Map.class, values);
+        Map map;
+        boolean isMap=false;
+        if(values instanceof Map){
+            map=(Map)values;
+            isMap=true;
+        }else{
+            map=TransformUtils.transformType(Map.class, values);
+        }
         for(String name:params.keySet()){
             ParamInfo param  = params.get(name);
             if(map.containsKey(name)&&param.isOverride()){
@@ -289,7 +313,12 @@ public class BaseDataService implements DataService
                 map.put(name, param.getValue());
             }
         }
-        return DataUtils.setProperties(map, values);
+        if(!isMap){
+            return DataUtils.setProperties(map, values);
+        }else{
+            return map;
+        }
+       
     }
 
     /**
@@ -297,13 +326,44 @@ public class BaseDataService implements DataService
      * 
      * @param req
      * @return
+     * @throws DataxException 
      */
-    protected DSResponse executeBatch(DSRequest req) {
-        // TODO Auto-generated method stub
-        return null;
+    protected DSResponse executeBatch(DSRequest req,OperationInfo oi) throws DSCallException {
+        DSCall dsc=  req.getDSCall();
+        BatchOperations bos=oi.getBatch();
+        TransactionPolicy policy= bos.getTransactionPolicy();
+        DSCall newDscall=null;
+        try{
+            newDscall = new DSCallImpl(STATUS.BEGIN,policy);
+            for(OperationInfo op:bos.getOperations()){
+                DSRequest request = createNewRequest(req,op);
+                if ( dsc != null) {
+                    request.setAttribute("old-dscall", dsc);
+                }
+                newDscall.execute(request);
+            }
+            return newDscall.getMergedResponse();
+        }finally{
+            if (dsc != null && newDscall != dsc) {
+                req.setDSCall(dsc);
+            }
+        }
     }
   
     
+    /**
+     * 根据OperationInfo重新生成request。
+     * 
+     * @param req
+     * @param op
+     * @return
+     */
+    protected DSRequest createNewRequest(DSRequest req, OperationInfo op) {
+       DSRequestImpl newreq= (( DSRequestImpl)req).clone();
+       newreq.setOperationId(op.getId());
+        return newreq;
+    }
+
     /**
      * 执行带Transformer的请求
      * 

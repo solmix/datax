@@ -71,6 +71,7 @@ public interface DataxSession
     void end();
     
     List<DSResponse> execute(List<DSRequest> requests);
+    
     List<DSResponse> executeXA(List<DSRequest> requests,TransactionPolicy policy);
     
     DataServiceManager getDataServiceManager();

@@ -25,7 +25,7 @@ package org.solmix.datax.transformer;
  * @version $Id$  2015年6月30日
  */
 
-public class MockTransformer implements Transformer
+public class MockTransformer extends TransformerAdaptor
 {
 
 }

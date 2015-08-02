@@ -187,5 +187,13 @@ public interface DSRequest extends Pageable
      * @param rc
      */
     void setRequestContext(RequestContext rc);
+    
+     Object getAttribute(String name);
+     
+     /**
+     * @param name name==null removed
+     * @param value
+     */
+    void setAttribute(String name,Object value);
 
 }

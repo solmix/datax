@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.solmix.commons.annotation.ThreadSafe;
@@ -114,6 +116,7 @@ public class DefaultDataServiceManager implements DataServiceManager
      */
     @Override
     public RepositoryService getRepositoryService() {
+        ensureInit();
         return repositoryService;
     }
 
@@ -247,10 +250,12 @@ public class DefaultDataServiceManager implements DataServiceManager
         this.defaultServerType = defaultServerType;
     }
 
+    @Override
     public Map<String, Object> getProperties() {
         return properties;
     }
 
+    @Override
     public void setProperties(Map<String, Object> properties) {
         this.properties = properties;
     }

@@ -75,7 +75,11 @@
 				<add validate="true">
 				<invoker class="org.solmix.datax.support.CallDataService" method="addforv"></invoker>
 				</add>
+				<add id="usedValidatedValues" validate="true" usedValidatedValues="true">
+				<invoker class="org.solmix.datax.support.CallDataService" method="addforv"></invoker>
+				</add>
 			</operations>
 		</service>
+		
 	</configuration>
 </datax>

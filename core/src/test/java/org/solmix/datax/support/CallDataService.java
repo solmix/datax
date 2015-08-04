@@ -24,6 +24,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.solmix.datax.DSRequest;
+import org.solmix.datax.DSResponse;
 import org.solmix.datax.DataService;
 import org.solmix.datax.RequestContext;
 import org.solmix.datax.annotation.Param;
@@ -91,7 +92,25 @@ public class CallDataService
         return true;
     }
     
+    
+    
     public String addfort(DSRequest req){
         return req.getValues().get("text").toString();
+    }
+    
+    public Map<String,Object> batchFetch(){
+        Map<String,Object> map= new HashMap<String, Object>();
+        map.put("step1", "batchFetch");
+        return map;
+    }
+    
+    public Map<String,Object> batchAdd(DSCall dsc){
+        DSResponse last=dsc.getResponseByOperationLocalId("batchFetch");
+        Map<String,Object> map=last.getSingleResult(Map.class);
+        map.put("step2", "batchAdd");
+        return map;
+    }
+    public void exception() throws Exception{
+        throw new Exception();
     }
 }

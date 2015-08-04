@@ -71,11 +71,7 @@ public class DefaultDataServiceManagerTest
         Assert.assertNotNull(dsm);
     }
 
-    // @Test
-    public void testInit() {
-        dsm.init();
-    }
-    
+  
     @Test
     public void testCreateDSRequest() {
         DSRequest ds= dsm.createDSRequest();
@@ -90,7 +86,6 @@ public class DefaultDataServiceManagerTest
         dsm.setLoadDefault(false);
         dsm.addResource("classpath:META-INF/dataservice1/ds2.xml");
        
-        dsm.init();
         DataServiceInfo dsi = dsm.getRepositoryService().getDataService("com.example.ds.aa");
         assertNotNull(dsi);
         assertEquals(3, dsi.getFields().size());
@@ -121,13 +116,12 @@ public class DefaultDataServiceManagerTest
         dsm.init();
         
     }
-    @Test
+//    @Test
     public void testResolver() {
         dsm.setLoadDefault(false);
         dsm.addResource("classpath:META-INF/resolver/ds2.xml");
         dsm.addResource("classpath:META-INF/resolver/ds1.xml");
         
-        dsm.init();
         DataServiceInfo dsi = dsm.getRepositoryService().getDataService("com.example.ds.aa");
         assertNotNull(dsi);
         assertEquals(3, dsi.getFields().size());
@@ -143,7 +137,6 @@ public class DefaultDataServiceManagerTest
         dsm.setLoadDefault(false);
         dsm.addResource("classpath:META-INF/dataservice1/load.xml");
        
-        dsm.init();
         MonitorInfo last = ms.getMonitorInfo();
         System.out.println("memery used:" + (last.getUsedMemory() - old.getUsedMemory()));
         DataServiceInfo dsi = dsm.getRepositoryService().getDataService("load.ds");
@@ -201,6 +194,7 @@ public class DefaultDataServiceManagerTest
         OperationInfo oi=dsi.getOperationInfo("#fetch");
         assertEquals(dsi.getId()+".fetch", oi.getId());
         assertEquals(Boolean.TRUE, oi.getAutoJoinTransactions());
+        assertEquals(Boolean.TRUE, oi.getUsedValidatedValues());
         //关联
         OperationInfo oi2=dsi.getOperationInfo("#feth2");
         assertEquals(oi.getId(), oi2.getRefid());
@@ -251,7 +245,6 @@ public class DefaultDataServiceManagerTest
         dsm.setLoadDefault(false);
         dsm.addResource("classpath:META-INF/dataservice1/load.xml");
         
-        dsm.init();
         ResourceManager cbp= c.getExtension(ResourceManager.class);
         
         DataServiceInfo dsi=  cbp.resolveResource("load.ds", DataServiceInfo.class);

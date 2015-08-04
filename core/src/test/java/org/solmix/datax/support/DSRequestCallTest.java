@@ -36,6 +36,9 @@ import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.DataServiceNoFoundException;
 import org.solmix.datax.OperationNoFoundException;
 import org.solmix.datax.application.ApplicationNotFoundException;
+import org.solmix.datax.call.TransactionFailedException;
+import org.solmix.datax.model.DataServiceInfo;
+import org.solmix.datax.model.OperationInfo;
 import org.solmix.datax.service.MockDataService;
 import org.solmix.datax.validation.ErrorMessage;
 import org.solmix.datax.validation.ErrorReport;
@@ -84,28 +87,7 @@ public class DSRequestCallTest
         req.setOperationId(id);
         return req;
     }
-    @Test
-    public void testValidateRequest() {
-        DataServiceManager dsm=   c.getExtension(DataServiceManager.class);
-        DSRequest add=dsm.createDSRequest();
-        Map<String,Object> values= new HashMap<String,Object>();
-        values.put("text", "aaa");
-        values.put("float", "0.12a");
-        values.put("date", "2012sd21-2a");
-        add.setOperationId("com.call.ds.add");
-        add.setRawValues(values);
-        try {
-            DSResponse addres= add.execute();
-            Assert.assertEquals(Status.STATUS_VALIDATION_ERROR,addres.getStatus());
-            Object[] errors=addres.getErrors();
-            Assert.assertNotNull(errors);
-            Assert.assertEquals(1, errors.length);
-        } catch (DSCallException e) {
-            Assert.fail(e.getMessage());
-        }
-    }
    
-    
     @Test
     public void testValidateRequestWithBean() {
         DataServiceManager dsm=   c.getExtension(DataServiceManager.class);
@@ -179,8 +161,26 @@ public class DSRequestCallTest
     public void testbatch() throws DSCallException{
         DSRequest custom = createDSRequest("com.call.ds2.custom");
         
-        custom.execute();
+        DSResponse res=custom.execute();
+        
+        assertEquals(Status.STATUS_SUCCESS, res.getStatus());
+        assertNotNull(res.getSingleResult(Map.class).get("com.call.ds2.custom#batchFetch"));
+        DataServiceManager dsm=   c.getExtension(DataServiceManager.class);
+        DataServiceInfo sdi=dsm.getRepositoryService().getDataService("com.call.ds2");
+        assertEquals(sdi.getOperations().size(), 16);
+        for(OperationInfo key:sdi.getOperations())
+        System.out.println(key.getId()+"-"+key.getLocalId());
     }
+    
+    @Test(expected=TransactionFailedException.class)
+    public void testbatchFailed() throws DSCallException{
+        DSRequest custom = createDSRequest("com.call.ds2.custom3");
+        
+        DSResponse res=custom.execute();
+        
+        assertEquals(Status.STATUS_SUCCESS, res.getStatus());
+    }
+    
    @Test
    public void testInvoker() throws DSCallException{
        //lookup=new 

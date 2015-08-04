@@ -29,13 +29,18 @@ import org.solmix.commons.annotation.NotThreadSafe;
 import org.solmix.datax.DSCallException;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
+import org.solmix.datax.DSResponse.Status;
+import org.solmix.datax.DataService;
 import org.solmix.datax.DataxException;
 import org.solmix.datax.call.DSCall;
 import org.solmix.datax.call.DSCallCompleteCallback;
 import org.solmix.datax.call.TransactionException;
 import org.solmix.datax.call.TransactionFailedException;
+import org.solmix.datax.model.OperationInfo;
 import org.solmix.datax.model.TransactionPolicy;
 import org.solmix.datax.support.BaseDataService;
+import org.solmix.datax.support.DSRequestImpl;
+import org.solmix.datax.support.DSResponseImpl;
 import org.solmix.datax.util.DataTools;
 
 /**
@@ -94,7 +99,31 @@ public class DSCallImpl implements DSCall
     public DSResponse getResponse(DSRequest req) {
         return this.responseMap.get(req);
     }
-
+    @Override
+    public DSResponse getResponseByOperationId(String operationId) {
+        if(operationId==null){
+            return null;
+        }
+        for(DSRequest req:requests){
+           if(operationId.endsWith( req.getOperationId())){
+               return getResponse(req);
+           }
+        }
+        return null;
+    }
+    @Override
+    public DSResponse getResponseByOperationLocalId(String operationId) {
+        if (operationId == null) {
+            return null;
+        }
+        for (DSRequest req : requests) {
+            OperationInfo oi = req.getOperationInfo();
+            if (oi != null && operationId.endsWith(oi.getLocalId())) {
+                return getResponse(req);
+            }
+        }
+        return null;
+    }
     /**
      * {@inheritDoc}
      * 
@@ -107,8 +136,9 @@ public class DSCallImpl implements DSCall
 
     @Override
     public void setTransactionPolicy(TransactionPolicy transactionPolicy) throws TransactionException {
-        if (status == STATUS.BEGIN)
+        if (status == STATUS.BEGIN){
             throw new TransactionException("dsRequest already started.");
+        }
         this.transactionPolicy = transactionPolicy;
     }
 
@@ -142,8 +172,9 @@ public class DSCallImpl implements DSCall
 
     @Override
     public void registerCallback(DSCallCompleteCallback callback) {
-        if (!callbacks.contains(callback))
+        if (!callbacks.contains(callback)){
             callbacks.add(callback);
+        }
     }
 
    
@@ -165,7 +196,7 @@ public class DSCallImpl implements DSCall
                 throw new TransactionFailedException("transaction rollback failure with rollback Exception:" + e1.getMessage()
                     + " with Root Exception:" + e.getMessage());
             }
-            throw new TransactionFailedException("transaction breaken", e);
+            throw new TransactionFailedException("transaction breaken case by:"+e.getMessage(), e);
         }
         
         boolean transactionFailure = isXAFailure(request, res);
@@ -226,15 +257,16 @@ public class DSCallImpl implements DSCall
     /**执行没抛错，检查执行结果是否为成功*/
     protected boolean isXAFailure(DSRequest req, DSResponse res) {
         boolean transactionFailure = false;
-        if (res != null && res.getStatus().value() < 0)
+        if (res != null && res.getStatus().value() < 0){
             if (req.isRequestStarted()) {
                 if (req.isPartsOfTransaction())
                     transactionFailure = true;
             } else {
-                BaseDataService ds = (BaseDataService) req.getDataService();
+                DataService ds = req.getDataService();
                 if (ds.canJoinTransaction(req) && (ds.canStartTransaction(req, true) || queueIncludesUpdates(req)))
                     transactionFailure = true;
             }
+        }
         return transactionFailure;
     }
     
@@ -242,7 +274,9 @@ public class DSCallImpl implements DSCall
    public void execute(){
        
    }
-    
+    /**
+     * 开始事物。
+     */
     public void begin(){
         if (status != STATUS.INIT)
             throw new TransactionException("Transaction have been started");
@@ -250,11 +284,31 @@ public class DSCallImpl implements DSCall
     }
     
     public void end(){
-        //TODO
-        //请求和返回个数是否一致
-        //返回结果状态是否都为成功
-        status = STATUS.SUCCESS;
-        onSuccess();
+        if(responseMap.size()!=requests.size()){
+            throw new TransactionException(new StringBuilder()
+            .append("Having ")
+            .append(requests.size())
+            .append(" requests,But having ")
+            .append(responseMap.size())
+            .append(" responses").toString());
+        }
+        boolean failure=false;
+        for (DSRequest req : requests) {
+            DSResponse res = getResponse(req);
+            if (res.getStatus().value() < 0) {
+                failure = true;
+                break;
+            }
+        }
+        if(failure){
+            try {
+                onFailure();
+            } catch (DSCallException e) {
+              throw new TransactionException("onFailure", e);
+            }
+        }else{
+            onSuccess();
+        }
     }
   
     @Override
@@ -291,23 +345,23 @@ public class DSCallImpl implements DSCall
      */
     @Override
     public DSResponse getMergedResponse()throws DSCallException {
-        if(responseMap.size()!=requests.size()){
-            throw new TransactionFailedException(new StringBuilder()
-            .append("Having ")
-            .append(requests.size())
-            .append(" requests,But having ")
-            .append(responseMap.size())
-            .append(" responses").toString());
+        //如果还没有结束，先结束并提交
+        if(status==STATUS.BEGIN){
+            end();
         }
-        boolean failure=false;
+        Map<String,Object> mergedData= new LinkedHashMap<String, Object>();
         for (DSRequest req : requests) {
-            DSResponse res = getResponse(req);
-            if (res.getStatus().value() < 0) {
-                failure = true;
-                break;
-            }
+            DSResponse resp = getResponse(req);
+            mergedData.put(req.getOperationId(), resp.getRawData());
         }
-        
-        return null;
+        Status st=Status.UNSET;
+        if(status==STATUS.SUCCESS){
+            st=Status.STATUS_SUCCESS;
+        }else if(status==STATUS.FAILED){
+            st=Status.STATUS_TRANSACTION_FAILED;
+        }
+        DSResponse res = new DSResponseImpl(st);
+        res.setRawData(mergedData);
+        return res;
     }
 }

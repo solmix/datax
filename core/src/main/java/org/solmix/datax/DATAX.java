@@ -65,7 +65,7 @@ public final class DATAX
 
     public static final String VALIDATION_LOGNAME = "org.solmix.datax.VALIDATION";
 
-    public static final String VALIDATION_TOPIC_PREFIX = "org/solmix/datax/validation/";;
+    public static final String VALIDATION_TOPIC_PREFIX = "org/solmix/datax/validation/";
     
     /**
      * Velocity 中{@link Container} 的名称
@@ -101,5 +101,7 @@ public final class DATAX
      * Velocity 表达式生成的临时结果标示
      */
     public static final String VT_TMP_NAME = "_d_vm_result";
+    
+    public static final String AFTER_VALIDATE_VALUES = "org.solmix.datax.validated.values";
     
 }

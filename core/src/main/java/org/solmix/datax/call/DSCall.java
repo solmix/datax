@@ -109,5 +109,21 @@ public interface DSCall extends FreeResourcesHandler
      * @return
      */
     DSResponse getMergedResponse()throws DSCallException;
+
+    /**
+     * 获取对于OperationId的返回结果
+     * 
+     * @param operationId
+     * @return
+     */
+    DSResponse getResponseByOperationId(String operationId);
+
+    /**
+     * 获取对于Operation localId的返回结果
+     * 
+     * @param operationId
+     * @return
+     */
+    DSResponse getResponseByOperationLocalId(String operationLocalId);
     
 }

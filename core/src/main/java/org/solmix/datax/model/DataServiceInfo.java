@@ -169,12 +169,16 @@ public class DataServiceInfo
                 Map<String, OperationInfo> operations = parseOperations(node.evalNode("operations"), context);
                 //BATCH中配置的也放入operaions中，方便索引
                 if (operations != null) {
+                    List<OperationInfo> tmp = new ArrayList<OperationInfo>();
                     for (OperationInfo oi : operations.values()) {
-                        BatchOperations bos = oi.getBatch();
-                        if (bos != null && bos.getOperations() != null) {
-                            for (OperationInfo o : bos.getOperations()) {
-                                operations.put(o.getId(), o);
+                        getBatchOperations(oi,tmp,oi.getId());
+                    }
+                    if(tmp.size()>0){
+                        for(OperationInfo toi:tmp){
+                            if(operations.containsKey(toi.getId())){
+                                throw new BuilderException("duplicate operationid:"+toi.getId());
                             }
+                            operations.put(toi.getId(), toi);
                         }
                     }
                 }
@@ -203,6 +207,27 @@ public class DataServiceInfo
                 context.setCurrentService(orig);
             }
 
+        }
+        private void getBatchOperations(OperationInfo oi,List<OperationInfo> tmp,String parentId){
+            BatchOperations bos = oi.getBatch();
+            if (bos != null && bos.getOperations() != null) {
+                int count=1;
+                for (OperationInfo o : bos.getOperations()) {
+                   if(o.getId()==null){
+                       if(o.localId==null){
+                           o.id=parentId+"#"+count;
+                       }else{
+                           o.id=parentId+"#"+o.localId;
+                       }
+                   }
+                    count++;
+                    tmp.add(o);
+                    BatchOperations boso = o.getBatch();
+                    if (boso != null && boso.getOperations() != null) {
+                        getBatchOperations(o,tmp,o.id);
+                    }
+                }
+            }
         }
 
         protected Map<String, OperationInfo> parseOperations(XMLNode node, XmlParserContext context) {

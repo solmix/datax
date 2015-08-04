@@ -101,16 +101,7 @@ public class DMIDataService
         InvokerObject invoker = new InvokerObject(container,dsRequest, ino, serviceClass, serviceName,methodName);
         Object result=null;
         DSResponse dsResponse = null;
-        try{
-            result= invoker.invoke();
-        }catch(Exception  e){
-            //XXX ${tmplate}
-            //XXX
-            dsResponse = new DSResponseImpl(dsRequest,Status.STATUS_FAILURE);
-            dsResponse.setRawData(e.getMessage());
-            LOG.error("DMI error:",e);
-            return dsResponse;
-        }
+        result= invoker.invoke();
         if (result != null && DSResponse.class.isAssignableFrom(result.getClass())) {
             dsResponse = DSResponse.class.cast(result);
         } else {

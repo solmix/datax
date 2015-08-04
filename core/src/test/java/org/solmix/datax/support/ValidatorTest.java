@@ -20,6 +20,7 @@ package org.solmix.datax.support;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -27,7 +28,6 @@ import org.junit.Assert;
 
 import static org.junit.Assert.*;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.solmix.datax.DSCallException;
@@ -56,11 +56,64 @@ public class ValidatorTest
         c = ContainerFactory.getDefaultContainer(true);
         Assert.assertNotNull(c);
     }
-  
-    @After
-    public void tearDown(){
-        if(c!=null){
-            c.close();
+    @Test
+    public void testDefaultFail() {
+        DataServiceManager dsm=   c.getExtension(DataServiceManager.class);
+        DSRequest add=dsm.createDSRequest();
+        Map<String,Object> values= new LinkedHashMap<String,Object>();
+//        values.put("text", null);
+        values.put("boolean", "asd");
+        values.put("integer", "1.2");
+        values.put("float", "0.12a");
+        values.put("date", "2012sd21-2a");
+        values.put("time", "12:22:01 122a");
+        values.put("datetime", "2012-21-2p 12:22:01 122a");
+        values.put("sequence", "aaa");
+        values.put("intEnum", "aaa");
+        values.put("enum", "ddd");
+       
+       
+        add.setOperationId("com.validate.default.add");
+        add.setRawValues(values);
+        try {
+            DSResponse addres= add.execute();
+            Assert.assertEquals(Status.STATUS_VALIDATION_ERROR,addres.getStatus());
+            Object[] errors=addres.getErrors();
+            Assert.assertNotNull(errors);
+            Assert.assertEquals(1, errors.length);
+            ErrorReport re = (ErrorReport)errors[0];
+           ErrorMessage fl= (ErrorMessage) re.get("float");
+           assertTrue(fl.toString().indexOf("arememts:[0.12a]")!=-1);
+           
+           ErrorMessage f2= (ErrorMessage) re.get("date");
+           assertTrue(f2.toString().indexOf("arememts:[2012sd21-2a]")!=-1);
+           for(String key:values.keySet()){
+               assertNotNull(key+" is not validate failed",re.get(key));
+           }
+        } catch (DSCallException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+    
+    @Test
+    public void testDefaultScucessBean() {
+        DataServiceManager dsm=   c.getExtension(DataServiceManager.class);
+        DSRequest add=dsm.createDSRequest();
+        Bean2 bean = new Bean2();
+        bean.setText("aaa");
+        bean.setDate("2012-21-2");
+        bean.setDatetime("2012-21-2 12:22:01");
+        
+        add.setOperationId("com.validate.validator.usedValidatedValues");
+        add.setRawValues(bean);
+        try {
+            DSResponse addres= add.execute();
+            Assert.assertEquals(Status.STATUS_SUCCESS,addres.getStatus());
+            Map<String,Object> afterValues=(Map<String,Object>)add.getRawValues();
+            assertEquals(afterValues.get("date").getClass(),Date.class);
+            assertEquals(afterValues.get("datetime").getClass(),Date.class);
+        } catch (DSCallException e) {
+            Assert.fail(e.getMessage());
         }
     }
     @Test
@@ -86,10 +139,58 @@ public class ValidatorTest
         try {
             DSResponse addres= add.execute();
             Assert.assertEquals(Status.STATUS_SUCCESS,addres.getStatus());
-           
+            Map<String,Object> afterValues=(Map<String,Object>)add.getRawValues();
+            assertEquals(afterValues.get("date").getClass(),Date.class);
+            assertEquals(afterValues.get("float").getClass(),Double.class);
         } catch (DSCallException e) {
             Assert.fail(e.getMessage());
         }
     }
-   
+    
+    @Test
+    public void testValidateScucess() {
+        DataServiceManager dsm=   c.getExtension(DataServiceManager.class);
+        DSRequest add=dsm.createDSRequest();
+        Map<String,Object> values= new LinkedHashMap<String,Object>();
+        values.put("text", "aaa");
+        values.put("boolean", "true");
+        add.setOperationId("com.validate.validator.add");
+        add.setRawValues(values);
+        try {
+            DSResponse addres= add.execute();
+            Assert.assertEquals(Status.STATUS_SUCCESS,addres.getStatus());
+            Object afterValues=add.getRawValues();
+            assertSame(afterValues, values);
+        } catch (DSCallException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+    @Test
+    public void testUsedValidatedValues() {
+        DataServiceManager dsm=   c.getExtension(DataServiceManager.class);
+        DSRequest add=dsm.createDSRequest();
+        Map<String,Object> values= new LinkedHashMap<String,Object>();
+        values.put("text", "aaa");
+        values.put("boolean", "true");
+        values.put("integer", "1");
+        values.put("float", "0.12");
+        values.put("date", "2012-21-2");
+        values.put("time", "12:22:01");
+        values.put("datetime", "2012-21-2 12:22:01");
+        values.put("datetime2", "2012-21-02 12:22:01");
+        values.put("sequence", "1");
+        values.put("intEnum", "2");
+        values.put("enum", "bbb");
+        add.setOperationId("com.validate.validator.usedValidatedValues");
+        add.setRawValues(values);
+        try {
+            DSResponse addres= add.execute();
+            Assert.assertEquals(Status.STATUS_SUCCESS,addres.getStatus());
+            Map<String,Object> afterValues=(Map<String,Object>)add.getRawValues();
+            assertEquals(afterValues.get("date").getClass(),Date.class);
+            assertEquals(afterValues.get("float").getClass(),Double.class);
+        } catch (DSCallException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
 }

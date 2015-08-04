@@ -26,8 +26,44 @@
 			<operations>
 				<custom>
 					<batch>
-						<fetch autoJoinTransactions="true"></fetch>
-						<fetch></fetch>
+						<fetch id="batchFetch" autoJoinTransactions="true">
+						<invoker class="org.solmix.datax.support.CallDataService" method="batchFetch"/>
+						</fetch>
+						<add id="batchAdd">
+						<invoker class="org.solmix.datax.support.CallDataService" method="batchAdd"/>
+						</add>
+					</batch>
+				</custom>
+				<custom id="custom3">
+					<batch>
+						<fetch id="batchFetch" autoJoinTransactions="true">
+						<invoker class="org.solmix.datax.support.CallDataService" method="batchFetch"/>
+						</fetch>
+						<add id="batchAdd">
+						<invoker class="org.solmix.datax.support.CallDataService" method="batchAdd"/>
+						</add>
+						<add id="exception">
+						<invoker class="org.solmix.datax.support.CallDataService" method="exception"/>
+						</add>
+					</batch>
+				</custom>
+				<custom id="custom2">
+					<batch>
+						<fetch id="batchFetch" autoJoinTransactions="true">
+						<invoker class="org.solmix.datax.support.CallDataService" method="batchFetch"/>
+						</fetch>
+						<add id="batchAdd">
+						<invoker class="org.solmix.datax.support.CallDataService" method="batchAdd"/>
+						</add>
+						<fetch>
+							<batch>
+								<add></add>
+								<update></update>
+								<remove></remove>
+								<add id="add2"></add>
+								<update id="update2"></update>
+							</batch>
+						</fetch>
 					</batch>
 				</custom>
 			</operations>

@@ -247,7 +247,9 @@
 					</complexType>
 				</element>
 				<element name="invoker" type="ds:invokerType"></element>
-				<any processContents="lax" namespace="##other" minOccurs="0" maxOccurs="unbounded"></any>
+				<any processContents="lax" namespace="##other"
+					minOccurs="0" maxOccurs="unbounded">
+				</any>
 			</choice>
 			<element name="batch">
 				<complexType>
@@ -277,6 +279,7 @@
 		<attribute name="autoJoinTransactions" type="boolean"></attribute>
 		<attribute name="refid" type="string"></attribute>
 		<attribute name="validate" type="boolean"></attribute>
+		<attribute name="usedValidatedValues" type="boolean"></attribute>
 		<anyAttribute namespace="##any" processContents="lax"></anyAttribute>
 	</complexType>
 

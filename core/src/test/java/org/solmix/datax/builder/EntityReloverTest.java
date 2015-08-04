@@ -23,7 +23,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.regex.Pattern;
 
 import org.junit.Test;
@@ -43,8 +45,9 @@ public class EntityReloverTest
 {
 
     @Test
-    public void test() {
-        InputStream is=EntityReloverTest.class.getResourceAsStream("services.xml");
+    public void test() throws IOException {
+       URL url= this.getClass().getResource("services.xml");
+        InputStream is=url.openStream();
         XMLParser parser = new XMLParser(is, true, null,new DataServiceEntityResolver(),DATAX.NS);
         XMLNode node =parser.evalNode("datax/configuration");
         assertNotNull(node);

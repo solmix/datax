@@ -13,7 +13,11 @@
 			<groupId>org.solmix.common</groupId>
 			<artifactId>solmix-common-runtime</artifactId>
 		</dependency>
-		
+		<dependency>
+			<groupId>commons-jxpath</groupId>
+			<artifactId>commons-jxpath</artifactId>
+			<scope>provided</scope>
+		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>

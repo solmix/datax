@@ -50,6 +50,8 @@ public class OperationInfo
     
     protected Boolean validate;
     
+    protected Boolean usedValidatedValues;
+    
     protected BatchOperations batch;
     
     protected List<TransformerInfo> transformers;
@@ -57,7 +59,6 @@ public class OperationInfo
     protected InvokerInfo invoker;
     
     protected String refid;
-    protected static int COUNT=0;
 
     private Map<String, ParamInfo> params;
     
@@ -73,9 +74,6 @@ public class OperationInfo
      * @param id
      */
     public OperationInfo(String id,String localId,OperationType type){
-        if(id==null){
-            id=this.getClass().getName()+"#"+(++COUNT);
-        }
         this.id=id;
         this.localId=localId;
         this.type=type;
@@ -102,7 +100,17 @@ public class OperationInfo
     public String getId() {
         return id;
     }
+
     
+    /**
+     * 设置为true时，当执行验证后将验证后转换后的结果作为输入参数。
+     * <br>
+     * 当validate 为true时生效，
+     * @return
+     */
+    public Boolean getUsedValidatedValues() {
+        return usedValidatedValues;
+    }
 
     public String getRefid() {
         return refid;
@@ -143,6 +151,7 @@ public class OperationInfo
         target.type=source.type;
         target.autoJoinTransactions=source.autoJoinTransactions;
         target.validate=source.validate;
+        target.usedValidatedValues=source.usedValidatedValues;
         target.params=source.params;
         target.invoker=source.invoker;
         target.transformers=source.transformers;
@@ -244,18 +253,22 @@ public class OperationInfo
             
             Boolean autoJoinTransactions= node.getBooleanAttribute("autoJoinTransactions");
             Boolean validate= node.getBooleanAttribute("validate");
+            Boolean usedValidatedValues= node.getBooleanAttribute("usedValidatedValues");
             Map<String ,ParamInfo> params = parseParams(node.evalNode("params"), context);
             List<TransformerInfo> transformers=parseTransformers(node.evalNodes("transformer"), context);
-            BatchOperations batch= parseBatch(node.evalNode("batch"),context);
+            BatchOperations batchOp= parseBatch(node.evalNode("batch"),context);
             InvokerInfo invoker = parseInvoker(node.evalNode("invoker"),context);
             oi.autoJoinTransactions=autoJoinTransactions;
             oi.node=node;
             oi.params=params;
-            oi.batch=batch;
+            oi.batch=batchOp;
             oi.transformers=transformers;
             oi.invoker=invoker;
             oi.validate=validate;
-            context.getRepositoryService().addOperationInfo(oi);
+            oi.usedValidatedValues=usedValidatedValues;
+            if(!batch){
+                context.getRepositoryService().addOperationInfo(oi);
+            }
             return oi;
         }
 

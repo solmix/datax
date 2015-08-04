@@ -92,4 +92,11 @@ public interface DataService extends FreeResourcesHandler
      * @return
      */
     Object escapeValue(Object data, String reference);
+
+    /**
+     * @param req
+     * @param ignoreExistingTransaction 忽略当前策略
+     * @return
+     */
+    boolean canStartTransaction(DSRequest req, boolean ignoreExistingTransaction);
 }

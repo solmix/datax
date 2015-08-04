@@ -16,39 +16,53 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.i18n;
-
-import java.util.Locale;
-import java.util.ResourceBundle;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.solmix.runtime.Container;
-import org.solmix.runtime.ContainerFactory;
-import org.solmix.runtime.i18n.support.DefaultResourceBundleManager;
+package org.solmix.datax.support;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年7月19日
+ * @version $Id$  2015年8月4日
  */
 
-public class ResourceBundleManagerTest
+public class Bean2
 {
-
-    @Test
-    public void test(){
-        Container c = ContainerFactory.getDefaultContainer(true);
-        try {
-            DefaultResourceBundleManager drbm = new DefaultResourceBundleManager(c);
-            ResourceBundle rb=drbm.getResourceBundle(Locale.CHINA);
-            Assert.assertNotNull(rb);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }finally{
-            c.close();
-        }
-        
+    private String text;
+    private String date;
+    private String float2;
+    
+    private String datetime;
+    
+    public String getText() {
+        return text;
     }
+    
+    public void setText(String text) {
+        this.text = text;
+    }
+    
+    public String getDate() {
+        return date;
+    }
+    
+    public void setDate(String date) {
+        this.date = date;
+    }
+    
+    public String getFloat2() {
+        return float2;
+    }
+    
+    public void setFloat2(String float2) {
+        this.float2 = float2;
+    }
+    
+    public String getDatetime() {
+        return datetime;
+    }
+    
+    public void setDatetime(String datetime) {
+        this.datetime = datetime;
+    }
+    
 }

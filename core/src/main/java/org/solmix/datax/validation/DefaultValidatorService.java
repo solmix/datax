@@ -651,7 +651,8 @@ public class DefaultValidatorService implements ValidatorService
             if (value == null || value.equals(""))
                 return null;
             try {
-                new URL(value.toString());
+               URL url= new URL(value.toString());
+               context.setResultingValue(url);
             } catch (MalformedURLException e) {
                 return new ErrorMessage(getErrorString(validatorInfo, e.getMessage()),null,value);
             }

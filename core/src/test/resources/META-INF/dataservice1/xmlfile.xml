@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<datax xmlns="http://www.solmix.org/schema/dataservice-1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.solmix.org/schema/dataservice-1.0.0 http://www.solmix.org/xmlns/dataservice/v1.0.0">
+	<configuration namespace="com.call" serverType="xmlfile">
+		
+		<service id="file">
+			<fields>
+			<field name="text" type="text"/>
+			<field name="float" type="float"/>
+			<field name="float2" type="float"/>
+			<field name="date" type="date"/>
+			</fields>
+			<operations>
+				<fetch dataUrl="classpath:data/xml-file-data.xml" recordXPath="record">
+				</fetch>
+			</operations>
+		</service>
+	</configuration>
+</datax>

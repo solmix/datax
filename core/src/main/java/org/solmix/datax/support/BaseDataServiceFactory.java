@@ -51,7 +51,7 @@ public class BaseDataServiceFactory implements DataServiceFactory
 
     private EventService eventService;
 
-    Container container;
+    private Container container;
 
     public BaseDataServiceFactory(Container container)
     {
@@ -67,11 +67,14 @@ public class BaseDataServiceFactory implements DataServiceFactory
     @Override
     public DataService instance(DataServiceInfo info, Map<String, Object> properties) {
         DataTypeMap prop = new DataTypeMap(Collections.unmodifiableMap(properties));
-        BaseDataService bds = new BaseDataService(info, container, prop);
+        BaseDataService bds = instanceBaseDataService(info, container, prop);
         bds.setEventService(getEventService());
         return bds;
     }
     
+    protected BaseDataService instanceBaseDataService(DataServiceInfo info,Container container,DataTypeMap prop){
+        return new BaseDataService(info, container, prop);
+    }
     @Override
     public EventService getEventService() {
         if (eventService == null) {

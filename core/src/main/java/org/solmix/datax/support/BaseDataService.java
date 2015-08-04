@@ -338,7 +338,7 @@ public class BaseDataService implements DataService
             for(OperationInfo op:bos.getOperations()){
                 DSRequest request = createNewRequest(req,op);
                 if ( dsc != null) {
-                    request.setAttribute("old-dscall", dsc);
+                    request.setAttribute("old_dscall", dsc);
                 }
                 newDscall.execute(request);
             }
@@ -370,7 +370,7 @@ public class BaseDataService implements DataService
      * @param req
      * @return
      */
-    protected DSResponse executeDefault(DSRequest req,OperationType type) {
+    protected DSResponse executeDefault(DSRequest req,OperationType type)throws DSCallException {
         if (DataTools.isFetch(type)) {
             return executeFetch(req);
         } else if (DataTools.isRemove(type)) {
@@ -384,7 +384,7 @@ public class BaseDataService implements DataService
         }
     }
 
-    protected DSResponse executeCustomer(DSRequest req) {
+    protected DSResponse executeCustomer(DSRequest req)throws DSCallException {
         return notSupported(req);
     }
 
@@ -404,7 +404,7 @@ public class BaseDataService implements DataService
      * @param req
      * @return
      */
-    protected DSResponse executeAdd(DSRequest req) {
+    protected DSResponse executeAdd(DSRequest req) throws DSCallException{
         return notSupported(req);
     }
 
@@ -412,7 +412,7 @@ public class BaseDataService implements DataService
      * @param req
      * @return
      */
-    protected DSResponse executeUpdate(DSRequest req) {
+    protected DSResponse executeUpdate(DSRequest req)throws DSCallException {
         return notSupported(req);
     }
 
@@ -420,7 +420,7 @@ public class BaseDataService implements DataService
      * @param req
      * @return
      */
-    protected DSResponse executeRemove(DSRequest req) {
+    protected DSResponse executeRemove(DSRequest req)throws DSCallException {
         return notSupported(req);
     }
 
@@ -428,7 +428,7 @@ public class BaseDataService implements DataService
      * @param req
      * @return
      */
-    protected DSResponse executeFetch(DSRequest req) {
+    protected DSResponse executeFetch(DSRequest req)throws DSCallException {
         return notSupported(req);
     }
 
@@ -493,7 +493,13 @@ public class BaseDataService implements DataService
         if(type==OperationType.UPDATE){
             vcontext.setPropertiesOnly(true);
         }
-        validateRecords(req.getValueSets(),vcontext);
+        Object validated=validateRecords(req.getRawValues(),vcontext);
+        if(oi.getUsedValidatedValues()!=null&&oi.getUsedValidatedValues()){
+            req.setRawValues(validated);
+        }else{
+            req.setAttribute(DATAX.AFTER_VALIDATE_VALUES, validated);
+        }
+        
         Map<String, Object> errors = vcontext.getErrors();
         if (errors != null)
             return new ArrayList<Object>(errors.values());
@@ -518,11 +524,14 @@ public class BaseDataService implements DataService
      * @param valueSets
      * @param vcontext
      */
-    protected Object validateRecords(List<?> data, ValidationContext vcontext) {
-        if(DataUtils.isNullOrEmpty(data)){
+    protected Object validateRecords(Object rdata, ValidationContext vcontext) {
+        if(rdata==null){
             return null;
-        }else{
-            long start = System.currentTimeMillis();
+        }
+        long start = System.currentTimeMillis();
+        Object validatedObject;
+        if(rdata instanceof List<?>){
+            List<?> data=(List<?>)rdata;
             List<Object> records = new ArrayList<Object>();
             for (int i = 0; i < data.size(); i++){
                 records.add(validateRecord(data.get(i), vcontext));
@@ -536,8 +545,16 @@ public class BaseDataService implements DataService
                     .append(" (avg ").append((end - start) / data.size())
                     .append(")").toString() : "").toString();
             createAndFireTimeMonitorEvent(end-start,__info);
-            return records;
+            validatedObject= records;
+        }else{
+            validatedObject= validateRecord(rdata, vcontext);
         }
+        long end = System.currentTimeMillis();
+        String __info = new StringBuilder().append("Done validating ")
+            .append("at path '").append(vcontext.getPath())
+            .append("': ").append(end - start).append("ms").toString();
+        createAndFireTimeMonitorEvent(end-start,__info);
+        return validatedObject;
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -845,7 +862,7 @@ public class BaseDataService implements DataService
         return false;
     }
     
-    
+    @Override
     public boolean canStartTransaction(DSRequest req, boolean ignoreExistingTransaction) {
         if (req == null)
             return false;
@@ -856,12 +873,19 @@ public class BaseDataService implements DataService
         boolean isModification = DataTools.isModificationRequest(req);
         TransactionPolicy policy = req.getDSCall().getTransactionPolicy();
         if (isModification) {
+            //不管policy，修改的加入事物。
+            if(ignoreExistingTransaction){
+                return true;
+            }
             if (policy == TransactionPolicy.NONE) {
                 return false;
             } else {
                 return true;
             }
         } else {
+            if(ignoreExistingTransaction){
+                return false;
+            }
             if (policy == null) {
                 return false;
             } else {

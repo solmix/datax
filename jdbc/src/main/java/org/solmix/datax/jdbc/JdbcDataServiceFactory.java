@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 The Solmix Project
+ * Copyright 2015 The Solmix Project
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -16,30 +16,31 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.transformer;
+package org.solmix.datax.jdbc;
 
-import org.solmix.datax.DSRequest;
-import org.solmix.datax.DSResponse;
+import org.solmix.commons.annotation.ThreadSafe;
+import org.solmix.datax.support.BaseDataServiceFactory;
+import org.solmix.runtime.Container;
+import org.solmix.runtime.Extension;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年8月1日
+ * @version $Id$  2015年8月5日
  */
-
-public class TransformerAdaptor implements Transformer
+@Extension(name = JdbcDataServiceFactory.JDBC)
+@ThreadSafe
+public class JdbcDataServiceFactory extends BaseDataServiceFactory
 {
-
-    @Override
-    public Object transformRequest(Object requestData, DSRequest request) throws Exception {
-        return requestData;
+    public static final String JDBC = "jdbc";
+    
+    /**
+     * @param container
+     */
+    public JdbcDataServiceFactory(Container container)
+    {
+        super(container);
     }
 
-    
-    @Override
-    public Object transformResponse(Object responseData, DSResponse response) throws Exception {
-        return responseData;
-    }
-    
 }

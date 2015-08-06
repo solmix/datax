@@ -34,18 +34,18 @@ import org.solmix.datax.transformer.TransformerAdaptor;
 public class MockTransformer extends TransformerAdaptor
 {
     @Override
-    public DSRequest transformRequest(DSRequest request) {
-       Map<String,Object> value= request.getValues();
+    public Object transformRequest(Object values,DSRequest request) {
+       Map<String,Object> value=(Map<String,Object>)values;
        value.put("text", value.get("text")+"-transformRequest");
        request.setRawValues(value);
-        return request;
+        return value;
     }
 
     @Override
-    public DSResponse transformResponse(DSResponse response) {
-        String tt=response.getSingleResult(String.class);
-         response.setRawData(tt+"-transformResponse");
-        return response;
+    public Object transformResponse(Object value,DSResponse response) {
+        String tt=value.toString();
+         tt=tt+"-transformResponse";
+        return tt;
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 The Solmix Project
+ * Copyright 2015 The Solmix Project
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -16,30 +16,16 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.transformer;
-
-import org.solmix.datax.DSRequest;
-import org.solmix.datax.DSResponse;
+package org.solmix.datax.jdbc.sql;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年8月1日
+ * @version $Id$  2015年8月5日
  */
 
-public class TransformerAdaptor implements Transformer
+public class SQLUtils
 {
 
-    @Override
-    public Object transformRequest(Object requestData, DSRequest request) throws Exception {
-        return requestData;
-    }
-
-    
-    @Override
-    public Object transformResponse(Object responseData, DSResponse response) throws Exception {
-        return responseData;
-    }
-    
 }

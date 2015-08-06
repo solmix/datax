@@ -36,6 +36,10 @@
 					<method-arg order="5" value="5xxx" expression="$request"/>
 					</invoker>
 					<transformer refid="#trans"></transformer>
+					<extensions>
+						<aa></aa>
+					</extensions>
+					<customCriteriaFields xmlns="http://www.solmix.org/schema/dataservice-sql">aaaa</customCriteriaFields>
 				</fetch>
 				<fetch id="feth2" refid="#fetch"></fetch>
 				<add>

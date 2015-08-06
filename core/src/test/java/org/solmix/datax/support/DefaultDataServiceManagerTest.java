@@ -172,6 +172,7 @@ public class DefaultDataServiceManagerTest
         assertEquals("load.ds.check", v.getId());
         assertEquals(LookupType.CONTAINER, v.getLookup());
         assertEquals("otherattr", v.getProperty("otherattr"));
+        
         assertEquals(org.solmix.datax.service.MockValidator.class, v.getClazz());
         assertEquals(Long.valueOf(1), v.getCount());
         assertEquals("验证错误", v.getErrorMessage());
@@ -195,6 +196,7 @@ public class DefaultDataServiceManagerTest
         assertEquals(dsi.getId()+".fetch", oi.getId());
         assertEquals(Boolean.TRUE, oi.getAutoJoinTransactions());
         assertEquals(Boolean.TRUE, oi.getUsedValidatedValues());
+        assertEquals("aaaa", oi.getExtension("customCriteriaFields"));
         //关联
         OperationInfo oi2=dsi.getOperationInfo("#feth2");
         assertEquals(oi.getId(), oi2.getRefid());

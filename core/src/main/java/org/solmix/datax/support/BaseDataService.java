@@ -250,7 +250,8 @@ public class BaseDataService implements DataService
     protected void transformRequest(DSRequest req, List<Transformer> trans) {
         for(Transformer transformer :trans){
             try {
-                req= transformer.transformRequest(req);
+                Object transformedValues= transformer.transformRequest(req.getRawValues(),req);
+                req.setRawValues(transformedValues);
             } catch (Exception e) {
                 throw new TransformerException("Transformer DSRequest",e);
             }
@@ -263,7 +264,8 @@ public class BaseDataService implements DataService
         }
         for(Transformer transformer :transformers){
             try {
-                response= transformer.transformResponse(response);
+               Object transformedObject= transformer.transformResponse(response.getRawData(),response);
+               response.setRawData(transformedObject);
             } catch (Exception e) {
                 throw new TransformerException("Transformer DSRequest",e);
             }

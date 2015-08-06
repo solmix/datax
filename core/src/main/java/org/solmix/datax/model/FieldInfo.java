@@ -282,4 +282,11 @@ public class FieldInfo
         }
         
     }
+    /**
+     * @return
+     */
+    public Object getCustomSelectExpression() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

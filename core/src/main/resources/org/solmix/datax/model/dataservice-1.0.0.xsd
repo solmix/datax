@@ -247,8 +247,9 @@
 					</complexType>
 				</element>
 				<element name="invoker" type="ds:invokerType"></element>
-				<any processContents="lax" namespace="##other"
-					minOccurs="0" maxOccurs="unbounded">
+                <element name="extensions" type="ds:extensionsType"></element>
+                <any processContents="lax" minOccurs="0"
+					maxOccurs="unbounded" namespace="##other">
 				</any>
 			</choice>
 			<element name="batch">
@@ -344,4 +345,9 @@
 			<enumeration value="container"></enumeration>
 		</restriction>
 	</simpleType>
+
+    <complexType name="extensionsType">
+    	<sequence minOccurs="0" maxOccurs="unbounded">
+    		<any processContents="lax"></any>
+    	</sequence></complexType>
 </schema>

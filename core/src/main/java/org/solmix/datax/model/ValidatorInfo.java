@@ -91,6 +91,7 @@ public class ValidatorInfo implements XMLSource
         }
         return res;
     }
+    
     public String getName() {
         return name;
     }

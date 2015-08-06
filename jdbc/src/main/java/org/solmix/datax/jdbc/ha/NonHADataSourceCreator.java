@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 The Solmix Project
+ * Copyright 2015 The Solmix Project
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -16,30 +16,24 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.transformer;
+package org.solmix.datax.jdbc.ha;
 
-import org.solmix.datax.DSRequest;
-import org.solmix.datax.DSResponse;
+import javax.sql.DataSource;
+
+import org.solmix.datax.jdbc.DataSourceInfo;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年8月1日
+ * @version $Id$  2015年8月6日
  */
 
-public class TransformerAdaptor implements Transformer
+public class NonHADataSourceCreator implements HADataSourceCreator
 {
-
     @Override
-    public Object transformRequest(Object requestData, DSRequest request) throws Exception {
-        return requestData;
+    public DataSource createHADataSource(DataSourceInfo info) throws Exception {
+        return info.getTargetDataSource();
     }
 
-    
-    @Override
-    public Object transformResponse(Object responseData, DSResponse response) throws Exception {
-        return responseData;
-    }
-    
 }

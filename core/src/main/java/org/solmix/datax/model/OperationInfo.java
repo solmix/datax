@@ -125,7 +125,20 @@ public class OperationInfo
         }
         return null;
     }
-   
+
+    public String getExtension(String name) {
+        if (getXMLNode() != null) {
+            List<XMLNode> nodes = getXMLNode().getChildren();
+            if (nodes != null) {
+                for (XMLNode node : nodes) {
+                    if (name.equals(node.getName())) {
+                        return node.getStringBody();
+                    }
+                }
+            }
+        }
+        return null;
+    }
     public XMLNode getXMLNode() {
         return node;
     }

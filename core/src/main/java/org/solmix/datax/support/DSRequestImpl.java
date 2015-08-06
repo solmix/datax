@@ -380,12 +380,12 @@ public class DSRequestImpl extends PagedBean implements DSRequest,Cloneable
         this.rawValues = rawValues;
     }
 
-    
+    @Override
     public Object getRawOldValues() {
         return rawOldValues;
     }
 
-    
+    @Override
     public void setRawOldValues(Object rawOldValues) {
         this.rawOldValues = rawOldValues;
     }

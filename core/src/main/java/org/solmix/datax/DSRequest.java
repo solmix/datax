@@ -196,4 +196,14 @@ public interface DSRequest extends Pageable
      */
     void setAttribute(String name,Object value);
 
+    /**
+     * @return
+     */
+    Object getRawOldValues();
+
+    /**
+     * @param rawOldValues
+     */
+    void setRawOldValues(Object rawOldValues);
+
 }

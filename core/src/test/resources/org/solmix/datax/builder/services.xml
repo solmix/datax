@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xz:datax xmlns:xz="http://www.solmix.org/schema/dataservice-1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.solmix.org/schema/dataservice-1.0.0 http://www.solmix.org/xmlns/dataservice/v1.0.0">
+<xz:datax xmlns:xz="http://www.solmix.org/schema/datax-ds/v1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.solmix.org/schema/datax-ds/v1.0.0 http://www.solmix.org/schema/datax-ds/v1.0.0">
 	<xz:configuration namespace="com.example.services">
 	
 	<xz:service id="aa">

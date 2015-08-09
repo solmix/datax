@@ -21,11 +21,14 @@ package org.solmix.datax.jdbc.ha;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -33,7 +36,10 @@ import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.solmix.commons.util.ClassLoaderUtils;
+import org.solmix.commons.util.StringUtils;
 import org.solmix.datax.jdbc.DataSourceInfo;
+import org.solmix.runtime.helper.ProxyHelper;
 
 /**
  * 
@@ -80,19 +86,100 @@ public class FailoverHADataSourceCreator implements HADataSourceCreator
             }
             return activeDataSource;
         }
+        HotSwapInvocationHandler handler = new HotSwapInvocationHandler(activeDataSource);
+        
+        if(isPositiveFailover()){
+            DataSource targetDetectorDataSource = info.getTargetDetectorDataSource();
+            DataSource standbyDetectorDataSource = info.getStandbyDetectorDataSource();
+            if (targetDetectorDataSource == null || standbyDetectorDataSource == null) {
+                throw new IllegalArgumentException(
+                        "targetDetectorDataSource or standbyDetectorDataSource can't be null if positive failover is enabled.");
+            }
+            ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+            ExecutorService jobExecutor = Executors.newFixedThreadPool(1);
+            jobExecutorRegistry.add(jobExecutor);
+            
+            FailoverMonitorJob job = new FailoverMonitorJob(jobExecutor);
+            job.setHotSwapInvocation(handler);
+            job.setMasterDataSource(activeDataSource);
+            job.setStandbyDataSource(standbyDataSource);
+            job.setMasterDetectorDataSource(targetDetectorDataSource);
+            job.setStandbyDetectorDataSource(standbyDetectorDataSource);
+            job.setCurrentDetectorDataSource(targetDetectorDataSource);
+            job.setDetectingRequestTimeout(getDetectingTimeout());
+            job.setDetectingSQL(getDetectingSql());
+            job.setRecheckInterval(recheckInterval);
+            job.setRecheckTimes(recheckTimes);
+            
+            ScheduledFuture<?> future = scheduler.scheduleWithFixedDelay(job, initialDelay,
+                    monitorPeriod, TimeUnit.MILLISECONDS);
+            schedulerFutures.put(future, scheduler);
+        }
+        
+        if(isPassiveFailover()){
+            handler.setPassiveFailover(true);
+            handler.setMainDataSource(activeDataSource);
+            handler.setStandbyDataSource(standbyDataSource);
+        }
+        
+        ClassLoader loader= ClassLoaderUtils.getDefaultClassLoader();
+        Object proxy=ProxyHelper.getProxy(loader, new Class[]{DataSource.class}, handler);
 
-        return null;
+        return (DataSource)proxy;
     }
 
     @PostConstruct
     public void init() {
+        if (!isPassiveFailover() && !isPositiveFailover()) {
+            return;
+        }
+        if (StringUtils.isEmpty(detectingSql)) {
+            throw new IllegalArgumentException(
+                    "A 'detectingSql' should be provided if positive failover function is enabled.");
+        }
 
+        if (monitorPeriod <= 0 || detectingTimeout <= 0 || recheckInterval <= 0
+                || recheckTimes <= 0) {
+            throw new IllegalArgumentException(
+                    "'monitorPeriod' OR 'detectingTimeoutThreshold' OR 'recheckInterval' OR 'recheckTimes' must be positive.");
+        }
+
+        if (isPositiveFailover()) {
+            if ((detectingTimeout > monitorPeriod)) {
+                throw new IllegalArgumentException(
+                        "the 'detectingTimeoutThreshold' should be less(or equals) than 'monitorPeriod'.");
+            }
+
+            if ((recheckInterval * recheckTimes) > detectingTimeout) {
+                throw new IllegalArgumentException(
+                        " 'recheckInterval * recheckTimes' can not be longer than 'detectingTimeoutThreshold'");
+            }
+        }
     }
 
     @PreDestroy
     public void destroy() {
+        for (Map.Entry<ScheduledFuture<?>, ScheduledExecutorService> e : schedulerFutures.entrySet()) {
+            ScheduledFuture<?> future = e.getKey();
+            ScheduledExecutorService scheduler = e.getValue();
+            future.cancel(true);
+            shutdownExecutor(scheduler);
+        }
 
+        for (ExecutorService executor : jobExecutorRegistry) {
+            shutdownExecutor(executor);
+        }
     }
+
+    private void shutdownExecutor(ExecutorService executor) {
+        try {
+            executor.shutdown();
+            executor.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (Exception ex) {
+            LOG.warn("interrupted when shutting down executor service.");
+        }
+    }
+
 
     public boolean isPassiveFailover() {
         return passiveFailover;
@@ -108,6 +195,66 @@ public class FailoverHADataSourceCreator implements HADataSourceCreator
 
     public void setPositiveFailover(boolean positiveFailover) {
         this.positiveFailover = positiveFailover;
+    }
+
+    
+    public long getMonitorPeriod() {
+        return monitorPeriod;
+    }
+
+    
+    public void setMonitorPeriod(long monitorPeriod) {
+        this.monitorPeriod = monitorPeriod;
+    }
+
+    
+    public int getInitialDelay() {
+        return initialDelay;
+    }
+
+    
+    public void setInitialDelay(int initialDelay) {
+        this.initialDelay = initialDelay;
+    }
+
+    
+    public String getDetectingSql() {
+        return detectingSql;
+    }
+
+    
+    public void setDetectingSql(String detectingSql) {
+        this.detectingSql = detectingSql;
+    }
+
+    
+    public long getDetectingTimeout() {
+        return detectingTimeout;
+    }
+
+    
+    public void setDetectingTimeout(long detectingTimeout) {
+        this.detectingTimeout = detectingTimeout;
+    }
+
+    
+    public long getRecheckInterval() {
+        return recheckInterval;
+    }
+
+    
+    public void setRecheckInterval(long recheckInterval) {
+        this.recheckInterval = recheckInterval;
+    }
+
+    
+    public int getRecheckTimes() {
+        return recheckTimes;
+    }
+
+    
+    public void setRecheckTimes(int recheckTimes) {
+        this.recheckTimes = recheckTimes;
     }
 
 }

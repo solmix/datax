@@ -22,8 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Resource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.solmix.commons.util.DataUtils;
@@ -85,10 +83,8 @@ public class DSRequestImpl extends PagedBean implements DSRequest,Cloneable
 
     private Object rawOldValues;
     
-    @Resource
     private DataServiceManager dataServiceManager;
     
-    @Resource
     private ApplicationManager applicationManager;
     
     private Map<String ,Object> attributes;
@@ -551,6 +547,26 @@ public class DSRequestImpl extends PagedBean implements DSRequest,Cloneable
             attributes.put(name, value);
         }
         
+    }
+
+    
+    public DataServiceManager getDataServiceManager() {
+        return dataServiceManager;
+    }
+
+    
+    public void setDataServiceManager(DataServiceManager dataServiceManager) {
+        this.dataServiceManager = dataServiceManager;
+    }
+
+    
+    public ApplicationManager getApplicationManager() {
+        return applicationManager;
+    }
+
+    
+    public void setApplicationManager(ApplicationManager applicationManager) {
+        this.applicationManager = applicationManager;
     }
 
 }

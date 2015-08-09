@@ -33,10 +33,10 @@ import org.solmix.datax.DSRequest;
 import org.solmix.datax.DataService;
 import org.solmix.datax.jdbc.JdbcDataService;
 import org.solmix.datax.jdbc.JdbcExtProperty;
-import org.solmix.datax.jdbc.driver.SQLDriver;
-import org.solmix.datax.jdbc.tmp.OracleDriver;
-import org.solmix.datax.jdbc.tmp.PostgresDriver;
-import org.solmix.datax.jdbc.tmp.SQLServerDriver;
+import org.solmix.datax.jdbc.dialect.OracleDialect;
+import org.solmix.datax.jdbc.dialect.PostgresDialect;
+import org.solmix.datax.jdbc.dialect.SQLDialect;
+import org.solmix.datax.jdbc.dialect.SqlServerDialect;
 import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.model.FieldType;
 import org.solmix.datax.model.OperationInfo;
@@ -205,7 +205,7 @@ public class SQLWhereClause
         return !isEmpty() ? 1 : 0;
     }
 
-    public String toString(SQLDriver driver)  {
+    public String toString(SQLDialect driver)  {
         String __return;
         if (isEmpty()) {
 //            log.trace("no data; returning empty string");
@@ -230,7 +230,7 @@ public class SQLWhereClause
      * @
      */
     @SuppressWarnings("rawtypes")
-    private String getOutput(Object condition, SQLDriver driver)  {
+    private String getOutput(Object condition, SQLDialect driver)  {
         if (condition instanceof String)
             return (new StringBuilder()).append("(").append(condition).append(")").toString();
         if (!isAdvanced) {
@@ -288,7 +288,7 @@ public class SQLWhereClause
         return new StringBuilder().append("Data Type : [").append(condition.getClass().getName()).append("] is not supported").toString();
     }
 
-    private String buildAdvancedExpression(String fieldName, String operator, Object value, Object start, Object end, SQLDriver driver) {
+    private String buildAdvancedExpression(String fieldName, String operator, Object value, Object start, Object end, SQLDialect driver) {
         String _overrideTableName = null;
         boolean skipCustomCheck = false;
         // check customer criteria fields.
@@ -394,7 +394,7 @@ public class SQLWhereClause
         return field;
     }
 
-    private String buildCompoundExpression(Iterator conditions, String operator, SQLDriver driver)  {
+    private String buildCompoundExpression(Iterator conditions, String operator, SQLDialect driver)  {
         if (!conditions.hasNext()) {
 //            log.info("empty condition");
             return "('1'='1')";
@@ -426,7 +426,7 @@ public class SQLWhereClause
      * @param driver
      * @return
      */
-    private String buildExpression(String fieldName, Object value, SQLDriver driver) {
+    private String buildExpression(String fieldName, Object value, SQLDialect driver) {
         String _overrideTableName = null;
         boolean skipCustomCheck = false;
         // check customer criteria fields.
@@ -533,8 +533,8 @@ public class SQLWhereClause
      * @param driver
      * @return
      */
-    private String substringFilter(String lvalue, Object rvalue, SQLDriver driver) {
-        if ((driver instanceof OracleDriver) || (driver instanceof SQLServerDriver) || (driver instanceof PostgresDriver))
+    private String substringFilter(String lvalue, Object rvalue, SQLDialect driver) {
+        if ((driver instanceof OracleDialect) || (driver instanceof SqlServerDialect) || (driver instanceof PostgresDialect))
             return (new StringBuilder()).append("LOWER(").append(lvalue).append(") LIKE ").append(
                 driver.escapeValueForFilter(rvalue.toString().toLowerCase(), filterStyle)).append(driver.escapeClause()).toString();
         else
@@ -542,13 +542,13 @@ public class SQLWhereClause
     }
 
     public String getSQLString()  {
-        String whereClause = toString((dataSources.get(0)).getDriver());
+        String whereClause = toString((dataSources.get(0)).getDialect());
         if (whereClause == null)
             whereClause = "('1'='1')";
         return whereClause;
     }
 
-    private String stringComparison(String fieldName, String columnType, String operator, Object objVal, boolean negate, SQLDriver driver) {
+    private String stringComparison(String fieldName, String columnType, String operator, Object objVal, boolean negate, SQLDialect driver) {
         if (fieldName == null) {
 //            log.error("Found a null fieldName");
             return "('1'='1')";
@@ -564,7 +564,7 @@ public class SQLWhereClause
         String value = objVal.toString();
         value = driver.escapeValueUnquoted(value, true);
         StringBuffer sql = new StringBuffer("(");
-        if ((driver instanceof OracleDriver) || (driver instanceof SQLServerDriver) || (driver instanceof PostgresDriver)) {
+        if ((driver instanceof OracleDialect) || (driver instanceof SqlServerDialect) || (driver instanceof PostgresDialect)) {
             if (operator.startsWith("i"))
                 sql.append((new StringBuilder()).append("LOWER(").append(fieldName).append(") LIKE ").toString());
             else
@@ -596,7 +596,7 @@ public class SQLWhereClause
         return sql.toString();
     }
 
-    private String valueComparison(String fieldName, String columnType, String operator, Object value, Object start, Object end, SQLDriver driver,
+    private String valueComparison(String fieldName, String columnType, String operator, Object value, Object start, Object end, SQLDialect driver,
         String realFieldName) {
         if (fieldName == null) {
 //            log.error("Found a null fieldName");
@@ -648,9 +648,9 @@ public class SQLWhereClause
         } else if (columnType.equals("date")) {
             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
             if (value != null)
-                if (driver instanceof OracleDriver)
+                if (driver instanceof OracleDialect)
                     value = (new StringBuilder()).append("To_Date('").append(df.format((Date) value)).append("','yyyy-mm-dd')").toString();
-                // else if (driver instanceof DB2iSeriesDriver) {
+                // else if (driver instanceof DB2iSeriesDialect) {
                 // if (field != null && !driver.shouldUseSQLDateType(field))
                 // value = (new StringBuilder()).append("'").append(df.format((Date) value)).append("-00.00.00'")
                 // .toString();
@@ -661,10 +661,10 @@ public class SQLWhereClause
                     value = (new StringBuilder()).append("'").append(df.format((Date) value)).append("'").toString();
                 }
             if (start != null)
-                if (driver instanceof OracleDriver)
+                if (driver instanceof OracleDialect)
                     start = (new StringBuilder()).append("To_Date('").append(df.format((Date) start)).append("','yyyy-mm-dd')").toString();
                 /*
-                 * else if (driver instanceof DB2iSeriesDriver) { if (field != null &&
+                 * else if (driver instanceof DB2iSeriesDialect) { if (field != null &&
                  * !driver.shouldUseSQLDateType(field)) value = (new
                  * StringBuilder()).append("'").append(df.format((Date) value)).append("-00.00.00'") .toString(); else
                  * value = (new StringBuilder()).append("'").append(df.format((Date) value)).append("'").toString(); }
@@ -672,10 +672,10 @@ public class SQLWhereClause
                     start = (new StringBuilder()).append("'").append(df.format((Date) start)).append("'").toString();
                 }
             if (end != null)
-                if (driver instanceof OracleDriver)
+                if (driver instanceof OracleDialect)
                     end = (new StringBuilder()).append("To_Date('").append(df.format((Date) end)).append("','yyyy-mm-dd')").toString();
                 /*
-                 * else if (driver instanceof DB2iSeriesDriver) { if (field != null &&
+                 * else if (driver instanceof DB2iSeriesDialect) { if (field != null &&
                  * !driver.shouldUseSQLDateType(field)) value = (new
                  * StringBuilder()).append("'").append(df.format((Date) value)).append("-00.00.00'") .toString(); else
                  * value = (new StringBuilder()).append("'").append(df.format((Date) value)).append("'").toString(); }
@@ -778,7 +778,7 @@ public class SQLWhereClause
         }
     }
 
-    private String nullComparison(String fieldName, String operator, SQLDriver driver) {
+    private String nullComparison(String fieldName, String operator, SQLDialect driver) {
         if (fieldName == null) {
 //            log.error("Found a null fieldName");
             return "('1'='1')";
@@ -790,7 +790,7 @@ public class SQLWhereClause
     }
 
     @SuppressWarnings("rawtypes")
-    private String setComparison(String fieldName, String columnType, String operator, Object value, boolean negate, SQLDriver driver,
+    private String setComparison(String fieldName, String columnType, String operator, Object value, boolean negate, SQLDialect driver,
         String realFieldName) {
         if (fieldName == null) {
 //            log.error("Found a null fieldName");
@@ -820,10 +820,10 @@ public class SQLWhereClause
                 work = work.toString();
             else if (columnType.equals("date")) {
                 SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-                if (driver instanceof OracleDriver)
+                if (driver instanceof OracleDialect)
                     work = (new StringBuilder()).append("To_Date('").append(df.format((Date) work)).append("','yyyy-mm-dd')").toString();
                 /*
-                 * else if (driver instanceof DB2iSeriesDriver) { if (field != null &&
+                 * else if (driver instanceof DB2iSeriesDialect) { if (field != null &&
                  * !driver.shouldUseSQLDateType(field)) value = (new
                  * StringBuilder()).append("'").append(df.format((Date) value)).append("-00.00.00'") .toString(); else
                  * value = (new StringBuilder()).append("'").append(df.format((Date) value)).append("'").toString(); }
@@ -867,7 +867,7 @@ public class SQLWhereClause
     }
 
     private String fieldComparison(String fieldName, String columnType, String operator, String otherFieldName, String otherColumnType,
-        boolean negate, SQLDriver driver) {
+        boolean negate, SQLDialect driver) {
         if (fieldName == null) {
 //            log.error("Found a null fieldName");
             return "('1'='1')";

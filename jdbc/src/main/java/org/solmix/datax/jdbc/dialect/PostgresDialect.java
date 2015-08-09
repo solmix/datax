@@ -59,7 +59,7 @@ public class PostgresDialect extends SQLDialect
     }
     
     @Override
-    protected String escapeValueUnquoted(Object value, boolean escapeForFilter) {
+    public String escapeValueUnquoted(Object value, boolean escapeForFilter) {
         if (value == null)
             return null;
         String escaped =value.toString().replace("'", "''") ;

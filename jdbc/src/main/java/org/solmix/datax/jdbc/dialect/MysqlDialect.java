@@ -69,7 +69,7 @@ public class MysqlDialect extends SQLDialect
             startRow).append(", ").append(totalRows).toString();
     }
     @Override
-    protected String escapeValueUnquoted(Object value, boolean escapeForFilter) {
+    public String escapeValueUnquoted(Object value, boolean escapeForFilter) {
         if (value == null)
             return null;
         String escaped =value.toString().replace("'", "''") ;

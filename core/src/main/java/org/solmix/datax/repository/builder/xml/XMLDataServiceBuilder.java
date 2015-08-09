@@ -69,7 +69,7 @@ public class XMLDataServiceBuilder extends AbstractBuilder
     
     public XMLDataServiceBuilder(InputStream stream, DefaultRepository repositoryService,
         Map<String,Object> variables,String resourceUri,Container container,String defaultServerType){
-        this(new XMLParser(stream, true, variables, new DataServiceEntityResolver(),DATAX.NS),repositoryService,resourceUri,container,defaultServerType);
+        this(new XMLParser(stream, true, variables, new DataxEntityResolver(),DATAX.NS),repositoryService,resourceUri,container,defaultServerType);
     }
     private XMLDataServiceBuilder(XMLParser parser, DefaultRepository repositoryService,
         String resourceUri,Container container,String defaultServerType){

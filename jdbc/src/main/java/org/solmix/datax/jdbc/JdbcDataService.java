@@ -32,15 +32,16 @@ import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.call.DSCall;
 import org.solmix.datax.call.DSCallCompleteCallback;
+import org.solmix.datax.jdbc.dialect.SQLDialect;
 import org.solmix.datax.jdbc.driver.SQLDriver;
 import org.solmix.datax.jdbc.mode.JdbcDataServiceInfo;
+import org.solmix.datax.jdbc.sql.SQLGenerationException;
 import org.solmix.datax.jdbc.sql.SQLOrderClause;
 import org.solmix.datax.jdbc.sql.SQLSelectClause;
 import org.solmix.datax.jdbc.sql.SQLTable;
 import org.solmix.datax.jdbc.sql.SQLTableClause;
 import org.solmix.datax.jdbc.sql.SQLValuesClause;
 import org.solmix.datax.jdbc.sql.SQLWhereClause;
-import org.solmix.datax.jdbc.sql.SQLGenerationException;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.model.OperationInfo;
@@ -300,6 +301,14 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
      * @return
      */
     public static Map getField2ColumnMap(List dataSources, boolean primaryKeysOnly) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /**
+     * @return
+     */
+    public SQLDialect getDialect() {
         // TODO Auto-generated method stub
         return null;
     }

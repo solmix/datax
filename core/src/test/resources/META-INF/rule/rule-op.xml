@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rules xmlns="http://www.solmix.org/schema/datax-rule/v1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.solmix.org/schema/datax-rule/v1.0.0 http://www.solmix.org/schema/datax-rule/v1.0.0 ">
+  <rule>
+    <operation>com.example.datax.fetch</operation>
+    <partitions>db1,db2</partitions>
+  </rule>
+  <rule>
+    <operation>com.example.datax.fetch</operation>
+    <expression><![CDATA[org_no.startsWith('1234')]]></expression>
+    <partitions>db3,db4</partitions>
+  </rule>
+  <rule>
+    <dataservice>com.example1.datax1</dataservice>
+    <expression><![CDATA[org_no.startsWith('1234')]]></expression>
+    <partitions>db5,db6</partitions>
+  </rule>
+  <rule>
+    <dataservice>com.example1.datax1</dataservice>
+    <partitions>db7,db8</partitions>
+  </rule>
+  <rule>
+    <namespace>com.example2</namespace>
+    <expression><![CDATA[org_no.startsWith('1234')]]></expression>
+    <partitions>db9,db10</partitions>
+  </rule>
+   <rule>
+    <namespace>com.example2</namespace>
+    <partitions>db11,db12</partitions>
+  </rule>
+</rules>

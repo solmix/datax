@@ -32,7 +32,7 @@ import org.junit.Test;
 import org.solmix.commons.xml.XMLNode;
 import org.solmix.commons.xml.XMLParser;
 import org.solmix.datax.DATAX;
-import org.solmix.datax.repository.builder.xml.DataServiceEntityResolver;
+import org.solmix.datax.repository.builder.xml.DataxEntityResolver;
 
 
 /**
@@ -48,10 +48,10 @@ public class EntityReloverTest
     public void test() throws IOException {
        URL url= this.getClass().getResource("services.xml");
         InputStream is=url.openStream();
-        XMLParser parser = new XMLParser(is, true, null,new DataServiceEntityResolver(),DATAX.NS);
+        XMLParser parser = new XMLParser(is, true, null,new DataxEntityResolver(),DATAX.NS);
         XMLNode node =parser.evalNode("datax/configuration");
         assertNotNull(node);
-        assertEquals("http://www.solmix.org/schema/dataservice-1.0.0", node.getNode().getNamespaceURI());
+        assertEquals("http://www.solmix.org/schema/datax-ds/v1.0.0", node.getNode().getNamespaceURI());
     }
 
     @Test

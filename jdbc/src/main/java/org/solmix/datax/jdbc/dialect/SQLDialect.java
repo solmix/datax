@@ -116,7 +116,7 @@ public abstract class SQLDialect
 
     public abstract String escapeValueForFilter(Object value, String filterStyle);
 
-    protected abstract String escapeValueUnquoted(Object value, boolean b);
+    public abstract String escapeValueUnquoted(Object value, boolean b);
     
     public abstract String formatValue(Object obj);
     
@@ -127,4 +127,11 @@ public abstract class SQLDialect
     public abstract String limitQuery(String query, long startRow, long totalRows, List<String> outputColumns, String orderClause);
 
     public abstract String limitQuery(String query, long startRow, long totalRows, List<String> outputColumns);
+
+    /**
+     * @return
+     */
+    public int getMaximumSetSize() {
+        return 0;
+    }
 }

@@ -19,7 +19,9 @@
 package org.solmix.datax.router;
 
 
+
 /**
+ * 路由请求并分片处理。
  * 
  * @author solmix.f@gmail.com
  * @version $Id$  2015年6月18日

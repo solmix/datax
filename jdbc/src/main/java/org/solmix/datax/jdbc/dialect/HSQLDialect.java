@@ -81,7 +81,7 @@ public class HSQLDialect extends SQLDialect
             query.substring("SELECT".length())).toString();
     }
     @Override
-    protected String escapeValueUnquoted(Object value, boolean escapeForFilter) {
+    public String escapeValueUnquoted(Object value, boolean escapeForFilter) {
         if (value == null)
             return null;
         String escaped =value.toString().replace("'", "''") ;

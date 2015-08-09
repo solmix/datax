@@ -152,7 +152,7 @@ public class OracleDialect extends SQLDialect
      * @see org.solmix.datax.jdbc.dialect.SQLDialect#escapeValueUnquoted(java.lang.Object, boolean)
      */
     @Override
-    protected String escapeValueUnquoted(Object value, boolean escapeForFilter) {
+    public String escapeValueUnquoted(Object value, boolean escapeForFilter) {
         if (value == null)
             return null;
         String escaped =value.toString().replace("'", "''") ;

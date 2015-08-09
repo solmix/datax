@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema targetNamespace="http://www.solmix.org/schema/dataservice-1.0.0"
-	elementFormDefault="qualified" xmlns="http://www.w3.org/2001/XMLSchema"
-	xmlns:ds="http://www.solmix.org/schema/dataservice-1.0.0">
+<schema targetNamespace="http://www.solmix.org/schema/datax-ds/v1.0.0"
+	elementFormDefault="qualified" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:ds="http://www.solmix.org/schema/datax-ds/v1.0.0">
 
 	<element name="datax" type="ds:dataxType"></element>
 	<complexType name="dataxType">

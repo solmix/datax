@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 The Solmix Project
+ * Copyright 2015 The Solmix Project
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -16,10 +16,28 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+package org.solmix.datax.export;
+
+import org.solmix.datax.DataxRuntimeException;
+
+
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$  2015年8月7日
  */
 
-package org.solmix.datax.router;
+public class ExportException extends DataxRuntimeException
+{
+    private static final long serialVersionUID = -1484231988023449497L;
+
+    public ExportException(String string, Throwable e)
+    {
+        super(string, e);
+    }
+
+    public ExportException(String string)
+    {
+        super(string);
+    }
+}

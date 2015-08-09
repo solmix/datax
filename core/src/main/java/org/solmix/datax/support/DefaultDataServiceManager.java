@@ -29,8 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.annotation.PostConstruct;
-
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.solmix.commons.annotation.ThreadSafe;
@@ -42,6 +41,7 @@ import org.solmix.datax.DataServiceFactory;
 import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.DataServiceNoFoundException;
 import org.solmix.datax.DataxRuntimeException;
+import org.solmix.datax.application.ApplicationManager;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.repository.DefaultRepository;
 import org.solmix.datax.repository.RepositoryService;
@@ -65,7 +65,7 @@ public class DefaultDataServiceManager implements DataServiceManager
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultDataServiceManager.class);
 
-    private static final String DEFAULT_XML_LOCATION = "META-INF/dataservice/*.xml";
+    private static final String DEFAULT_XML_LOCATION = "META-INF/dataservices/*.xml";
 
     private ConcurrentHashMap<String, DataServiceHolder> cached = new ConcurrentHashMap<String, DefaultDataServiceManager.DataServiceHolder>();
 
@@ -89,6 +89,7 @@ public class DefaultDataServiceManager implements DataServiceManager
 
     private String defaultServerType;
     
+    private ApplicationManager applicationManager;
 
     private ExtensionLoader<DataServiceFactory> extensionLoader;
 
@@ -312,14 +313,20 @@ public class DefaultDataServiceManager implements DataServiceManager
             scanClassDefinition(basePackage, repository);
         }
 
-        for (String xml : xmlResources.keySet()) {
-            XMLDataServiceBuilder builder = null;
-            try {
-                builder = new XMLDataServiceBuilder(xmlResources.get(xml), repository, getProperties(), xml, container, getDefaultServerType());
-            } catch (XMLParsingException e) {
-                throw new BuilderException("Error validate xml file:" + xml, e);
+        try {
+            for (String xml : xmlResources.keySet()) {
+                XMLDataServiceBuilder builder = null;
+                try {
+                    builder = new XMLDataServiceBuilder(xmlResources.get(xml), repository, getProperties(), xml, container, getDefaultServerType());
+                } catch (XMLParsingException e) {
+                    throw new BuilderException("Error validate xml file:" + xml, e);
+                }
+                builder.build();
             }
-            builder.build();
+        } finally {
+            for (InputStream input : xmlResources.values()) {
+                IOUtils.closeQuietly(input);
+            }
         }
         Collection<ReferenceResolver> resolvers = repository.getReferenceResolvers();
         if (!resolvers.isEmpty()) {
@@ -412,8 +419,9 @@ public class DefaultDataServiceManager implements DataServiceManager
    
     @Override
     public DSRequest createDSRequest() {
-        DSRequest  request= new DSRequestImpl();
-        injectObject(request);
+        DSRequestImpl  request= new DSRequestImpl();
+        request.setDataServiceManager(this);
+        request.setApplicationManager(getApplicationManager());
         return request;
     }
 
@@ -428,7 +436,25 @@ public class DefaultDataServiceManager implements DataServiceManager
     @Override
     public DSResponse createDsResponse(DSRequest request) {
         DSResponse response= new DSResponseImpl(request);
-        injectObject(response);
+        //TODO
+        //injectObject(response);
         return response;
     }
+
+    
+    public ApplicationManager getApplicationManager() {
+        if(applicationManager==null){
+            synchronized (this) {
+                applicationManager=container.getExtension(ApplicationManager.class);
+            }
+        }
+        return applicationManager;
+    }
+
+    
+    public void setApplicationManager(ApplicationManager applicationManager) {
+        this.applicationManager = applicationManager;
+    }
+    
+    
 }

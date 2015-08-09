@@ -16,10 +16,19 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+package org.solmix.datax.jdbc.router.rule;
+
+
 /**
  * 
  * @author solmix.f@gmail.com
  * @version $Id$  2015年6月18日
  */
 
-package org.solmix.datax.router.rule;
+public interface RouterRule<F, T>
+{
+    boolean isPassed(F param);
+    
+    T getAction();
+
+}

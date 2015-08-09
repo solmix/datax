@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<datax xmlns="http://www.solmix.org/schema/dataservice-1.0.0"
+<datax xmlns="http://www.solmix.org/schema/datax-ds/v1.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.solmix.org/schema/dataservice-1.0.0 http://www.solmix.org/xmlns/dataservice/v1.0.0">
+	xsi:schemaLocation="http://www.solmix.org/schema/datax-ds/v1.0.0 http://www.solmix.org/schema/datax-ds/v1.0.0">
 	<configuration namespace="com.call">
 		
 		<service id="ds2" serviceClass="org.solmix.datax.support.CallDataService">

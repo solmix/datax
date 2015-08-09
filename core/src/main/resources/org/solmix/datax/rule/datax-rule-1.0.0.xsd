@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema targetNamespace="http://www.solmix.org/schema/datax-rule/v1.0.0" elementFormDefault="qualified" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://www.solmix.org/schema/datax-rule/v1.0.0">
+
+    <element name="rules" type="tns:rulesType"></element>
+
+    <complexType name="rulesType">
+    	<sequence minOccurs="1" maxOccurs="unbounded">
+    		<element name="rule" type="tns:ruleType"></element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="ruleType">
+    	<sequence>
+    		<choice minOccurs="1" maxOccurs="1">
+    			<element name="namespace" type="string" minOccurs="0" maxOccurs="1"></element>
+    			<element name="dataservice" type="string" minOccurs="0"
+    				maxOccurs="1">
+    			</element>
+    			<element name="operation" type="string" minOccurs="0"
+    				maxOccurs="1">
+    			</element>
+    		</choice>
+    		<element name="expression" type="string" minOccurs="0" maxOccurs="1"></element>
+            <element name="partitions" type="string"></element>
+    	</sequence>
+    </complexType>
+</schema>

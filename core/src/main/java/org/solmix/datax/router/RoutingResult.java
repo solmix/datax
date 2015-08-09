@@ -16,16 +16,38 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+
 package org.solmix.datax.router;
 
+import java.util.List;
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$ 2015年6月18日
  */
 
-public interface RoutingResult
+public class RoutingResult
 {
+
+    private List<String> resourceIds;
+
+    private Merger<?, ?> merger;
+
+    public List<String> getResourceIds() {
+        return resourceIds;
+    }
+
+    public void setResourceIds(List<String> resourceIds) {
+        this.resourceIds = resourceIds;
+    }
+
+    public Merger<?, ?> getMerger() {
+        return merger;
+    }
+
+    public void setMerger(Merger<?, ?> merger) {
+        this.merger = merger;
+    }
 
 }

@@ -27,6 +27,7 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
+import org.solmix.commons.util.Assert;
 import org.solmix.datax.jdbc.DataSourceInfo;
 import org.solmix.datax.jdbc.DataSourceService;
 import org.solmix.datax.jdbc.ha.HADataSourceCreator;
@@ -69,10 +70,23 @@ public class DefaultDataSourceService implements DataSourceService
     }
 
     @PostConstruct
-    public void init(){
+    public void init() throws Exception{
         if(getHaDataSourceCreator()!=null){
             setHaDataSourceCreator(new NonHADataSourceCreator());
         }
-        
+        if(dataSourceInfos.isEmpty()){
+            return;
+        }
+        for(DataSourceInfo info:getDataSourceInfos()){
+            Assert.isNotNull(info.getId());
+            Assert.isNotNull(info.getTargetDataSource());
+            DataSource dataSourceToUse = info.getTargetDataSource();
+
+            if (info.getStandbyDataSource() != null) {
+                dataSourceToUse = getHaDataSourceCreator().createHADataSource(info);
+            }
+
+            dataSources.put(info.getId(),  dataSourceToUse);
+        }
     }
 }

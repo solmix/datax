@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 The Solmix Project
+ * Copyright 2015 The Solmix Project
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -16,10 +16,18 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+package org.solmix.datax.router;
+
+import java.util.List;
+
+
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年6月18日
+ * @version $Id$  2015年8月7日
  */
 
-package org.solmix.datax.router.support;
+public interface Merger<T, R>
+{
+    R merge(List<T> entities);
+}

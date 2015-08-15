@@ -37,7 +37,7 @@ import org.solmix.datax.DataService;
  * @version $Id$  2015年7月15日
  */
 
-public class DSResponseImpl  extends PagedBean implements DSResponse
+public class DSResponseImpl implements DSResponse
 {
 
     private static final Logger LOG = LoggerFactory.getLogger(DSResponseImpl.class);
@@ -99,18 +99,15 @@ public class DSResponseImpl  extends PagedBean implements DSResponse
     public void setDataService(DataService dataService) {
         this.dataService=dataService;
     }
+    @Override
     public void setAffectedRows(Long affectedRows) {
         this.affectedRows=affectedRows;
         
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.solmix.api.datasource.DSResponse#getAffectedRows(java.lang.Long)
-     */
+ 
     @Override
-    public Long getAffectedRows(Long long1) {
+    public Long getAffectedRows() {
         return affectedRows;
         
     }

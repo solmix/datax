@@ -29,7 +29,7 @@ import java.util.Map;
  * @version $Id$ 2015年6月18日
  */
 
-public interface DSResponse extends Pageable
+public interface DSResponse
 {
 
     /**
@@ -76,9 +76,9 @@ public interface DSResponse extends Pageable
         }
     }
 
-    void setAffectedRows(Long long1);
+    void setAffectedRows(Long affected);
 
-    Long getAffectedRows(Long long1);
+    Long getAffectedRows();
 
     /**
      * Return the DataSource

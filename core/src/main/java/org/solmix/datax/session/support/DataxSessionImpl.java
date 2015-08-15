@@ -26,12 +26,12 @@ import org.solmix.datax.DSResponse;
 import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.DataxException;
 import org.solmix.datax.DataxRuntimeException;
-import org.solmix.datax.Pageable;
+import org.solmix.datax.attachment.Pageable;
 import org.solmix.datax.call.DSCall;
-import org.solmix.datax.call.TransactionException;
-import org.solmix.datax.call.TransactionFailedException;
 import org.solmix.datax.model.TransactionPolicy;
 import org.solmix.datax.session.DataxSession;
+import org.solmix.datax.transaction.TransactionException;
+import org.solmix.datax.transaction.TransactionFailedException;
 
 
 /**
@@ -123,7 +123,7 @@ public class DataxSessionImpl implements DataxSession
     /**
      * {@inheritDoc}
      * 
-     * @see org.solmix.datax.session.DataxSession#fetchList(java.lang.String, java.lang.Object, org.solmix.datax.Pageable)
+     * @see org.solmix.datax.session.DataxSession#fetchList(java.lang.String, java.lang.Object, org.solmix.datax.attachment.Pageable)
      */
     @Override
     public <E> List<E> fetchList(String statement, Object parameter, Pageable page) {

@@ -23,9 +23,10 @@ import java.util.List;
 import org.solmix.datax.DSCallException;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
-import org.solmix.datax.DataxException;
 import org.solmix.datax.FreeResourcesHandler;
 import org.solmix.datax.model.TransactionPolicy;
+import org.solmix.datax.transaction.TransactionException;
+import org.solmix.datax.transaction.TransactionService;
 
 
 /**
@@ -125,5 +126,10 @@ public interface DSCall extends FreeResourcesHandler
      * @return
      */
     DSResponse getResponseByOperationLocalId(String operationLocalId);
-    
+   
+
+    /**
+     * @return
+     */
+    TransactionService getTransactionService();
 }

@@ -31,16 +31,14 @@ import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.DSResponse.Status;
 import org.solmix.datax.DataService;
-import org.solmix.datax.DataxException;
 import org.solmix.datax.call.DSCall;
 import org.solmix.datax.call.DSCallCompleteCallback;
-import org.solmix.datax.call.TransactionException;
-import org.solmix.datax.call.TransactionFailedException;
 import org.solmix.datax.model.OperationInfo;
 import org.solmix.datax.model.TransactionPolicy;
-import org.solmix.datax.support.BaseDataService;
-import org.solmix.datax.support.DSRequestImpl;
 import org.solmix.datax.support.DSResponseImpl;
+import org.solmix.datax.transaction.TransactionException;
+import org.solmix.datax.transaction.TransactionFailedException;
+import org.solmix.datax.transaction.TransactionService;
 import org.solmix.datax.util.DataTools;
 
 /**
@@ -62,9 +60,12 @@ public class DSCallImpl implements DSCall
     private Long transactionNum;
     
     private Map<Object, Object> attributes;
+    
     private final Map<DSRequest, DSResponse> responseMap = new LinkedHashMap<DSRequest, DSResponse>();
 
     private final HashSet<DSCallCompleteCallback> callbacks = new HashSet<DSCallCompleteCallback>();
+    
+    private final TransactionService transactionService;
 
     public enum STATUS
     {
@@ -73,15 +74,16 @@ public class DSCallImpl implements DSCall
 
     private STATUS status;
 
-    public DSCallImpl()
+    public DSCallImpl(TransactionService transactionManager)
     {
-        this(STATUS.INIT,null);
+        this(STATUS.INIT,transactionManager,null);
     }
 
-    public DSCallImpl(STATUS status,TransactionPolicy policy)
+    public DSCallImpl(STATUS status,TransactionService transactionManager,TransactionPolicy policy)
     {
         this.status = status;
         this.transactionPolicy=policy;
+        this.transactionService=transactionManager;
     }
     public void addRequest(DSRequest req) {
         if(!requests.contains(req)){
@@ -136,7 +138,7 @@ public class DSCallImpl implements DSCall
 
     @Override
     public void setTransactionPolicy(TransactionPolicy transactionPolicy) throws TransactionException {
-        if (status == STATUS.BEGIN){
+        if (status != STATUS.INIT){
             throw new TransactionException("dsRequest already started.");
         }
         this.transactionPolicy = transactionPolicy;
@@ -364,4 +366,10 @@ public class DSCallImpl implements DSCall
         res.setRawData(mergedData);
         return res;
     }
+
+    @Override
+    public TransactionService getTransactionService() {
+        return transactionService;
+    }
+    
 }

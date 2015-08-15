@@ -24,7 +24,7 @@ import org.solmix.commons.annotation.NotThreadSafe;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.DataServiceManager;
-import org.solmix.datax.Pageable;
+import org.solmix.datax.attachment.Pageable;
 import org.solmix.datax.model.TransactionPolicy;
 
 

@@ -16,31 +16,31 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+
 package org.solmix.datax.jdbc;
 
 import org.solmix.commons.annotation.ThreadSafe;
+import org.solmix.commons.collections.DataTypeMap;
+import org.solmix.datax.model.DataServiceInfo;
+import org.solmix.datax.support.BaseDataService;
 import org.solmix.datax.support.BaseDataServiceFactory;
 import org.solmix.runtime.Container;
 import org.solmix.runtime.Extension;
 
-
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年8月5日
+ * @version $Id$ 2015年8月5日
  */
 @Extension(name = JdbcDataServiceFactory.JDBC)
 @ThreadSafe
 public class JdbcDataServiceFactory extends BaseDataServiceFactory
 {
-    public static final String JDBC = "jdbc";
-    
-    /**
-     * @param container
-     */
-    public JdbcDataServiceFactory(Container container)
-    {
-        super(container);
-    }
 
+    public static final String JDBC = "jdbc";
+
+    @Override
+    protected BaseDataService instanceBaseDataService(DataServiceInfo info, Container container, DataTypeMap prop) {
+        return new JdbcDataService(info, container, prop);
+    }
 }

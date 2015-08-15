@@ -47,9 +47,8 @@ import org.solmix.datax.DataServiceNoFoundException;
 import org.solmix.datax.DataxException;
 import org.solmix.datax.OperationNoFoundException;
 import org.solmix.datax.call.DSCall;
-import org.solmix.datax.call.Transaction;
-import org.solmix.datax.call.support.DSCallImpl;
-import org.solmix.datax.call.support.DSCallImpl.STATUS;
+import org.solmix.datax.call.DSCallFactory;
+import org.solmix.datax.call.DSCallUtils;
 import org.solmix.datax.model.BatchOperations;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.model.FieldInfo;
@@ -98,6 +97,8 @@ public class BaseDataService implements DataService
     private Container container;
     private DataTypeMap properties;
     private DataServiceInfo info;
+    
+    private DSCallFactory dsCallFactory;
     
     private  EventService eventService;
     
@@ -330,25 +331,20 @@ public class BaseDataService implements DataService
      * @return
      * @throws DataxException 
      */
-    protected DSResponse executeBatch(DSRequest req,OperationInfo oi) throws DSCallException {
-        DSCall dsc=  req.getDSCall();
-        BatchOperations bos=oi.getBatch();
-        TransactionPolicy policy= bos.getTransactionPolicy();
-        DSCall newDscall=null;
-        try{
-            newDscall = new DSCallImpl(STATUS.BEGIN,policy);
-            for(OperationInfo op:bos.getOperations()){
-                DSRequest request = createNewRequest(req,op);
-                if ( dsc != null) {
-                    request.setAttribute("old_dscall", dsc);
-                }
-                newDscall.execute(request);
+    protected DSResponse executeBatch(DSRequest req, OperationInfo oi) throws DSCallException {
+        BatchOperations bos = oi.getBatch();
+        TransactionPolicy policy = bos.getTransactionPolicy();
+        DSCall old = DSCallUtils.getDSCall();
+        try {
+            DSCall newdsc = dsCallFactory.createDSCall(policy);
+            DSCallUtils.setDSCall(newdsc);
+            for (OperationInfo op : bos.getOperations()) {
+                DSRequest request = createNewRequest(req, op);
+                newdsc.execute(request);
             }
-            return newDscall.getMergedResponse();
-        }finally{
-            if (dsc != null && newDscall != dsc) {
-                req.setDSCall(dsc);
-            }
+            return newdsc.getMergedResponse();
+        } finally {
+            DSCallUtils.setDSCall(old);
         }
     }
   
@@ -394,7 +390,7 @@ public class BaseDataService implements DataService
      * @param req
      * @return
      */
-    private DSResponse notSupported(DSRequest req) {
+    protected DSResponse notSupported(DSRequest req) {
         OperationInfo oi = info.getOperationInfo(req.getOperationId());
         throw new UnsupportedOperationException(
             new StringBuilder().append("Default operation type '")
@@ -730,6 +726,9 @@ public class BaseDataService implements DataService
             getEventService().postEvent(event);
         }
     }
+    protected boolean isEventEnable(){
+        return getEventService()!=null;
+    }
     protected void createAndFireValidationEvent(Level levle, String msg) {
         ValidationEvent event= new ValidationEvent(levle,msg);
         if(getEventService()!=null){
@@ -1005,11 +1004,11 @@ public class BaseDataService implements DataService
         }
     }
     //需要根据DSrequest中配置的服务命名空间和参数规则(rule)决定使用的数据源。
-    protected String getTransactionObjectKey(DSRequest req){
+  /*  protected String getTransactionObjectKey(DSRequest req){
         return null;
-    }
+    }*/
     
-    protected Transaction getTransactionObject(DSRequest req) {
+   /* protected Transaction getTransactionObject(DSRequest req) {
         if (req == null){
             return null;
         }
@@ -1017,12 +1016,16 @@ public class BaseDataService implements DataService
             return null;
         else
             return (Transaction) req.getDSCall().getAttribute(getTransactionObjectKey(req));
-    }
+    }*/
 
     
     @Override
     public Object escapeValue(Object data, String reference) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    public void setDSCallFactory(DSCallFactory factory) {
+       this.dsCallFactory=factory;
     }
 }

@@ -37,9 +37,9 @@ import org.solmix.datax.RequestContext;
 import org.solmix.datax.application.Application;
 import org.solmix.datax.application.ApplicationManager;
 import org.solmix.datax.call.DSCall;
-import org.solmix.datax.call.TransactionException;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.model.OperationInfo;
+import org.solmix.datax.transaction.TransactionException;
 
 
 /**
@@ -48,7 +48,7 @@ import org.solmix.datax.model.OperationInfo;
  * @version $Id$  2015年7月15日
  */
 
-public class DSRequestImpl extends PagedBean implements DSRequest,Cloneable
+public class DSRequestImpl  implements DSRequest,Cloneable
 {
 
     private static final Logger LOG= LoggerFactory.getLogger(DSRequestImpl.class);
@@ -88,6 +88,8 @@ public class DSRequestImpl extends PagedBean implements DSRequest,Cloneable
     private ApplicationManager applicationManager;
     
     private Map<String ,Object> attributes;
+    
+    private Map<Class<?> ,Object> attachments;
     
     public DSRequestImpl(){
     }
@@ -523,7 +525,7 @@ public class DSRequestImpl extends PagedBean implements DSRequest,Cloneable
     @Override
     public Object getAttribute(String name) {
         if(attributes!=null){
-            attributes.get(name);
+           return attributes.get(name);
         }
         return null;
     }
@@ -567,6 +569,27 @@ public class DSRequestImpl extends PagedBean implements DSRequest,Cloneable
     
     public void setApplicationManager(ApplicationManager applicationManager) {
         this.applicationManager = applicationManager;
+    }
+
+   
+    @Override
+    public <T> void addAttachment(Class<T> classKey, T instance) {
+        if(instance==null||classKey==null){
+            return;
+        }
+        if(attachments==null){
+            attachments=new HashMap<Class<?>, Object>();
+        }
+        attachments.put(classKey, instance);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T getAttachment(Class<T> classKey) {
+        if (attachments != null) {
+            return (T) attachments.get(classKey);
+        }
+        return null;
     }
 
 }

@@ -33,7 +33,7 @@ import org.solmix.datax.model.OperationInfo;
  * @version $Id$ 2015年6月18日
  */
 
-public interface DSRequest extends Pageable
+public interface DSRequest 
 {
 
     DSResponse execute() throws DSCallException;
@@ -206,4 +206,7 @@ public interface DSRequest extends Pageable
      */
     void setRawOldValues(Object rawOldValues);
 
+    <T>void addAttachment(Class<T> classKey,T instance);
+    
+    <T> T getAttachment(Class<T> classKey);
 }

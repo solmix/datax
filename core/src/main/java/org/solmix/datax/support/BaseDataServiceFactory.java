@@ -30,6 +30,7 @@ import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.repository.builder.BaseXmlNodeParserProvider;
 import org.solmix.datax.repository.builder.XmlNodeParserProvider;
 import org.solmix.runtime.Container;
+import org.solmix.runtime.ContainerAware;
 import org.solmix.runtime.Extension;
 import org.solmix.runtime.event.EventService;
 
@@ -40,12 +41,12 @@ import org.solmix.runtime.event.EventService;
  */
 @Extension(name = BaseDataServiceFactory.BASE)
 @ThreadSafe
-public class BaseDataServiceFactory implements DataServiceFactory
+public class BaseDataServiceFactory implements DataServiceFactory,ContainerAware
 {
 
     public static final String BASE = "base";
 
-    private final XmlNodeParserProvider provider;
+    private  XmlNodeParserProvider provider;
 
     private Object eventServicelock = new Object();
 
@@ -53,10 +54,8 @@ public class BaseDataServiceFactory implements DataServiceFactory
 
     private Container container;
 
-    public BaseDataServiceFactory(Container container)
+    public BaseDataServiceFactory()
     {
-        this.container = container;
-        provider = new BaseXmlNodeParserProvider(container);
     }
     
     /**
@@ -88,6 +87,17 @@ public class BaseDataServiceFactory implements DataServiceFactory
     @Override
     public XmlNodeParserProvider getXmlNodeParserProvider() {
         return provider;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.solmix.runtime.ContainerAware#setContainer(org.solmix.runtime.Container)
+     */
+    @Override
+    public void setContainer(Container container) {
+        this.container=container;
+        provider = new BaseXmlNodeParserProvider(container);
     }
 
 }

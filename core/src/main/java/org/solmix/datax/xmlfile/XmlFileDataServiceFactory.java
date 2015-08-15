@@ -18,20 +18,13 @@
  */
 package org.solmix.datax.xmlfile;
 
-import java.util.Collections;
-import java.util.Map;
-
 import org.solmix.commons.annotation.ThreadSafe;
 import org.solmix.commons.collections.DataTypeMap;
-import org.solmix.datax.DataService;
-import org.solmix.datax.DataServiceFactory;
 import org.solmix.datax.model.DataServiceInfo;
-import org.solmix.datax.repository.builder.XmlNodeParserProvider;
 import org.solmix.datax.support.BaseDataService;
 import org.solmix.datax.support.BaseDataServiceFactory;
 import org.solmix.runtime.Container;
 import org.solmix.runtime.Extension;
-import org.solmix.runtime.event.EventService;
 
 
 /**
@@ -45,13 +38,7 @@ public class XmlFileDataServiceFactory extends BaseDataServiceFactory
 {
     public static final String XMLFILE = "xmlfile";
     
-    /**
-     * @param container
-     */
-    public XmlFileDataServiceFactory(Container container)
-    {
-        super(container);
-    }
+    
     @Override
     protected BaseDataService instanceBaseDataService(DataServiceInfo info,Container container,DataTypeMap prop){
         return  new XmlFileDataService(info, container, prop);

@@ -36,4 +36,8 @@ public interface DataSourceService
     Map<String, DataSource> getDataSources();
 
     Set<DataSourceInfo> getDataSourceInfos();
+    
+    DataSourceInfo getDataSourceInfo(String key);
+    
+    RoutingRequestProcessor getRoutingRequestProcessor();
 }

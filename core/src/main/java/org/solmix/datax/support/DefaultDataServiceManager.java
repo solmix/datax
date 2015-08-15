@@ -42,6 +42,8 @@ import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.DataServiceNoFoundException;
 import org.solmix.datax.DataxRuntimeException;
 import org.solmix.datax.application.ApplicationManager;
+import org.solmix.datax.call.DSCallFactory;
+import org.solmix.datax.call.support.DefaultDSCallFactory;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.repository.DefaultRepository;
 import org.solmix.datax.repository.RepositoryService;
@@ -49,6 +51,7 @@ import org.solmix.datax.repository.builder.BuilderException;
 import org.solmix.datax.repository.builder.ReferenceResolver;
 import org.solmix.datax.repository.builder.xml.XMLDataServiceBuilder;
 import org.solmix.runtime.Container;
+import org.solmix.runtime.ContainerAware;
 import org.solmix.runtime.extension.ExtensionLoader;
 import org.solmix.runtime.resource.InputStreamResource;
 import org.solmix.runtime.resource.ResourceInjector;
@@ -60,7 +63,7 @@ import org.solmix.runtime.resource.ResourceManager;
  * @version $Id$ 2015年6月18日
  */
 @ThreadSafe
-public class DefaultDataServiceManager implements DataServiceManager
+public class DefaultDataServiceManager implements DataServiceManager,ContainerAware
 {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultDataServiceManager.class);
@@ -87,6 +90,8 @@ public class DefaultDataServiceManager implements DataServiceManager
 
     private RepositoryService repositoryService;
 
+    private DSCallFactory dscFactory;
+    
     private String defaultServerType;
     
     private ApplicationManager applicationManager;
@@ -95,15 +100,19 @@ public class DefaultDataServiceManager implements DataServiceManager
 
     public DefaultDataServiceManager(Container c)
     {
-        this.container = c;
+        setContainer(c);
+    }
+
+    @Override
+    public void setContainer(Container container) {
+        this.container = container;
         if (container != null) {
             container.setExtension(this, DataServiceManager.class);
-            setupDataServiceResolver();
+            setupExtensions();
             extensionLoader = container.getExtensionLoader(DataServiceFactory.class);
         }
     }
-
-    private void setupDataServiceResolver() {
+    private void setupExtensions() {
         ResourceManager rm = container.getExtension(ResourceManager.class);
         if (rm != null) {
             rm.addResourceResolver(new DataServiceResolver(this));
@@ -215,6 +224,9 @@ public class DefaultDataServiceManager implements DataServiceManager
     private DataService instanceDataService(DataServiceInfo info){
         DataServiceFactory dsf= extensionLoader.getExtension(info.getServerType());
         DataService ds= dsf.instance(info,getProperties());
+        if(ds instanceof BaseDataService){
+            ((BaseDataService)ds).setDSCallFactory(dscFactory);
+        }
         return ds;
     }
 
@@ -249,6 +261,16 @@ public class DefaultDataServiceManager implements DataServiceManager
      */
     public void setDefaultServerType(String defaultServerType) {
         this.defaultServerType = defaultServerType;
+    }
+
+    
+    public DSCallFactory getDscFactory() {
+        return dscFactory;
+    }
+
+    
+    public void setDscFactory(DSCallFactory dscFactory) {
+        this.dscFactory = dscFactory;
     }
 
     @Override
@@ -290,6 +312,17 @@ public class DefaultDataServiceManager implements DataServiceManager
         // 未设置，使用默认repository。
         if (repositoryService == null) {
             buildDefaultRepository();
+        }
+        //设置默认的manager。
+        
+        if(dscFactory==null){
+            dscFactory= container.getExtension(DSCallFactory.class);
+            if(dscFactory==null){
+                DefaultDSCallFactory factory=new DefaultDSCallFactory();
+                factory.init();
+                dscFactory=factory;
+                container.setExtension(dscFactory, DSCallFactory.class);
+            }
         }
         init = true;
     }
@@ -455,6 +488,7 @@ public class DefaultDataServiceManager implements DataServiceManager
     public void setApplicationManager(ApplicationManager applicationManager) {
         this.applicationManager = applicationManager;
     }
+
     
     
 }

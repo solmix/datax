@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<datax xmlns="http://www.solmix.org/schema/datax-ds/v1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.solmix.org/schema/datax-ds/v1.0.0 http://www.solmix.org/schema/datax-ds/v1.0.0">
+	<configuration namespace="datax.auth">
+		<service id="User">
+			<fields>
+				<field name="" type="text" />
+				<field name="float" type="float" />
+				<field name="float2" type="float" />
+				<field name="date" type="date" />
+			</fields>
+			<operations>
+				<fetch/>
+			</operations>
+		</service>
+	</configuration>
+</datax>

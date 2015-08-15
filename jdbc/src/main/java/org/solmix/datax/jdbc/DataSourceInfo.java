@@ -19,6 +19,8 @@
 
 package org.solmix.datax.jdbc;
 
+import java.util.concurrent.ExecutorService;
+
 import javax.sql.DataSource;
 
 /**
@@ -41,6 +43,8 @@ public class DataSourceInfo
     private DataSource standbyDetectorDataSource;
 
     private int poolSize = Runtime.getRuntime().availableProcessors() * 5;
+    
+    private ExecutorService executorService;
 
     public String getId() {
         return id;
@@ -88,6 +92,16 @@ public class DataSourceInfo
 
     public int getPoolSize() {
         return poolSize;
+    }
+    
+    
+    public ExecutorService getExecutorService() {
+        return executorService;
+    }
+
+    
+    public void setExecutorService(ExecutorService executorService) {
+        this.executorService = executorService;
     }
 
     @Override

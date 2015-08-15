@@ -19,6 +19,7 @@
 package org.solmix.datax.util;
 
 import org.solmix.datax.DSRequest;
+import org.solmix.datax.attachment.Pageable;
 import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.model.FieldType;
 import org.solmix.datax.model.OperationType;
@@ -125,5 +126,33 @@ public class DataTools
             return false;
         }
         return isModificationOperation(req.getOperationInfo().getType());
+    }
+    
+    public static boolean isPaged(DSRequest req){
+        if(req==null){
+            return false;
+        }
+        Pageable page=   req.getAttachment(Pageable.class);
+        if(page!=null){
+            return isPaged(page);
+        }
+        
+        return false;
+    }
+    
+    public static boolean isPaged(Pageable page){
+        if(page==null){
+            return false;
+        }
+        if (page.getStartRow() != null 
+            && page.getStartRow() >= 0 
+            && page.getEndRow() != null 
+            && page.getEndRow() > 0 
+            && page.getBatchSize() != null 
+            && page.getBatchSize() > 0){
+            return true;
+        }
+           
+        return false;
     }
 }

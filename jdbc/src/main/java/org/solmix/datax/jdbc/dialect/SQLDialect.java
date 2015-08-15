@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.solmix.commons.util.Reflection;
 import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.util.DataTools;
@@ -40,7 +41,6 @@ public abstract class SQLDialect
 {
     
     public static final Map<String,Class<? extends SQLDialect>> buildIn = new HashMap<String, Class<? extends SQLDialect>>();
-    
     static{
         buildIn.put("h2db", H2DBDialect.class);
         buildIn.put("hsqldb", HSQLDialect.class);
@@ -49,13 +49,20 @@ public abstract class SQLDialect
         buildIn.put("postgresql", PostgresDialect.class);
         buildIn.put("mysql", MysqlDialect.class);
     }
-    
-    public static SQLDialect instance(String dbName,String dbType) throws Exception{
+    public static SQLDialect instance(String dbName) throws Exception{
+        Assert.assertNotNull(dbName);
+        String dbType=null;
+        for(String key:buildIn.keySet()){
+            if(dbName.toLowerCase().indexOf(key)!=-1){
+                dbType=key;
+                break;
+            }
+        }
         Class<? extends SQLDialect> clz =buildIn.get(dbType);
         SQLDialect dialect=  Reflection.newInstance(clz);
         return dialect;
     }
-    
+   
     public Object escapeClause() {
         return "";
     }
@@ -64,6 +71,11 @@ public abstract class SQLDialect
         return escapeColumnName(columnName, false);
     }
 
+    public String getRowCountQueryString(String customSql) {
+        return new StringBuilder().append("SELECT COUNT(*) FROM (").append(
+            customSql).append(") aliasForPage").toString();
+    }
+    
     public String escapeColumnName(String columnName, boolean forceQuoteColumn) {
         if (columnName == null)
             return null;

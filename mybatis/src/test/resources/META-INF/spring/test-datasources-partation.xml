@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.1.xsd">
+	<!--分片1 主数据源 -->
+	<bean id="partition1_main" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+		destroy-method="close">
+		<property name="driverClass" value="org.h2.Driver" />
+		<property name="jdbcUrl"
+			value="jdbc:h2:mem:p1_main;DB_CLOSE_DELAY=-1;MODE=Oracle;LOCK_MODE=3" />
+		<property name="user" value="" />
+		<property name="password" value="" />
+		<property name="minPoolSize" value="10" />
+		<property name="maxPoolSize" value="20" />
+		<property name="maxIdleTime" value="1800" />
+		<property name="acquireIncrement" value="2" />
+		<property name="maxStatements" value="0" />
+		<property name="initialPoolSize" value="2" />
+		<property name="idleConnectionTestPeriod" value="1800" />
+		<property name="acquireRetryAttempts" value="30" />
+		<property name="breakAfterAcquireFailure" value="true" />
+		<property name="testConnectionOnCheckout" value="false" />
+	</bean>
+	<!--分片1 备用数据源 -->
+	<bean id="partition1_standby" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+		destroy-method="close">
+		<property name="driverClass" value="org.h2.Driver" />
+		<property name="jdbcUrl"
+			value="jdbc:h2:mem:p1_standby;DB_CLOSE_DELAY=-1;MODE=Oracle;LOCK_MODE=3" />
+		<property name="user" value="" />
+		<property name="password" value="" />
+		<property name="minPoolSize" value="10" />
+		<property name="maxPoolSize" value="20" />
+		<property name="maxIdleTime" value="1800" />
+		<property name="acquireIncrement" value="2" />
+		<property name="maxStatements" value="0" />
+		<property name="initialPoolSize" value="2" />
+		<property name="idleConnectionTestPeriod" value="1800" />
+		<property name="acquireRetryAttempts" value="30" />
+		<property name="breakAfterAcquireFailure" value="true" />
+		<property name="testConnectionOnCheckout" value="false" />
+	</bean>
+	<!--分片2 主数据源 -->
+	<bean id="partition2_main" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+		destroy-method="close">
+		<property name="driverClass" value="org.h2.Driver" />
+		<property name="jdbcUrl"
+			value="jdbc:h2:mem:p2_main;DB_CLOSE_DELAY=-1;MODE=Oracle;LOCK_MODE=3" />
+		<property name="user" value="" />
+		<property name="password" value="" />
+		<property name="minPoolSize" value="10" />
+		<property name="maxPoolSize" value="20" />
+		<property name="maxIdleTime" value="1800" />
+		<property name="acquireIncrement" value="2" />
+		<property name="maxStatements" value="0" />
+		<property name="initialPoolSize" value="2" />
+		<property name="idleConnectionTestPeriod" value="1800" />
+		<property name="acquireRetryAttempts" value="30" />
+		<property name="breakAfterAcquireFailure" value="true" />
+		<property name="testConnectionOnCheckout" value="false" />
+	</bean>
+	<!--分片2 备用数据源 -->
+	<bean id="partition2_standby" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+		destroy-method="close">
+		<property name="driverClass" value="org.h2.Driver" />
+		<property name="jdbcUrl"
+			value="jdbc:h2:mem:p2_standby;DB_CLOSE_DELAY=-1;MODE=Oracle;LOCK_MODE=3" />
+		<property name="user" value="" />
+		<property name="password" value="" />
+		<property name="minPoolSize" value="10" />
+		<property name="maxPoolSize" value="20" />
+		<property name="maxIdleTime" value="1800" />
+		<property name="acquireIncrement" value="2" />
+		<property name="maxStatements" value="0" />
+		<property name="initialPoolSize" value="2" />
+		<property name="idleConnectionTestPeriod" value="1800" />
+		<property name="acquireRetryAttempts" value="30" />
+		<property name="breakAfterAcquireFailure" value="true" />
+		<property name="testConnectionOnCheckout" value="false" />
+	</bean>
+	<bean id="dataSourceService" class="org.solmix.datax.jdbc.support.DefaultDataSourceService">
+		<property name="dataSourceInfos">
+			<set>
+				<bean class="org.solmix.datax.jdbc.DataSourceInfo">
+					<property name="id" value="partition1" />
+					<property name="targetDataSource" ref="partition1_main" />
+					<property name="targetDetectorDataSource" ref="partition1_main" />
+					<property name="standbyDataSource" ref="partition1_standby" />
+					<property name="standbyDetectorDataSource" ref="partition1_standby" />
+					<property name="poolSize" value="10" />
+				</bean>
+				<bean class="org.solmix.datax.jdbc.DataSourceInfo">
+					<property name="id" value="partition2" />
+					<property name="targetDataSource" ref="partition2_main" />
+					<property name="targetDetectorDataSource" ref="partition2_main" />
+					<property name="standbyDataSource" ref="partition2_standby" />
+					<property name="standbyDetectorDataSource" ref="partition2_standby" />
+				</bean>
+			</set>
+		</property>
+		<property name="haDataSourceCreator">
+			<bean class="org.solmix.datax.jdbc.ha.FailoverHADataSourceCreator">
+			<property name="detectingSql" value="select * from dual"></property>
+			</bean>
+		</property>
+	</bean>
+</beans>

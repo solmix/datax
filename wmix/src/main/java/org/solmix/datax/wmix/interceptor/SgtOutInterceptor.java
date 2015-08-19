@@ -16,16 +16,7 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.wmix.serializer;
-
-import java.io.IOException;
-
-import org.solmix.datax.DSResponse;
-
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
+package org.solmix.datax.wmix.interceptor;
 
 
 /**
@@ -34,18 +25,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
  * @version $Id$  2015年8月19日
  */
 
-public class DSResponseSerializer extends JsonSerializer<DSResponse>
+public class SgtOutInterceptor extends AbstractOutInterceptor
 {
 
-    @Override
-    public void serialize(DSResponse value, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException {
-
-        Object o =value.getRawData();
-        if(o!=null){
-            
-        }
-        
-    }
-    @Override
-    public Class<DSResponse> handledType() { return DSResponse.class; }
 }

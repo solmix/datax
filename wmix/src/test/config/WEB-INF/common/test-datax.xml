@@ -10,4 +10,12 @@
 	<bean class="org.solmix.datax.support.DefaultDataServiceManager">
 		<property name="configLocation" value="classpath:META-INF/ds/**/*.xml"/>
 	</bean>
+	
+	<bean class="org.solmix.service.jackson.JacksonDataProcessor">
+		<property name="jsonSerializers">
+			<list>
+				<bean class="org.solmix.datax.wmix.serializer.DSResponseSerializer"></bean>
+			</list>
+		</property>
+	</bean>
 </beans>

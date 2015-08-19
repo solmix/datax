@@ -2,6 +2,7 @@ package org.solmix.datax.wmix;
 
 import org.solmix.commons.util.PackageUtils;
 import org.solmix.exchange.Service;
+import org.solmix.exchange.data.DataProcessor;
 import org.solmix.exchange.event.ServiceFactoryEvent;
 import org.solmix.exchange.invoker.Invoker;
 import org.solmix.exchange.model.NamedID;
@@ -14,7 +15,6 @@ public class DataxServiceFactory extends AbstractServiceFactory {
     private Invoker invoker;
     private String address;
     public DataxServiceFactory(){
-        setDataProcessor(new JacksonDataProcessor());
     }
     public DataxServiceFactory(String address){
         this();
@@ -40,6 +40,10 @@ public class DataxServiceFactory extends AbstractServiceFactory {
        getDataProcessor().initialize(getService());
        service.setDataProcessor(getDataProcessor());
        pulishEvent(ServiceFactoryEvent.DATABINDING_INITIALIZED, getDataProcessor());
+    }
+    @Override
+    protected DataProcessor defaultDataProcessor() {
+        return new JacksonDataProcessor();
     }
     
     protected void initService(){

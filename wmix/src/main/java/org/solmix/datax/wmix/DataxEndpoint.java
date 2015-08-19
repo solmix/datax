@@ -26,13 +26,16 @@ import org.slf4j.LoggerFactory;
 import org.solmix.commons.util.Assert;
 import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.wmix.interceptor.SgtInInterceptor;
+import org.solmix.datax.wmix.interceptor.SgtOutInterceptor;
 import org.solmix.exchange.Endpoint;
 import org.solmix.exchange.Service;
 import org.solmix.exchange.Transporter;
+import org.solmix.exchange.data.DataProcessor;
 import org.solmix.exchange.interceptor.support.MessageSenderInterceptor;
 import org.solmix.exchange.model.ArgumentInfo;
 import org.solmix.exchange.processor.InFaultChainProcessor;
 import org.solmix.exchange.processor.OutFaultChainProcessor;
+import org.solmix.runtime.Container;
 import org.solmix.wmix.exchange.AbstractWmixEndpoint;
 import org.solmix.wmix.exchange.WmixMessage;
 
@@ -65,16 +68,20 @@ public class DataxEndpoint extends AbstractWmixEndpoint implements Endpoint
         getOutInterceptors().add(new MessageSenderInterceptor());
         getOutFaultInterceptors().add(new MessageSenderInterceptor());
         getInInterceptors().add(new SgtInInterceptor());
+        getOutInterceptors().add(new SgtOutInterceptor());
+    }
+    
+    @Override
+    protected void setContainer(Container container) {
+        super.setContainer(container);
+        argumentInfo = new ArgumentInfo();
+        argumentInfo.setTypeClass(Map.class);
+        dataServiceManager=container.getExtension(DataServiceManager.class);
+        Assert.assertNotNull(dataServiceManager,"NO found DataServiceManager");
+        DataProcessor dataProcessor = container.getExtension(DataProcessor.class);
+        serviceFactory.setDataProcessor(dataProcessor);
     }
 
-     @Override
-    protected void afterInit() {
-         argumentInfo = new ArgumentInfo();
-         argumentInfo.setTypeClass(Map.class);
-         dataServiceManager=container.getExtension(DataServiceManager.class);
-         Assert.assertNotNull(dataServiceManager,"NO found DataServiceManager");
-     };
-     
     @Override
     public void service(WmixMessage message) throws Exception {
         message.put(ArgumentInfo.class, argumentInfo);
@@ -94,5 +101,5 @@ public class DataxEndpoint extends AbstractWmixEndpoint implements Endpoint
         
         return serviceFactory.create();
     }
-
+    
 }

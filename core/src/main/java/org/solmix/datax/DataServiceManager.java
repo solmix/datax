@@ -20,6 +20,7 @@ package org.solmix.datax;
 
 import java.util.Map;
 
+import org.solmix.datax.call.DSCallFactory;
 import org.solmix.datax.repository.RepositoryService;
 
 
@@ -34,6 +35,8 @@ public interface DataServiceManager
     RepositoryService getRepositoryService();
     
     void setRepositoryService(RepositoryService service);
+    
+    DSCallFactory getDSCallFactory();
     
     void setConfigLocation(String location);
     

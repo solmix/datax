@@ -126,9 +126,9 @@ public interface DSRequest
 
     List<?> getValueSets();
 
-    Map<String, Object> getOldValues();
+//    Map<String, Object> getOldValues();
 
-    List<?> getOldValueSets();
+//    List<?> getOldValueSets();
 
     /**
      * @param rawValues
@@ -199,12 +199,12 @@ public interface DSRequest
     /**
      * @return
      */
-    Object getRawOldValues();
+//    Object getRawOldValues();
 
     /**
      * @param rawOldValues
      */
-    void setRawOldValues(Object rawOldValues);
+//    void setRawOldValues(Object rawOldValues);
 
     <T>void addAttachment(Class<T> classKey,T instance);
     

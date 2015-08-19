@@ -246,8 +246,8 @@
 					</complexType>
 				</element>
 				<element name="invoker" type="ds:invokerType"></element>
-                <element name="extensions" type="ds:extensionsType"></element>
-                <any processContents="lax" minOccurs="0"
+				<element name="extensions" type="ds:extensionsType"></element>
+				<any processContents="lax" minOccurs="0"
 					maxOccurs="unbounded" namespace="##other">
 				</any>
 			</choice>
@@ -272,6 +272,7 @@
 					</sequence>
 					<attribute name="transactionPolicy"
 						type="ds:transactionPolicy" />
+					<attribute name="merged" type="ds:mergedType"></attribute>
 				</complexType>
 			</element>
 		</choice>
@@ -280,6 +281,7 @@
 		<attribute name="refid" type="string"></attribute>
 		<attribute name="validate" type="boolean"></attribute>
 		<attribute name="usedValidatedValues" type="boolean"></attribute>
+		<attribute name="oneway" type="boolean"></attribute>
 		<anyAttribute namespace="##any" processContents="lax"></anyAttribute>
 	</complexType>
 
@@ -349,4 +351,11 @@
     	<sequence minOccurs="0" maxOccurs="unbounded">
     		<any processContents="lax"></any>
     	</sequence></complexType>
+
+    <simpleType name="mergedType">
+    	<restriction base="string">
+    		<enumeration value="simple"></enumeration>
+    		<enumeration value="wrapped"></enumeration>
+    	</restriction>
+    </simpleType>
 </schema>

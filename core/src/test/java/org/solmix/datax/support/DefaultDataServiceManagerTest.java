@@ -35,6 +35,7 @@ import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.model.FieldType;
 import org.solmix.datax.model.InvokerInfo;
 import org.solmix.datax.model.LookupType;
+import org.solmix.datax.model.MergedType;
 import org.solmix.datax.model.MethodArgInfo;
 import org.solmix.datax.model.OperationInfo;
 import org.solmix.datax.model.ParamInfo;
@@ -197,6 +198,9 @@ public class DefaultDataServiceManagerTest
         assertEquals(Boolean.TRUE, oi.getAutoJoinTransactions());
         assertEquals(Boolean.TRUE, oi.getUsedValidatedValues());
         assertEquals("aaaa", oi.getExtension("customCriteriaFields"));
+        
+        //oneway extension
+        assertEquals(Boolean.TRUE, oi.getOneway());
         //关联
         OperationInfo oi2=dsi.getOperationInfo("#feth2");
         assertEquals(oi.getId(), oi2.getRefid());
@@ -234,7 +238,7 @@ public class DefaultDataServiceManagerTest
        
        BatchOperations bi=dsi.getOperationInfo("#add").getBatch();
        assertEquals(TransactionPolicy.FROM_FIRST_CHANGE, bi.getTransactionPolicy());
-       
+       assertEquals(MergedType.WRAPPED, bi.getMergedType());
        OperationInfo afeth= bi.getOperations().get(0);
        assertNotNull(afeth.getBatch());
        

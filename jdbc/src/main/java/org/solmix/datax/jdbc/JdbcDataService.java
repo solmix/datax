@@ -84,9 +84,6 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
             .append(type)
             .append(" operation with \n")
             .append(" values:").append(req.getRawValues());
-            if(req.getRawOldValues()!=null){
-                info.append(" oldValues:").append(req.getRawOldValues());
-            }
             LOG.debug(info.toString());
         }
         OperationInfo oi=  req.getOperationInfo();

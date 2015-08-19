@@ -53,5 +53,10 @@
 			<artifactId>datax-core</artifactId>
 			<version>0.6.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>org.solmix.services</groupId>
+			<artifactId>solmix-service-jackson</artifactId>
+			<version>0.6.1-SNAPSHOT</version>
+		</dependency>
   </dependencies>
 </project>

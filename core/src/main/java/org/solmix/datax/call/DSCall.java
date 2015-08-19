@@ -24,6 +24,7 @@ import org.solmix.datax.DSCallException;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.FreeResourcesHandler;
+import org.solmix.datax.model.MergedType;
 import org.solmix.datax.model.TransactionPolicy;
 import org.solmix.datax.transaction.TransactionException;
 import org.solmix.datax.transaction.TransactionService;
@@ -82,9 +83,20 @@ public interface DSCall extends FreeResourcesHandler
     DSResponse getResponse(DSRequest req);
 
     /**
-     * 执行DSCall自带的Request,执行结果通过{@link #getResponse(DSRequest)}获取
+     * 当发生错误时是否中断，默认中断
+     * 结束时调用commit提交请求
+     * 或者调用getMergedResponse提交并返回结果
+     * @param broken
      */
-    void execute();
+    void setExceptionBroken(boolean broken);
+    
+    /**
+     *  当发生错误时是否中断，默认中断
+     *  结束时调用commit提交请求
+     *  或者调用getMergedResponse提交并返回结果
+     * @return
+     */
+    boolean isExceptionBroken();
 
     /**
      * @param key
@@ -106,10 +118,11 @@ public interface DSCall extends FreeResourcesHandler
  
     /**
      * 结束DSCall事物  并 返回DSCall已经执行了的所有结果的一个合并集。
-     * 
+     * @param merged 如果为空，默认为auto
      * @return
+     * @throws DSCallException
      */
-    DSResponse getMergedResponse()throws DSCallException;
+    DSResponse getMergedResponse(MergedType merged)throws DSCallException;
 
     /**
      * 获取对于OperationId的返回结果
@@ -132,4 +145,9 @@ public interface DSCall extends FreeResourcesHandler
      * @return
      */
     TransactionService getTransactionService();
+
+    /**
+     * 提交DSCall中的请求
+     */
+    void commit();
 }

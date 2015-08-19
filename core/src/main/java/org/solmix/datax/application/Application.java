@@ -76,7 +76,6 @@ public interface Application
 
     public static final String BUILT_IN_APPLICATION = ApplicationManager.BUILT_IN_APPLICATION;
 
-    public static final String DEFAULT_APPLICATION = ApplicationManager.DEFAULT_APPLICATION;
 
 //     DataService getDataService(String serviceId) ;
 

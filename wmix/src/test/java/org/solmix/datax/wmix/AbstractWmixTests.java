@@ -19,6 +19,7 @@
 
 package org.solmix.datax.wmix;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -118,6 +119,20 @@ public abstract class AbstractWmixTests
         }
 
         invocationContext= client.newInvocation(uri);
+        request = invocationContext.getRequest();
+        response = invocationContext.getResponse();
+        filter=(WmixFilter)invocationContext.getFilter();
+        servletContext =filter.getServletContext();
+    }
+    protected final void invokePost(String uri,String content)throws Exception{
+        if (uri != null && uri.startsWith("http")) {
+            uri = URI.create(uri).normalize().toString(); // full uri
+        }else{
+            uri= URI.create("http://127.0.0.1/"+uri).normalize().toString(); 
+        }
+        InputStream   in_nocode   =   new   ByteArrayInputStream(content.getBytes());   
+        PostMethodWebRequest post = new PostMethodWebRequest(uri,in_nocode, "text/json;charset=utf-8");
+        invocationContext = client.newInvocation(post);
         request = invocationContext.getRequest();
         response = invocationContext.getResponse();
         filter=(WmixFilter)invocationContext.getFilter();

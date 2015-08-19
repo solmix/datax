@@ -20,7 +20,6 @@ package org.solmix.datax.script;
 
 import java.io.StringWriter;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -117,7 +116,6 @@ public class VelocityExpression
         }
         vc.put(DATAX.VM_DS, request.getDataService());
         vc.put(DATAX.VM_VALUES, request.getRawValues());
-        vc.put(DATAX.VM_OLD_VALUES, request.getOldValues());
         
         return vc;
     }

@@ -29,7 +29,6 @@ public interface ApplicationManager
 {
     public static final String BUILT_IN_APPLICATION = "builtinApplication";
 
-    public static final String DEFAULT_APPLICATION = "defaultApplication";
     /**
      * return the application threshold.
      * @param id

@@ -16,26 +16,31 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.call;
+package org.solmix.datax.wmix.serializer;
 
-import org.solmix.datax.model.TransactionPolicy;
+import java.io.IOException;
+
+import org.solmix.datax.DSResponse;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年8月12日
+ * @version $Id$  2015年8月19日
  */
 
-public interface DSCallFactory
+public class DSResponseSerializer extends JsonSerializer<DSResponse>
 {
 
-    DSCall createDSCall();
+    @Override
+    public void serialize(DSResponse value, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException {
+        // TODO Auto-generated method stub
+        
+    }
 
-    /**
-     * @param policy
-     * @return
-     */
-    DSCall createDSCall(TransactionPolicy policy);
-    
 }

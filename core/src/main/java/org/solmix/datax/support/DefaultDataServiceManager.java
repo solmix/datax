@@ -98,9 +98,8 @@ public class DefaultDataServiceManager implements DataServiceManager,ContainerAw
 
     private ExtensionLoader<DataServiceFactory> extensionLoader;
 
-    public DefaultDataServiceManager(Container c)
+    public DefaultDataServiceManager()
     {
-        setContainer(c);
     }
 
     @Override
@@ -264,7 +263,8 @@ public class DefaultDataServiceManager implements DataServiceManager,ContainerAw
     }
 
     
-    public DSCallFactory getDscFactory() {
+    @Override
+    public DSCallFactory getDSCallFactory() {
         return dscFactory;
     }
 

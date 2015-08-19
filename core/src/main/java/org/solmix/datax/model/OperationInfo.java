@@ -50,6 +50,8 @@ public class OperationInfo
     
     protected Boolean validate;
     
+    protected Boolean oneway;
+    
     protected Boolean usedValidatedValues;
     
     protected BatchOperations batch;
@@ -95,6 +97,11 @@ public class OperationInfo
     
     public Boolean getValidate() {
         return validate;
+    }
+
+    
+    public Boolean getOneway() {
+        return oneway;
     }
 
     public String getId() {
@@ -169,6 +176,7 @@ public class OperationInfo
         target.invoker=source.invoker;
         target.transformers=source.transformers;
         target.node=source.node;
+        target.oneway=source.oneway;
     }
     public Map<String, ParamInfo> getParams() {
         return params;
@@ -266,6 +274,7 @@ public class OperationInfo
             
             Boolean autoJoinTransactions= node.getBooleanAttribute("autoJoinTransactions");
             Boolean validate= node.getBooleanAttribute("validate");
+            Boolean oneway= node.getBooleanAttribute("oneway");
             Boolean usedValidatedValues= node.getBooleanAttribute("usedValidatedValues");
             Map<String ,ParamInfo> params = parseParams(node.evalNode("params"), context);
             List<TransformerInfo> transformers=parseTransformers(node.evalNodes("transformer"), context);
@@ -277,6 +286,7 @@ public class OperationInfo
             oi.batch=batchOp;
             oi.transformers=transformers;
             oi.invoker=invoker;
+            oi.oneway=oneway;
             oi.validate=validate;
             oi.usedValidatedValues=usedValidatedValues;
             if(!batch){

@@ -20,12 +20,16 @@
 package org.solmix.datax.call.support;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.solmix.commons.annotation.NotThreadSafe;
+import org.solmix.commons.util.DataUtils;
 import org.solmix.datax.DSCallException;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
@@ -33,6 +37,7 @@ import org.solmix.datax.DSResponse.Status;
 import org.solmix.datax.DataService;
 import org.solmix.datax.call.DSCall;
 import org.solmix.datax.call.DSCallCompleteCallback;
+import org.solmix.datax.model.MergedType;
 import org.solmix.datax.model.OperationInfo;
 import org.solmix.datax.model.TransactionPolicy;
 import org.solmix.datax.support.DSResponseImpl;
@@ -52,7 +57,8 @@ import org.solmix.datax.util.DataTools;
 @NotThreadSafe
 public class DSCallImpl implements DSCall
 {
-
+    private static final Logger LOG = LoggerFactory.getLogger(DSCallImpl.class);
+    
     private List<DSRequest> requests = new ArrayList<DSRequest>();
 
     private TransactionPolicy transactionPolicy;
@@ -66,7 +72,6 @@ public class DSCallImpl implements DSCall
     private final HashSet<DSCallCompleteCallback> callbacks = new HashSet<DSCallCompleteCallback>();
     
     private final TransactionService transactionService;
-
     public enum STATUS
     {
         INIT , BEGIN , SUCCESS , FAILED , CLOSED;
@@ -74,17 +79,19 @@ public class DSCallImpl implements DSCall
 
     private STATUS status;
 
+    private boolean exceptionBroken =true  ;
+
     public DSCallImpl(TransactionService transactionManager)
     {
         this(STATUS.INIT,transactionManager,null);
     }
-
     public DSCallImpl(STATUS status,TransactionService transactionManager,TransactionPolicy policy)
     {
         this.status = status;
         this.transactionPolicy=policy;
         this.transactionService=transactionManager;
     }
+    
     public void addRequest(DSRequest req) {
         if(!requests.contains(req)){
             requests.add(req);
@@ -139,7 +146,7 @@ public class DSCallImpl implements DSCall
     @Override
     public void setTransactionPolicy(TransactionPolicy transactionPolicy) throws TransactionException {
         if (status != STATUS.INIT){
-            throw new TransactionException("dsRequest already started.");
+            throw new TransactionException("dscall already started.");
         }
         this.transactionPolicy = transactionPolicy;
     }
@@ -192,19 +199,28 @@ public class DSCallImpl implements DSCall
         try {
             res = request.execute();
         } catch (Throwable e) {
-            try {
-                transactionFailed(request, res);
-            } catch (Exception e1) {
-                throw new TransactionFailedException("transaction rollback failure with rollback Exception:" + e1.getMessage()
-                    + " with Root Exception:" + e.getMessage());
+            if(exceptionBroken){
+                try {
+                    transactionFailed(request, res);
+                } catch (Exception e1) {
+                    throw new TransactionFailedException("transaction rollback failure with rollback Exception:" + e1.getMessage()
+                        + " with Root Exception:" + e.getMessage());
+                }
+                throw new TransactionFailedException("transaction breaken case by:"+e.getMessage(), e);
+            }else{
+                res = new DSResponseImpl(request);
+                res.setRawData(e.getMessage());
+                res.setStatus(Status.STATUS_FAILURE);
+                LOG.error("DSRequest execute Failed:",e);
             }
-            throw new TransactionFailedException("transaction breaken case by:"+e.getMessage(), e);
+            
         }
-        
-        boolean transactionFailure = isXAFailure(request, res);
-        if (transactionFailure) {
-            transactionFailed(request, res);
-            throw new TransactionFailedException("transaction breaken because of one request failure.");
+        if(exceptionBroken){
+            boolean transactionFailure = isXAFailure(request, res);
+            if (transactionFailure) {
+                transactionFailed(request, res);
+                throw new TransactionFailedException("transaction breaken because of one request failure.");
+            }
         }
         responseMap.put(request, res);
         return res;
@@ -271,11 +287,7 @@ public class DSCallImpl implements DSCall
         }
         return transactionFailure;
     }
-    
-    @Override
-   public void execute(){
-       
-   }
+ 
     /**
      * 开始事物。
      */
@@ -285,7 +297,8 @@ public class DSCallImpl implements DSCall
         status = STATUS.BEGIN;
     }
     
-    public void end(){
+    @Override
+    public void commit(){
         if(responseMap.size()!=requests.size()){
             throw new TransactionException(new StringBuilder()
             .append("Having ")
@@ -340,21 +353,75 @@ public class DSCallImpl implements DSCall
     }
 
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.solmix.datax.call.DSCall#getMergedResponse()
-     */
     @Override
-    public DSResponse getMergedResponse()throws DSCallException {
+    public DSResponse getMergedResponse(MergedType merged)throws DSCallException {
         //如果还没有结束，先结束并提交
         if(status==STATUS.BEGIN){
-            end();
+            commit();
         }
-        Map<String,Object> mergedData= new LinkedHashMap<String, Object>();
+        if(merged==null){
+            merged=MergedType.SIMPLE;
+        }
+        switch (merged) {
+            case SIMPLE:
+                return simpleResponse();
+            case WRAPPED:
+                return wrappedResponse();
+            default:
+               throw new UnsupportedOperationException(merged.value());
+           
+        }
+    }
+    
+    private DSResponse simpleResponse() {
+        Status st=Status.UNSET;
+        if(status==STATUS.SUCCESS){
+            st=Status.STATUS_SUCCESS;
+        }else if(status==STATUS.FAILED){
+            st=Status.STATUS_TRANSACTION_FAILED;
+        }
+        List<DSRequest> canReturn = new ArrayList<DSRequest>();
         for (DSRequest req : requests) {
+            if(DataUtils.asBoolean(req.getOperationInfo().getOneway())){
+                continue;
+            }else{
+                canReturn.add(req);
+            }
+        }
+        DSResponse res=null;
+        boolean onlyOneRequest =canReturn.size()==1;
+        if(onlyOneRequest){
+            res= getResponse(canReturn.get(0));
+            res.setStatus(st);
+        }else{
+            res = new DSResponseImpl(st);
+            Map<String,Object> mergedData= new LinkedHashMap<String, Object>();
+            List<Object> errors = new ArrayList<Object>();
+            for (DSRequest req : canReturn) {
+                DSResponse resp = getResponse(req);
+                mergedData.put(req.getOperationId(), resp.getRawData());
+                Object[] error = resp.getErrors();
+                if(errors!=null&&error.length>0){
+                    errors.addAll(Arrays.asList(error));
+                }
+                res.setRawData(mergedData);
+                if(errors.size()>0){
+                    res.setErrors(errors.toArray());
+                }
+            }
+        }
+        return res;
+        
+    }
+    
+    private DSResponse wrappedResponse() {
+        List<DSResponse> array= new ArrayList<DSResponse>();
+        for (DSRequest req : requests) {
+            if(DataUtils.asBoolean(req.getOperationInfo().getOneway())){
+                continue;
+            }
             DSResponse resp = getResponse(req);
-            mergedData.put(req.getOperationId(), resp.getRawData());
+            array.add(resp);
         }
         Status st=Status.UNSET;
         if(status==STATUS.SUCCESS){
@@ -363,13 +430,30 @@ public class DSCallImpl implements DSCall
             st=Status.STATUS_TRANSACTION_FAILED;
         }
         DSResponse res = new DSResponseImpl(st);
-        res.setRawData(mergedData);
+        res.setRawData(array);
         return res;
     }
-
     @Override
     public TransactionService getTransactionService() {
         return transactionService;
+    }
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.solmix.datax.call.DSCall#setExceptionBroken(boolean)
+     */
+    @Override
+    public void setExceptionBroken(boolean broken) {
+       this.exceptionBroken=broken;
+    }
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.solmix.datax.call.DSCall#isExceptionBroken()
+     */
+    @Override
+    public boolean isExceptionBroken() {
+        return exceptionBroken;
     }
     
 }

@@ -81,7 +81,6 @@ public class DSRequestImpl  implements DSRequest,Cloneable
     
     private Object rawValues;
 
-    private Object rawOldValues;
     
     private DataServiceManager dataServiceManager;
     
@@ -378,15 +377,6 @@ public class DSRequestImpl  implements DSRequest,Cloneable
         this.rawValues = rawValues;
     }
 
-    @Override
-    public Object getRawOldValues() {
-        return rawOldValues;
-    }
-
-    @Override
-    public void setRawOldValues(Object rawOldValues) {
-        this.rawOldValues = rawOldValues;
-    }
 
     /**
      * {@inheritDoc}
@@ -431,26 +421,6 @@ public class DSRequestImpl  implements DSRequest,Cloneable
     @Override
     public List<?> getValueSets() {
         return DataUtils.makeListIfSingle(getRawValues());
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.solmix.datax.DSRequest#getOldValues()
-     */
-    @Override
-    public Map<String, Object> getOldValues() {
-        return getValuesInternal( getRawOldValues());
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.solmix.datax.DSRequest#getOldValueSets()
-     */
-    @Override
-    public List<?> getOldValueSets() {
-        return DataUtils.makeListIfSingle(getRawOldValues());
     }
 
     /**

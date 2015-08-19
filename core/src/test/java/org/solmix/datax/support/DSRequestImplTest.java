@@ -18,6 +18,8 @@
  */
 package org.solmix.datax.support;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,12 +27,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.solmix.commons.util.DataUtils;
-import org.solmix.datax.DSRequest;
 import org.solmix.datax.DataServiceManager;
 import org.solmix.runtime.Container;
 import org.solmix.runtime.ContainerFactory;
-
-import static org.junit.Assert.*;
 /**
  * 
  * @author solmix.f@gmail.com
@@ -57,15 +56,11 @@ public class DSRequestImplTest
         req.setOperationId("com.call.ds.fetch");
         req.setValidated(true);
         req.setRawValues(a);
-        req.setRawOldValues(old);
         DSRequestImpl nreq=req.clone();
         nreq.setValidated(false);
         Map<String,String> mm=(Map<String,String>)nreq.getRawValues();
-        RBean oo=(RBean)nreq.getRawOldValues();
         mm.put("111", "333");
         nreq.setRawValues(mm);
-        oo.setText("123566");
-        req.setRawOldValues(oo);
         assertEquals(req.getOperationId(), nreq.getOperationId());
         try {
             Map<String, Object> map= DataUtils.getProperties(req, false);

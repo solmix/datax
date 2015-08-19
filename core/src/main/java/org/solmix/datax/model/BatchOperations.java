@@ -38,11 +38,14 @@ public class BatchOperations
     private List<OperationInfo> operations;
 
     private TransactionPolicy transactionPolicy;
+    
+    private MergedType mergedType;
 
-    public BatchOperations(List<OperationInfo> operations,TransactionPolicy transactionPolicy)
+    public BatchOperations(List<OperationInfo> operations,TransactionPolicy transactionPolicy,MergedType mergedType)
     {
         this.operations = operations;
         this.transactionPolicy=transactionPolicy;
+        this.mergedType=mergedType;
     }
     
     
@@ -57,6 +60,10 @@ public class BatchOperations
      */
     public TransactionPolicy getTransactionPolicy() {
         return transactionPolicy;
+    }
+    
+    public MergedType getMergedType() {
+        return mergedType;
     }
 
     public static class Parser extends BaseXmlNodeParser<BatchOperations>{
@@ -74,13 +81,18 @@ public class BatchOperations
             }else{
                 transactionPolicy=TransactionPolicy.ANY_CHANGE;
             }
+            String merged= node.getStringAttribute("merged");
+            MergedType mergedType=null;
+            if(merged!=null){
+                mergedType=MergedType.fromValue(merged);
+            }
             List<OperationInfo> operations = new ArrayList<OperationInfo>(nodes.size());
             for(XMLNode n:nodes){
                 OperationInfo.Parser p = new OperationInfo.Parser(true);
                 OperationInfo oi=  p.parse(n, context);
                 operations.add(oi);
             }
-            return new BatchOperations(operations, transactionPolicy);
+            return new BatchOperations(operations, transactionPolicy,mergedType);
         }
     }
 }

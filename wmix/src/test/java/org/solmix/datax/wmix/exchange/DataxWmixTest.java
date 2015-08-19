@@ -27,16 +27,37 @@ import org.solmix.datax.wmix.AbstractWmixTests;
  * 
  * @author solmix.f@gmail.com
  * @version $Id$ 2015年8月14日
- */
+/   / /*/
 
 public class DataxWmixTest extends AbstractWmixTests
 {
 
     @Test
     public void test() throws Exception {
-        prepareServlet("app3");
+        StringBuffer sb = new StringBuffer();
+        sb.append("{");
+        sb.append("\"transactionNum\":2, ");
+        sb.append("\"operations\":{");
+        sb.append("\"elem\":[");
+        sb.append("{");
+        sb.append("\"appID\":\"builtinApplication\", ");
+        sb.append("\"componentId\":\"ftdrmr_summary_tree\", ");
+        sb.append("\"operationId\":\"rmr$RmrSummary_fetch\", ");
+        sb.append("\"textMatchStyle\":\"exact\", ");
+        sb.append("\"requestId\":\"rmr$RmrSummary_request1\",");
+        sb.append("\"action\":\"datax.auth.User.fetch\",");
+        sb.append("\"operationType\":\"fetch\", ");
+        sb.append("\"values\":{");
+        sb.append("\"date\":\"2015-08-16\",");
+        sb.append("\"VIEW\":\"4\"");
+        sb.append("}");
+        sb.append("}");
+        sb.append("]");
+        sb.append("}");
+        sb.append("}");
+        prepareServlet("datax");
         Assert.assertNotNull(component);
-        invoke("/app3/datax/1");
+        invokePost("/datax/datax/1?a=b&d=e",sb.toString());
         controller.service(request, response);
     }
 }

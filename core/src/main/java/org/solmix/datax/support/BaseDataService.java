@@ -54,6 +54,7 @@ import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.model.FieldType;
 import org.solmix.datax.model.LookupType;
+import org.solmix.datax.model.MergedType;
 import org.solmix.datax.model.OperationInfo;
 import org.solmix.datax.model.OperationType;
 import org.solmix.datax.model.ParamInfo;
@@ -333,6 +334,7 @@ public class BaseDataService implements DataService
      */
     protected DSResponse executeBatch(DSRequest req, OperationInfo oi) throws DSCallException {
         BatchOperations bos = oi.getBatch();
+        MergedType  merged = bos.getMergedType();
         TransactionPolicy policy = bos.getTransactionPolicy();
         DSCall old = DSCallUtils.getDSCall();
         try {
@@ -342,7 +344,7 @@ public class BaseDataService implements DataService
                 DSRequest request = createNewRequest(req, op);
                 newdsc.execute(request);
             }
-            return newdsc.getMergedResponse();
+            return newdsc.getMergedResponse(merged);
         } finally {
             DSCallUtils.setDSCall(old);
         }

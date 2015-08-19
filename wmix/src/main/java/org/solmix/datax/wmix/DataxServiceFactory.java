@@ -1,49 +1,73 @@
 package org.solmix.datax.wmix;
 
+import org.solmix.commons.util.PackageUtils;
 import org.solmix.exchange.Service;
 import org.solmix.exchange.event.ServiceFactoryEvent;
-import org.solmix.exchange.interceptor.support.ServiceInvokerInterceptor;
 import org.solmix.exchange.invoker.Invoker;
+import org.solmix.exchange.model.NamedID;
+import org.solmix.exchange.model.ServiceInfo;
 import org.solmix.exchange.support.AbstractServiceFactory;
+import org.solmix.service.jackson.JacksonDataProcessor;
 
 public class DataxServiceFactory extends AbstractServiceFactory {
 
     private Invoker invoker;
     private String address;
+    public DataxServiceFactory(){
+        setDataProcessor(new JacksonDataProcessor());
+    }
     public DataxServiceFactory(String address){
+        this();
         this.address=address;
     }
 	@Override
 	public Service create() {
 		pulishEvent(ServiceFactoryEvent.START_CREATE);
 		initService();
+		initDataProcessor();
 		setupInterceptor();
 		if(this.invoker!=null){
 		    service.setInvoker(getInvoker());
 		}else{
 		    service.setInvoker(createInvoker());
 		}
-		if(getDataFormat()!=null){
-		    service.setDataFormat(getDataFormat());
-		}
 		Service service =getService();
 		pulishEvent(ServiceFactoryEvent.END_CREATE,service);
 		return service;
 	}
 	
-	protected void initService(){
-	    DataxService service = new DataxService(null,address);
+    protected void initDataProcessor() {
+       getDataProcessor().initialize(getService());
+       service.setDataProcessor(getDataProcessor());
+       pulishEvent(ServiceFactoryEvent.DATABINDING_INITIALIZED, getDataProcessor());
+    }
+    
+    protected void initService(){
+	    ServiceInfo info = new ServiceInfo();
+	    DataxService service = new DataxService(info);
 	    setService(service);
+	    info.setName(getServiceId());
+	}
+	
+	protected NamedID getServiceId(){
+	    if(address==null){
+              String ns = PackageUtils.getNamespace(PackageUtils.getPackageName(DataxService.class));
+              return new NamedID(ns, "service");
+          }else{
+              return new NamedID(address, "service");
+          }
 	}
 	
 	protected void setupInterceptor(){
-	    service.getInInterceptors().add(new ServiceInvokerInterceptor());
+	    super.initDefaultInterceptor();
 	}
 
+    @Override
     public Invoker getInvoker() {
         return invoker;
     }
 
+    @Override
     public Invoker createInvoker() {
         return new DataxInvoker();
     }

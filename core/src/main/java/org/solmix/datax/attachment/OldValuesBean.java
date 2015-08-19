@@ -16,26 +16,31 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.call;
-
-import org.solmix.datax.model.TransactionPolicy;
+package org.solmix.datax.attachment;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年8月12日
+ * @version $Id$  2015年8月18日
  */
 
-public interface DSCallFactory
+public class OldValuesBean implements OldValues
 {
 
-    DSCall createDSCall();
+   private Object oldValues;
+   
+   public OldValuesBean(Object old){
+       this.oldValues=old;
+   }
+    @Override
+    public Object getOldValues() {
+        return oldValues;
+    }
 
-    /**
-     * @param policy
-     * @return
-     */
-    DSCall createDSCall(TransactionPolicy policy);
     
+    public void setOldValues(Object oldValues) {
+        this.oldValues = oldValues;
+    }
+
 }

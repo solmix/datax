@@ -16,40 +16,74 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+
 package org.solmix.datax.wmix;
 
-import java.io.IOException;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.solmix.commons.util.Assert;
+import org.solmix.datax.DataServiceManager;
+import org.solmix.datax.wmix.interceptor.SgtInInterceptor;
 import org.solmix.exchange.Endpoint;
 import org.solmix.exchange.Service;
-import org.solmix.wmix.endpoint.AbstractWmixEndpoint;
+import org.solmix.exchange.Transporter;
+import org.solmix.exchange.interceptor.support.MessageSenderInterceptor;
+import org.solmix.exchange.model.ArgumentInfo;
+import org.solmix.exchange.processor.InFaultChainProcessor;
+import org.solmix.exchange.processor.OutFaultChainProcessor;
+import org.solmix.wmix.exchange.AbstractWmixEndpoint;
 import org.solmix.wmix.exchange.WmixMessage;
-
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年8月13日
+ * @version $Id$ 2015年8月13日
  */
 
 public class DataxEndpoint extends AbstractWmixEndpoint implements Endpoint
 {
 
     private static final Logger LOG = LoggerFactory.getLogger(DataxEndpoint.class);
+
     private static final long serialVersionUID = 7621213021932655937L;
 
-    @Override
-    public void service(WmixMessage message) {
-       System.out.println("===================");
-       try {
-        getTransporter().invoke(message);
-    } catch (IOException e) {
-        e.printStackTrace();
+    private DataxServiceFactory serviceFactory;
+    
+    private ArgumentInfo argumentInfo;
+    
+    private DataServiceManager dataServiceManager;
+    
+    public DataxEndpoint(){
+        serviceFactory= new DataxServiceFactory();
     }
+    @Override
+    protected void prepareInterceptors() {
+        setInFaultProcessor(new InFaultChainProcessor(container, getPhasePolicy()));
+        setOutFaultProcessor(new OutFaultChainProcessor(container,  getPhasePolicy()));
+        getOutInterceptors().add(new MessageSenderInterceptor());
+        getOutFaultInterceptors().add(new MessageSenderInterceptor());
+        getInInterceptors().add(new SgtInInterceptor());
     }
 
+     @Override
+    protected void afterInit() {
+         argumentInfo = new ArgumentInfo();
+         argumentInfo.setTypeClass(Map.class);
+         dataServiceManager=container.getExtension(DataServiceManager.class);
+         Assert.assertNotNull(dataServiceManager,"NO found DataServiceManager");
+     };
+     
+    @Override
+    public void service(WmixMessage message) throws Exception {
+        message.put(ArgumentInfo.class, argumentInfo);
+        message.getExchange().put(DataServiceManager.class, dataServiceManager);
+        message.getExchange().put(Transporter.class, getTransporter());
+        getTransporter().invoke(message);
+    }
+
+   
     @Override
     protected Logger getLogger() {
         return LOG;
@@ -57,7 +91,8 @@ public class DataxEndpoint extends AbstractWmixEndpoint implements Endpoint
 
     @Override
     protected Service createService() {
-        return new DataxService();
+        
+        return serviceFactory.create();
     }
 
 }

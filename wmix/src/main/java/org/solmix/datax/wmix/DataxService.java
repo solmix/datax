@@ -1,14 +1,14 @@
 package org.solmix.datax.wmix;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
-import org.solmix.commons.util.PackageUtils;
 import org.solmix.exchange.Endpoint;
 import org.solmix.exchange.Service;
-import org.solmix.exchange.dataformat.DataFormat;
+import org.solmix.exchange.data.DataProcessor;
 import org.solmix.exchange.interceptor.support.InterceptorProviderAttrSupport;
 import org.solmix.exchange.invoker.Invoker;
 import org.solmix.exchange.model.EndpointInfo;
@@ -22,16 +22,13 @@ public class DataxService extends InterceptorProviderAttrSupport implements Serv
     private static final long serialVersionUID = -6315846318409396395L;
     private Map<NamedID, Endpoint> endpoints = new HashMap<NamedID, Endpoint>();
     private Invoker invoker;
-    private DataFormat dataFormat;
-    private NamedID serviceName;
-    private String address;
-    public DataxService(){
-        
+    private DataProcessor dataProcessor;
+    
+    private ServiceInfo info;
+    public DataxService(ServiceInfo info){
+        this.info=info;
     }
-    public DataxService(NamedID serviceName,String address){
-        this.serviceName=serviceName;
-        this.address=address;
-    }
+    
     @Override
     public Invoker getInvoker() {
         return invoker;
@@ -39,15 +36,7 @@ public class DataxService extends InterceptorProviderAttrSupport implements Serv
 
     @Override
     public NamedID getServiceName() {
-        if(this.serviceName!=null){
-            return serviceName;
-        }
-        if(address==null){
-            String ns = PackageUtils.getNamespace(PackageUtils.getPackageName(this.getClass()));
-            return new NamedID(ns, "service");
-        }else{
-            return new NamedID(address, "service");
-        }
+        return info.getName();
     }
 
     @Override
@@ -63,18 +52,20 @@ public class DataxService extends InterceptorProviderAttrSupport implements Serv
 
     @Override
     public EndpointInfo getEndpointInfo(NamedID eid) {
-        // TODO Auto-generated method stub
+        if (endpoints.get(eid) != null) {
+            return endpoints.get(eid).getEndpointInfo();
+        }
         return null;
     }
 
     @Override
-    public DataFormat getDataFormat() {
-        return dataFormat;
+    public DataProcessor getDataProcessor() {
+        return dataProcessor;
     }
 
     @Override
-    public void setDataFormat(DataFormat df) {
-        this.dataFormat=df;
+    public void setDataProcessor(DataProcessor df) {
+        this.dataProcessor=df;
     }
 
     @Override
@@ -84,8 +75,7 @@ public class DataxService extends InterceptorProviderAttrSupport implements Serv
 
     @Override
     public List<ServiceInfo> getServiceInfos() {
-        // TODO Auto-generated method stub
-        return null;
+        return Arrays.asList(info);
     }
 
     @Override
@@ -95,8 +85,7 @@ public class DataxService extends InterceptorProviderAttrSupport implements Serv
 
     @Override
     public ServiceInfo getServiceInfo() {
-        // TODO Auto-generated method stub
-        return null;
+        return info;
     }
 
 }

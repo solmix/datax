@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- mybatis 映射文件 -->
+<!-- namespace 映射命名空间 namespace.id对应mybatis.ds.xml中CustomQL的值 比如该查询即为:com.ieslab.eiams.example.CCons.fetch,和mybatis.ds.xml中CustomQL的值相同 -->
+<mapper namespace="datax.auth.User">
+<select id="getId" parameterType="map" resultType="java.lang.String">
+		SELECT
+		AUTH_SEQ_ID.NEXTVAL FROM DUAL
+	</select>
+	<!-- 与用户相同角色的其他用户 -->
+	<select id="getSameRoleUser" parameterType="map" resultType="map">
+	SELECT AU.USER_ID, AU.USER_NAME, AU.TRUENAME,oo.org_no,oo.p_org_no
+  FROM AUTH_USERS AU,
+       AUTH_USER_ROLE_RELA AC,O_org oo,
+       (SELECT B.ROLE_ID
+          FROM AUTH_USERS A, AUTH_ROLES B, AUTH_USER_ROLE_RELA C
+         WHERE A.USER_ID = C.USER_ID
+           AND B.ROLE_ID = C.ROLE_ID
+           AND A.USER_ID = #{userId}) AB
+ WHERE AU.USER_ID = AC.USER_ID and au.scope_id=oo.org_no
+   AND AC.ROLE_ID = AB.ROLE_ID
+   and (oo.org_no=#{scopeId} or oo.p_org_no=#{scopeId})
+	</select>
+	<select id="getUserGroup" parameterType="map" resultMap="cn.sg.gdw.security.Group.groupResultMap">
+		SELECT A.* FROM AUTH_USER_GROUPS A,AUTH_USER_GROUP_RELA B 
+		WHERE A.GROUP_ID = B.GROUP_ID
+		AND USER_ID= #{userId, jdbcType=VARCHAR}
+	</select>
+	<select id="getUserRole" parameterType="map" resultType="map">
+		SELECT A.ROLE_ID ,A.ROLE_NAME, A.SCOPE_ID  
+			FROM AUTH_ROLES A,AUTH_USER_ROLE_RELA B
+			WHERE A.ROLE_ID =B.ROLE_ID 
+			AND B.USER_ID=#{userId}
+	</select>
+	<select id="getScopeTree" parameterType="map" resultType="map">
+		 <choose>
+            <when test="TYPE == 0">
+	            SELECT DISTINCT * FROM (
+				<include refid="orglist"/>
+				union
+				<include refid="suborglist"/>
+				 )ORDER BY TYPE 
+            </when>
+            <otherwise>
+				<include refid="suborglist"/>
+            </otherwise>
+        </choose>
+		 
+	</select>
+	<select id="fetchUserRoles" parameterType="map" resultType="map">
+	SELECT DISTINCT ROLE_NAME  
+	FROM AUTH_ROLES A,AUTH_USER_ROLE_RELA  B ,AUTH_USERS  C 
+	WHERE A.ROLE_ID =B.ROLE_ID AND B.USER_ID =C.USER_ID 
+	AND C.USER_NAME=#{userName, jdbcType=VARCHAR} 
+	</select>
+	<select id="fetchUserPermissions" parameterType="map" resultType="map">
+	SELECT DISTINCT  G.RESOURCE_NAME,F.ACTION_NAME  
+	FROM AUTH_ROLES A,
+		AUTH_USER_ROLE_RELA  B ,
+		AUTH_USERS  C,
+		AUTH_ROLE_PERMISSION_RELA D,
+		AUTH_PERMISSIONS E,
+		AUTH_ACTIONS F,
+		AUTH_RESOURCES G
+	 WHERE A.ROLE_ID =B.ROLE_ID AND 
+	 B.USER_ID =C.USER_ID AND 
+	 D.ROLE_ID=A.ROLE_ID AND 
+	 E.PERMISSION_ID = D.PERMISSION_ID AND 
+	 F.ACTION_ID=E.ACTION_ID AND 
+	 G.RESOURCE_ID=E.RESOURCE_ID AND
+	 G.RESOURCE_NAME IS NOT NULL AND C.USER_NAME=#{userName, jdbcType=VARCHAR} 
+	 
+	 UNION
+	SELECT DISTINCT  D.RESOURCE_NAME,E.ACTION_NAME  
+	FROM 
+		AUTH_USERS A,
+		AUTH_USER_PERMISSION_RELA B ,
+		AUTH_PERMISSIONS C,
+		AUTH_RESOURCES D,
+		AUTH_ACTIONS E
+	WHERE A.USER_ID=B.USER_ID AND 
+	B.PERMISSION_ID = C.PERMISSION_ID AND 
+	D.RESOURCE_ID = C.RESOURCE_ID AND 
+	C.ACTION_ID = E.ACTION_ID AND a.USER_NAME=#{userName, jdbcType=VARCHAR} 
+	</select>
+	<sql id="orglist"> 
+	SELECT '1'||ORG_NO ID,'1'||P_ORG_NO PARENT ,
+				ORG_NAME NAME,'1' type,'icon/org.png' ICON FROM O_ORG
+			where ORG_NO=#{ID, jdbcType=VARCHAR} 
+	
+  	</sql>
+  	<sql id="suborglist"> 
+	SELECT '1'||ORG_NO ID,'1'||P_ORG_NO PARENT ,
+				ORG_NAME NAME,'1' type,'icon/org.png' ICON  FROM O_ORG
+			where P_ORG_NO=#{ID, jdbcType=VARCHAR}
+	
+  	</sql>
+  	<sql id="userlist"> 
+	SELECT '2'||USER_ID ID ,'1'||SCOPE_ID PARENT,
+				TRUENAME NAME, '2' type,'user/user.png' ICON  FROM AUTH_USERS 
+			where SCOPE_ID=#{ID, jdbcType=VARCHAR}
+	
+  	</sql>
+  	<insert id="addRoleToUser" parameterType="map">
+		INSERT INTO
+		AUTH_USER_ROLE_RELA  (
+		RELA_ID,
+		USER_ID,
+		ROLE_ID)
+		VALUES
+		(AUTH_SEQ_ID.NEXTVAL,
+		#{USER_ID, jdbcType=VARCHAR},
+		#{ROLE_ID, jdbcType=VARCHAR})
+	</insert>
+	<delete id="removeRoleFromUser" parameterType="map">
+		DELETE FROM AUTH_USER_ROLE_RELA   
+		WHERE USER_ID=#{USER_ID}
+		AND ROLE_ID=#{ROLE_ID}
+	</delete>
+	<insert id="addUserToGroup" parameterType="map">
+		INSERT INTO
+		AUTH_USER_GROUP_RELA (
+		RELA_ID,
+		USER_ID,
+		GROUP_ID)
+		VALUES
+		(AUTH_SEQ_ID.NEXTVAL,
+		#{userId, jdbcType=VARCHAR},
+		#{groupId, jdbcType=VARCHAR})
+	</insert>
+<!-- 更新登陆时间 -->
+  <update id="updateUserLogin" parameterType="cn.sg.gdw.security.entity.UserEntity">
+      update AUTH_USERS
+    <set>
+      LAST_LOGIN_TIME = #{lastLoginTime, jdbcType=TIMESTAMP},
+      LAST_LOGIN_IP = #{lastLoginIp, jdbcType=VARCHAR}
+      </set>
+    where USER_ID= #{userId, jdbcType=VARCHAR}
+  </update>
+  <!-- 锁定解除 -->
+  <update id="lockUser" parameterType="map">
+      update AUTH_USERS
+    <set>
+      STATUS = #{status, jdbcType=INTEGER},
+      LOCK_TIME = #{lockTime, jdbcType=TIMESTAMP}
+      </set>
+    where USER_ID= #{userId, jdbcType=VARCHAR}
+  </update>
+  <update id="updateStatus" parameterType="map">
+      update AUTH_USERS
+    <set>
+      STATUS = #{status, jdbcType=INTEGER}
+      </set>
+    where USER_ID= #{userId, jdbcType=VARCHAR}
+  </update>
+  
+  <update id="changePassword" parameterType="map" >
+      update AUTH_USERS
+    <set>
+      PASSWORD = #{password, jdbcType=VARCHAR},
+      PWD_REMIND_TIME=#{pwdRemindTime, jdbcType=TIMESTAMP}
+      </set>
+    where USER_NAME = #{userName, jdbcType=VARCHAR}
+  </update>
+  <select id="superFetchUsers" parameterType="map" resultMap="userResultMap">
+		select A.USER_ID,A.USER_NAME,A.TRUENAME,A.CREATE_DATE ,
+			B.TRUENAME CREATE_NAME,A.STATUS,
+			A.LAST_LOGIN_TIME,A.LAST_LOGIN_IP,
+			A.LOCK_TIME,A.PWD_REMIND_TIME,
+			A.LAST_CHANGE_PASSWORD,
+			A.COMMENTS,
+			A.SUPER_FLAG,
+			C.ORG_NAME SCOPE_NAME,
+			A.SCOPE_ID
+		from AUTH_USERS A,AUTH_USERS B,O_ORG C
+		WHERE A.CREATE_ID=B.USER_ID
+			AND A.SCOPE_ID=C.ORG_NO
+		<if test="scopeId!=null">
+	      and A.SCOPE_ID LIKE #{scopeId}||'%'
+		</if>
+		<if test="userName!=null">
+	      and A.USER_NAME = #{userName}
+		</if>
+		<if test="userId!=null">
+	      and A.USER_ID = #{userId}
+		</if>
+		<if test="trueName!=null">
+	      and A.TRUENAME LIKE '%'||#{trueName}||'%'
+		</if>
+	</select>
+	<select id="fetchUsers" parameterType="map" resultMap="userResultMap">
+		select A.USER_ID,A.USER_NAME,A.TRUENAME,A.CREATE_DATE ,
+			B.TRUENAME CREATE_NAME,A.STATUS,
+			A.LAST_LOGIN_TIME,A.LAST_LOGIN_IP,
+			A.LOCK_TIME,A.PWD_REMIND_TIME,
+			A.LAST_CHANGE_PASSWORD,
+			A.COMMENTS,
+			A.SUPER_FLAG,
+			C.ORG_NAME SCOPE_NAME,
+			A.SCOPE_ID
+		from AUTH_USERS A,AUTH_USERS B,O_ORG C
+		WHERE A.CREATE_ID=B.USER_ID
+			AND A.SCOPE_ID=C.ORG_NO
+			AND nvl(a.SUPER_FLAG,0) != 1
+		<if test="scopeId!=null">
+	      and A.SCOPE_ID LIKE #{scopeId}||'%'
+		</if>
+		<if test="userName!=null">
+	      and A.USER_NAME = #{userName}
+		</if>
+		<if test="userId!=null">
+	      and A.USER_ID = #{userId}
+		</if>
+		<if test="trueName!=null">
+	      and A.TRUENAME LIKE '%'||#{trueName}||'%'
+		</if>
+	</select>
+	<select id="fetchUserByName" parameterType="map" resultMap="userResultMap">
+		select A.USER_ID,A.USER_NAME,A.TRUENAME,A.CREATE_DATE ,A.STATUS,
+		A.LAST_LOGIN_TIME,A.LAST_LOGIN_IP,
+		A.LOCK_TIME,A.PWD_REMIND_TIME,
+		A.LAST_CHANGE_PASSWORD,
+		A.PASSWORD,
+		A.SUPER_FLAG,
+		A.SCOPE_ID,O.ORG_NAME SCOPE_NAME
+		from AUTH_USERS A,O_ORG O
+		WHERE A.USER_NAME =#{userName} AND O.ORG_NO=A.SCOPE_ID
+	</select>
+	 <update id="updateUser" parameterType="map" >
+      update AUTH_USERS
+    <set>
+      TRUENAME = #{trueName, jdbcType=VARCHAR},
+      <if test="password!=null">
+	    PASSWORD =#{password},
+	  </if>
+	  COMMENTS= #{comments, jdbcType=VARCHAR},
+	  SCOPE_ID=#{scopeId, jdbcType=VARCHAR},
+      </set>
+    where USER_ID = #{userId, jdbcType=VARCHAR}
+  </update>
+	<insert id="addUser" parameterType="cn.sg.gdw.security.entity.UserEntity">
+		INSERT INTO
+		AUTH_USERS (
+		USER_ID,
+		USER_NAME,
+		PASSWORD,
+		TRUENAME,
+		CREATE_DATE,
+		STATUS,
+		LAST_LOGIN_TIME,
+		LAST_LOGIN_IP,
+		PWD_REMIND_TIME,
+		COMMENTS,
+		CREATE_ID,
+		CREATE_NAME,
+		SCOPE_ID)
+		VALUES
+		(#{userId, jdbcType=INTEGER},
+		#{userName, jdbcType=VARCHAR},
+		#{password, jdbcType=VARCHAR},
+		#{trueName, jdbcType=VARCHAR},
+		#{createDate, jdbcType=TIMESTAMP},
+		#{status, jdbcType=VARCHAR},
+		#{lastLoginTime, jdbcType=TIMESTAMP},
+		#{lastLoginIp, jdbcType=VARCHAR},
+		#{pwdRemindTime, jdbcType=TIMESTAMP},
+		#{comments, jdbcType=VARCHAR},
+		#{createId, jdbcType=VARCHAR},
+		#{createName, jdbcType=VARCHAR},
+		#{scopeId, jdbcType=VARCHAR})
+	</insert>
+	<delete id="removeUserByName" parameterType="map">
+		DELETE FROM AUTH_USERS WHERE USER_NAME=#{userName}
+	</delete>
+	<delete id="removeUserById" parameterType="map">
+		DELETE FROM AUTH_USERS WHERE USER_ID=#{userId}
+	</delete>
+	<delete id="removeUserPermission" parameterType="map">
+		DELETE FROM AUTH_USER_PERMISSION_RELA  WHERE USER_ID=#{userId}
+	</delete>
+	<delete id="removeUserGroup" parameterType="map">
+		DELETE FROM AUTH_USER_GROUP_RELA   WHERE USER_ID=#{userId}
+	</delete>
+	
+	<resultMap id="userResultMap" type="cn.sg.gdw.security.entity.UserEntity">
+    <id property="userId" column="USER_ID" jdbcType="INTEGER" />
+    <result property="comments" column="COMMENTS" jdbcType="VARCHAR" />
+    <result property="userName" column="USER_NAME" jdbcType="VARCHAR" />
+    <result property="trueName" column="TRUENAME" jdbcType="VARCHAR" />
+    <result property="password" column="PASSWORD" jdbcType="VARCHAR" />
+    <result property="createDate" column="CREATE_DATE" jdbcType="TIMESTAMP" />
+    <result property="createName" column="CREATE_NAME" jdbcType="VARCHAR" />
+    <result property="status" column="STATUS" jdbcType="INTEGER" />
+    <result property="lastLoginTime" column="LAST_LOGIN_TIME" jdbcType="TIMESTAMP" />
+    <result property="lastChangePassword" column="LAST_CHANGE_PASSWORD" jdbcType="TIMESTAMP" />
+    <result property="lastLoginIp" column="LAST_LOGIN_IP" jdbcType="VARCHAR" />
+    <result property="lockTime" column="LOCK_TIME" jdbcType="TIMESTAMP" />
+    <result property="pwdRemindTime" column="PWD_REMIND_TIME" jdbcType="TIMESTAMP" />
+    <result property="scopeName" column="SCOPE_NAME" jdbcType="VARCHAR" />
+    <result property="scopeId" column="SCOPE_ID" jdbcType="VARCHAR" />  
+    <result property="superFlag" column="SUPER_FLAG" jdbcType="INTEGER" />
+  </resultMap>
+</mapper>
+			

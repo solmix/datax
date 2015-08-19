@@ -12,7 +12,7 @@
 	<component name="app1" path="/app1"
 		xmlns="http://www.solmix.org/schema/wmix-component">
 		<endpoints>
-			<bean class="org.solmix.datax.wmix.mock.TestEndpoint" xmlns="http://www.springframework.org/schema/beans"></bean>
+			<bean class="org.solmix.datax.wmix.mock.TestEndpoint"  xmlns="http://www.springframework.org/schema/beans"></bean>
 		</endpoints>
 	</component>
 </beans>

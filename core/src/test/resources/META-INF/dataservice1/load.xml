@@ -26,7 +26,7 @@
 				</field>
 			</fields>
 			<operations>
-				<fetch autoJoinTransactions="true" serviceMethod="getMenu" usedValidatedValues="true">
+				<fetch autoJoinTransactions="true" serviceMethod="getMenu" usedValidatedValues="true" oneway="true">
 					<params isOverride="true">
 						<param key="key" value="v" isOverride="false" />
 						<param key="key2" value="v2"  />
@@ -43,7 +43,7 @@
 				</fetch>
 				<fetch id="feth2" refid="#fetch"></fetch>
 				<add>
-					<batch transactionPolicy="from_first_change">
+					<batch transactionPolicy="from_first_change" merged="wrapped">
 						<add>
 							<batch>
 								<add></add>

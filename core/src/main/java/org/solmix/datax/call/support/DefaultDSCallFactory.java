@@ -45,7 +45,7 @@ public class DefaultDSCallFactory implements DSCallFactory
     }
 
     @Override
-    public DSCall createDsCall() {
+    public DSCall createDSCall() {
         return new DSCallImpl(transactionServiceFactory.createTransactionService());
     }
     
@@ -55,7 +55,6 @@ public class DefaultDSCallFactory implements DSCallFactory
             transactionServiceFactory= new DefaultTransactionServiceFactory();
         }
     }
-
     
     public TransactionServiceFactory getTransactionServiceFactory() {
         return transactionServiceFactory;

@@ -86,7 +86,21 @@ public final class DATAX
      * Velocity 中{@link DSRequest} 的名称
      */
     public static final String VM_DSREQUEST = "dsrequest";
+    
+    /**
+     * Velocity 中HttpServletRequest 的名称
+     */
+    public static final String VM_REQUEST = "request";
+    
+    /**
+     * Velocity 中HttpServletResponse 的名称
+     */
+    public static final String VM_RESPONSE = "response";
 
+    /**
+     * Velocity 中HttpSession 的名称
+     */
+    public static final String VM_SESSION= "session";
     /**
      * Velocity 中{@link DataService} 的名称
      */

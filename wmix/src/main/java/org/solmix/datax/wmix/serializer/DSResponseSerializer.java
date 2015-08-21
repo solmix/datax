@@ -21,6 +21,8 @@ package org.solmix.datax.wmix.serializer;
 import java.io.IOException;
 
 import org.solmix.datax.DSResponse;
+import org.solmix.datax.attachment.Pageable;
+import org.solmix.datax.wmix.Constants;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -38,13 +40,33 @@ public class DSResponseSerializer extends JsonSerializer<DSResponse>
 {
 
     @Override
-    public void serialize(DSResponse value, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException {
+    public void serialize(DSResponse response, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException {
 
-        Object o =value.getRawData();
-        if(o!=null){
-            
+        jgen.writeStartObject();
+        jgen.writeNumberField("status", response.getStatus().value());
+        jgen.writeBooleanField("isDSResponse", true);
+        if(response.getAffectedRows()!=null){
+            jgen.writeNumberField("affectedRows", response.getAffectedRows());
         }
-        
+        Object invalidate = response.getAttribute(Constants.INVALIDATE_CACHE);
+        Pageable page = response.getAttachment(Pageable.class);
+        if(invalidate!=null){
+            jgen.writeBooleanField("invalidateCache", Boolean.valueOf(invalidate.toString()));
+        }
+        if(page!=null){
+            jgen.writeNumberField("startRow", page.getStartRow());
+            jgen.writeNumberField("endRow", page.getEndRow());
+            jgen.writeNumberField("totalRows", page.getTotalRow());
+        }
+        Object o =response.getRawData();
+        if(o!=null){
+            jgen.writeObjectField("data", o);
+        }
+        Object[] errors = response.getErrors();
+        if(errors!=null&&errors.length>0){
+            jgen.writeObjectField("errors",errors);
+        }
+        jgen.writeEndObject();
     }
     @Override
     public Class<DSResponse> handledType() { return DSResponse.class; }

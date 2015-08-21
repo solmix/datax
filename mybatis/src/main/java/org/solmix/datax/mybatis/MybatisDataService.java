@@ -250,6 +250,7 @@ public class MybatisDataService extends BaseDataService implements DataService
             int start = page.getStartRow();
             int end =start+results.size();
             page.setEndRow(end);
+            res.addAttachment(Pageable.class, page);
         }
         return res;
     }

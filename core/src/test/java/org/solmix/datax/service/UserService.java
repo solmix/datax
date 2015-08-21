@@ -16,28 +16,16 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.export;
-
-import org.solmix.datax.DataxRuntimeException;
+package org.solmix.datax.service;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年8月7日
+ * @version $Id$  2015年8月20日
  */
 
-public class ExportException extends DataxRuntimeException
+public interface UserService
 {
-    private static final long serialVersionUID = -1484231988023449497L;
 
-    public ExportException(String string, Throwable e)
-    {
-        super(string, e);
-    }
-
-    public ExportException(String string)
-    {
-        super(string);
-    }
 }

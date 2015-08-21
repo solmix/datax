@@ -143,4 +143,16 @@ public interface DSResponse
      * @param errors
      */
     void setErrors(Object... errors);
+    
+    <T>void addAttachment(Class<T> classKey,T instance);
+    
+    <T> T getAttachment(Class<T> classKey);
+    
+    Object getAttribute(String name);
+    
+    /**
+    * @param name name==null removed
+    * @param value
+    */
+   void setAttribute(String name,Object value);
 }

@@ -19,21 +19,133 @@
 
 package org.solmix.datax.wmix.exchange;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.solmix.datax.wmix.AbstractWmixTests;
+import org.solmix.runtime.monitor.MonitorInfo;
+import org.solmix.runtime.monitor.support.MonitorServiceImpl;
+import org.solmix.runtime.threadpool.DefaultThreadPool;
+import org.solmix.runtime.threadpool.DefaultThreadPoolManager;
+
+import com.meterware.servletunit.InvocationContext;
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$ 2015年8月14日
-/   / /*/
+ * @version $Id$ 2015年8月14日 / / /
+ */
 
 public class DataxWmixTest extends AbstractWmixTests
 {
 
     @Test
     public void test() throws Exception {
+
+        prepareServlet("datax");
+        Assert.assertNotNull(component);
+        invokePost("/datax/datax/1?a=b&d=e", getRequest());
+        controller.service(request, response);
+        response.getOutputStream();
+    }
+    private int count=0;
+    @Test
+    public void testAsync() throws Exception {
+        final MonitorServiceImpl mi = new MonitorServiceImpl();
+        MonitorInfo old = mi.getMonitorInfo();
+        final long free = old.getUsedMemory();
+        DefaultThreadPoolManager manager = new DefaultThreadPoolManager();
+       final DefaultThreadPool pool = (DefaultThreadPool) manager.getDefaultThreadPool();
+        pool.setMaxThreads(100);
+        pool.setQueueSize(1000);
+        pool.setDequeueTimeout(10000);
+        prepareServlet("datax");
+        int size = 100;
+        final CountDownLatch latch = new CountDownLatch(size);
+        List<Runnable> runs = new ArrayList<Runnable>();
+        for (int i = 0; i < size; i++) {
+            final String str = getRequest();
+
+            Runnable run = new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        InvocationContext ipc = invokePostContext("/datax/datax/1?a=b&d=e", str);
+                        controller.service(ipc.getRequest(), ipc.getResponse());
+                        // System.out.println("Thread"+Thread.currentThread().getId()+":"+latch.getCount());
+                        if (latch.getCount() % 1000 == 0) {
+                            MonitorInfo bb = mi.getMonitorInfo();
+                            System.out.println((bb.getUsedMemory()) / 1000 + "KB");
+                            System.out.println(pool.getQueueSize());
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        latch.countDown();
+                    }
+                }
+            };
+            runs.add(run);
+        }
+        MonitorInfo bb = mi.getMonitorInfo();
+        System.out.println((bb.getUsedMemory() - free) / 1000 + "KB");
+        long start = System.currentTimeMillis();
+
+        for (Runnable run : runs) {
+            pool.execute(run);
+        }
+        latch.await();
+        System.out.println((System.currentTimeMillis() - start));
+       /*while(true){
+           final String str = getRequest();
+
+           Runnable run = new Runnable() {
+
+               @Override
+               public void run() {
+                   try {
+                       InvocationContext ipc = invokePostContext("/datax/datax/1?a=b&d=e", str);
+                       controller.service(ipc.getRequest(), ipc.getResponse());
+                       // System.out.println("Thread"+Thread.currentThread().getId()+":"+latch.getCount());
+                       count++;
+                       if (count % 1000 == 0) {
+                           MonitorInfo bb = mi.getMonitorInfo();
+                           System.out.println((bb.getUsedMemory()) / 1000 + "KB");
+                           System.out.println(pool.getQueueSize());
+                       }
+                   } catch (Exception e) {
+                       e.printStackTrace();
+                   } finally {
+                       latch.countDown();
+                   }
+               }
+           };
+           pool.execute(run);
+           Thread.currentThread().sleep(100);
+       }*/
+    }
+
+    @Test
+    public void testBatch() throws Exception {
+        prepareServlet("datax");
+        long start = System.currentTimeMillis();
+        MonitorServiceImpl mi = new MonitorServiceImpl();
+        MonitorInfo old = mi.getMonitorInfo();
+        long free = old.getFreeMemory();
+        for (int i = 0; i < 1000; i++) {
+            invokePost("/datax/datax/1?a=b&d=e", getRequest());
+            controller.service(request, response);
+        }
+        System.out.println((System.currentTimeMillis() - start));
+        MonitorInfo bb = mi.getMonitorInfo();
+        System.out.println((bb.getFreeMemory() - free) / 1000 + "KB");
+    }
+
+    private String getRequest() {
         StringBuffer sb = new StringBuffer();
         sb.append("{");
         sb.append("\"transactionNum\":2, ");
@@ -55,9 +167,6 @@ public class DataxWmixTest extends AbstractWmixTests
         sb.append("]");
         sb.append("}");
         sb.append("}");
-        prepareServlet("datax");
-        Assert.assertNotNull(component);
-        invokePost("/datax/datax/1?a=b&d=e",sb.toString());
-        controller.service(request, response);
+        return sb.toString();
     }
 }

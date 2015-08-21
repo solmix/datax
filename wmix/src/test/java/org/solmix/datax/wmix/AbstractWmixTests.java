@@ -138,6 +138,19 @@ public abstract class AbstractWmixTests
         filter=(WmixFilter)invocationContext.getFilter();
         servletContext =filter.getServletContext();
     }
+    
+    protected final InvocationContext invokePostContext(String uri,String content)throws Exception{
+        if (uri != null && uri.startsWith("http")) {
+            uri = URI.create(uri).normalize().toString(); // full uri
+        }else{
+            uri= URI.create("http://127.0.0.1/"+uri).normalize().toString(); 
+        }
+        InputStream   in_nocode   =   new   ByteArrayInputStream(content.getBytes());   
+        PostMethodWebRequest post = new PostMethodWebRequest(uri,in_nocode, "text/json;charset=utf-8");
+        return client.newInvocation(post);
+    }
+    
+    
     protected final void invokePost(String uri,Object... params)throws Exception{
         if (uri != null && uri.startsWith("http")) {
             uri = URI.create(uri).normalize().toString(); // full uri

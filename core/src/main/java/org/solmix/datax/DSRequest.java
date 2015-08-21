@@ -196,16 +196,6 @@ public interface DSRequest
      */
     void setAttribute(String name,Object value);
 
-    /**
-     * @return
-     */
-//    Object getRawOldValues();
-
-    /**
-     * @param rawOldValues
-     */
-//    void setRawOldValues(Object rawOldValues);
-
     <T>void addAttachment(Class<T> classKey,T instance);
     
     <T> T getAttachment(Class<T> classKey);

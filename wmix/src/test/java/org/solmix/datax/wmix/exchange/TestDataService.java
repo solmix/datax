@@ -43,7 +43,7 @@ public class TestDataService
     @Resource
     private RequestContext context;
     public String fetch1(){
-        return "hello";
+        return "hello中文乱码问题！@！";
     }
     
     public void add1(@Param String name){

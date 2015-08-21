@@ -19,6 +19,7 @@
 package org.solmix.datax.support;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -51,6 +52,10 @@ public class DSResponseImpl implements DSResponse
     private Long affectedRows;
 
     private Object rawData;
+    
+    private Map<String ,Object> attributes;
+    
+    private Map<Class<?> ,Object> attachments;
     
     public DSResponseImpl(Status status)
     {
@@ -331,5 +336,47 @@ public class DSResponseImpl implements DSResponse
     public void setErrors(Object... errors) {
         this.errors=errors;
     }
+    @Override
+    public Object getAttribute(String name) {
+        if(attributes!=null){
+           return attributes.get(name);
+        }
+        return null;
+    }
 
+    
+    @Override
+    public void setAttribute(String name, Object value) {
+        if(name==null){
+            return;
+        }
+        if(attributes==null){
+                attributes=new HashMap<String, Object>();
+        }
+        if(value==null){
+            attributes.remove(name);
+        }else{
+            attributes.put(name, value);
+        }
+    }
+    
+    @Override
+    public <T> void addAttachment(Class<T> classKey, T instance) {
+        if(instance==null||classKey==null){
+            return;
+        }
+        if(attachments==null){
+            attachments=new HashMap<Class<?>, Object>();
+        }
+        attachments.put(classKey, instance);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T getAttachment(Class<T> classKey) {
+        if (attachments != null) {
+            return (T) attachments.get(classKey);
+        }
+        return null;
+    }
 }

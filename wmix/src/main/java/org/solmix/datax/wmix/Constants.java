@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 The Solmix Project
+ * Copyright 2015 The Solmix Project
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -16,27 +16,17 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.service;
-
-import javax.annotation.Resource;
-
-import org.solmix.datax.model.DataServiceInfo;
+package org.solmix.datax.wmix;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年7月1日
+ * @version $Id$  2015年8月20日
  */
 
-public class MockDataService
+public class Constants
 {
-    @Resource(name="load.ds")
-    private DataServiceInfo info;
-
-    public DataServiceInfo getInfo() {
-        return info;
-    }
-    
+    public static final String INVALIDATE_CACHE="invalidateCache";
 
 }

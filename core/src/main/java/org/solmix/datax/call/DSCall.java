@@ -64,7 +64,7 @@ public interface DSCall extends FreeResourcesHandler
     void registerCallback(DSCallCompleteCallback callback);
     
     /**
-     * 执行带事物的请求
+     * 执行请求
      * @param request
      * @return
      */
@@ -147,7 +147,14 @@ public interface DSCall extends FreeResourcesHandler
     TransactionService getTransactionService();
 
     /**
-     * 提交DSCall中的请求
+     * 结束一次调用请求
+     * @throws TransactionException 如果失败
      */
-    void commit();
+    void commit() throws TransactionException;
+
+    /**
+     * @return
+     */
+    boolean isClosed();
+  
 }

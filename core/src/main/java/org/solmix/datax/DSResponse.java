@@ -76,9 +76,9 @@ public interface DSResponse
         }
     }
 
-    void setAffectedRows(Long affected);
+    void setAffectedRows(Integer affected);
 
-    Long getAffectedRows();
+    Integer getAffectedRows();
 
     /**
      * Return the DataSource

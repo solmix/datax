@@ -21,6 +21,7 @@ package org.solmix.datax.support;
 import java.io.IOException;
 
 import org.solmix.datax.DataService;
+import org.solmix.datax.DataxSession;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.runtime.resource.InputStreamResource;
 import org.solmix.runtime.resource.ResourceResolver;
@@ -52,6 +53,8 @@ public class DataServiceResolver implements ResourceResolver
             return (T) dataServiceManager.getRepositoryService().getDataService(resourceName);
         }else if(DataService.class.isAssignableFrom(resourceType)){
             return  (T)dataServiceManager.getDataService(resourceName);
+        }else if(DataxSession.class==resourceType){
+            return (T) new DataxSessionImpl(dataServiceManager);
         }
         return null;
     }

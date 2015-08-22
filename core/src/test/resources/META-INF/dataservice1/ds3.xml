@@ -17,6 +17,7 @@
 						<fetch autoJoinTransactions="true"></fetch>
 						<fetch></fetch>
 					</batch>
+					<fetch></fetch>
 				</custom>
 			</operations>
 		</service>

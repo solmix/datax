@@ -49,7 +49,7 @@ public class DSResponseImpl implements DSResponse
 
     private DataService dataService;
 
-    private Long affectedRows;
+    private Integer affectedRows;
 
     private Object rawData;
     
@@ -105,14 +105,14 @@ public class DSResponseImpl implements DSResponse
         this.dataService=dataService;
     }
     @Override
-    public void setAffectedRows(Long affectedRows) {
+    public void setAffectedRows(Integer affectedRows) {
         this.affectedRows=affectedRows;
         
     }
 
  
     @Override
-    public Long getAffectedRows() {
+    public Integer getAffectedRows() {
         return affectedRows;
         
     }

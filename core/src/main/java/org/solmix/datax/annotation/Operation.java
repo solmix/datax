@@ -16,47 +16,22 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+package org.solmix.datax.annotation;
 
-package org.solmix.datax.call;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$ 2015年8月12日
+ * @version $Id$  2015年8月21日
  */
+@Target({METHOD})
+@Retention(RUNTIME)
+public @interface Operation {
 
-public class DSCallUtils
-{
-
-    private static final ThreadLocal<DSCall> local = new ThreadLocal<DSCall>();
-
-    public static DSCall getDSCall() {
-
-        DSCall call= local.get();
-        if(call!=null&&call.isClosed()){
-            return null;
-        }else{
-            return call;
-        }
-    }
-
-    // 移除当前线程的DSCall
-    public static void removeDSCall() {
-
-        local.remove();
-    }
-
-    public static DSCall setDSCall(DSCall call) {
-        if (call == null) {
-            removeDSCall();
-        }
-        DSCall old = getDSCall();
-        local.set(call);
-        if(old!=null&&old.isClosed()){
-            return null;
-        }else{
-            return old;
-        }
-    }
 }

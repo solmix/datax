@@ -67,11 +67,12 @@ public class DSCallImpl implements DSCall
     
     private Map<Object, Object> attributes;
     
-    private final Map<DSRequest, DSResponse> responseMap = new LinkedHashMap<DSRequest, DSResponse>();
+    private  Map<DSRequest, DSResponse> responseMap = new LinkedHashMap<DSRequest, DSResponse>();
 
-    private final HashSet<DSCallCompleteCallback> callbacks = new HashSet<DSCallCompleteCallback>();
+    private  HashSet<DSCallCompleteCallback> callbacks = new HashSet<DSCallCompleteCallback>();
     
     private final TransactionService transactionService;
+    
     public enum STATUS
     {
         INIT , BEGIN , SUCCESS , FAILED , CLOSED;
@@ -85,6 +86,7 @@ public class DSCallImpl implements DSCall
     {
         this(STATUS.INIT,transactionManager,null);
     }
+    
     public DSCallImpl(STATUS status,TransactionService transactionManager,TransactionPolicy policy)
     {
         this.status = status;
@@ -133,11 +135,7 @@ public class DSCallImpl implements DSCall
         }
         return null;
     }
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.solmix.datax.call.DSCall#getTransactionPolicy()
-     */
+ 
     @Override
     public TransactionPolicy getTransactionPolicy() {
         return transactionPolicy;
@@ -151,11 +149,6 @@ public class DSCallImpl implements DSCall
         this.transactionPolicy = transactionPolicy;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.solmix.datax.call.DSCall#queueIncludesUpdates(org.solmix.datax.DSRequest)
-     */
     @Override
     public boolean queueIncludesUpdates(DSRequest req) {
         if (requests == null)
@@ -189,6 +182,9 @@ public class DSCallImpl implements DSCall
    
     @Override
     public DSResponse execute(DSRequest request) throws DSCallException {
+        if(status==STATUS.INIT){
+            status=STATUS.BEGIN;
+        }
         if (status != STATUS.BEGIN) {
             throw new TransactionException("Transaction not started ,you should call method begin()");
         }
@@ -288,42 +284,32 @@ public class DSCallImpl implements DSCall
         return transactionFailure;
     }
  
-    /**
-     * 开始事物。
-     */
-    public void begin(){
-        if (status != STATUS.INIT)
-            throw new TransactionException("Transaction have been started");
-        status = STATUS.BEGIN;
-    }
+
     
     @Override
-    public void commit(){
-        if(responseMap.size()!=requests.size()){
-            throw new TransactionException(new StringBuilder()
-            .append("Having ")
-            .append(requests.size())
-            .append(" requests,But having ")
-            .append(responseMap.size())
-            .append(" responses").toString());
-        }
-        boolean failure=false;
-        for (DSRequest req : requests) {
-            DSResponse res = getResponse(req);
-            if (res.getStatus().value() < 0) {
-                failure = true;
-                break;
+    public void commit() {
+            if (responseMap.size() != requests.size()) {
+                throw new TransactionException(new StringBuilder().append("Having ").append(requests.size()).append(" requests,But having ").append(
+                    responseMap.size()).append(" responses").toString());
             }
-        }
-        if(failure){
-            try {
-                onFailure();
-            } catch (DSCallException e) {
-              throw new TransactionException("onFailure", e);
+            boolean failure = false;
+            for (DSRequest req : requests) {
+                DSResponse res = getResponse(req);
+                if (res.getStatus().value() < 0) {
+                    failure = true;
+                    break;
+                }
             }
-        }else{
-            onSuccess();
-        }
+            if (failure) {
+                try {
+                    onFailure();
+                } catch (DSCallException e) {
+                    throw new TransactionException("onFailure", e);
+                }
+            } else {
+                onSuccess();
+            }
+       
     }
   
     @Override
@@ -350,8 +336,16 @@ public class DSCallImpl implements DSCall
 
     @Override
     public void freeResources() {
+        status=STATUS.CLOSED;
+        this.attributes=null;
+        this.responseMap=null;
+        this.requests=null;
     }
 
+    @Override
+    public boolean isClosed(){
+        return status==STATUS.CLOSED;
+    }
 
     @Override
     public DSResponse getMergedResponse(MergedType merged)throws DSCallException {
@@ -359,18 +353,18 @@ public class DSCallImpl implements DSCall
         if(status==STATUS.BEGIN){
             commit();
         }
-        if(merged==null){
-            merged=MergedType.SIMPLE;
-        }
-        switch (merged) {
-            case SIMPLE:
-                return simpleResponse();
-            case WRAPPED:
-                return wrappedResponse();
-            default:
-               throw new UnsupportedOperationException(merged.value());
-           
-        }
+            if(merged==null){
+                merged=MergedType.SIMPLE;
+            }
+            switch (merged) {
+                case SIMPLE:
+                    return simpleResponse();
+                case WRAPPED:
+                    return wrappedResponse();
+                default:
+                   throw new UnsupportedOperationException(merged.value());
+               
+            }
     }
     
     private DSResponse simpleResponse() {
@@ -401,7 +395,7 @@ public class DSCallImpl implements DSCall
                 DSResponse resp = getResponse(req);
                 mergedData.put(req.getOperationId(), resp.getRawData());
                 Object[] error = resp.getErrors();
-                if(errors!=null&&error.length>0){
+                if(error!=null&&error.length>0){
                     errors.addAll(Arrays.asList(error));
                 }
                 res.setRawData(mergedData);
@@ -455,5 +449,8 @@ public class DSCallImpl implements DSCall
     public boolean isExceptionBroken() {
         return exceptionBroken;
     }
+
+
+   
     
 }

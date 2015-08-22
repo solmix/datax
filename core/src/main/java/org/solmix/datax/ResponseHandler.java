@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 The Solmix Project
+ * Copyright 2015 The Solmix Project
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -16,16 +16,17 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.session;
+package org.solmix.datax;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年7月24日
+ * @version $Id$  2015年8月22日
  */
 
-public interface DataxSessionFactory
+public interface ResponseHandler<T>
 {
+    T handle(DSRequest request,DSResponse response);
 
 }

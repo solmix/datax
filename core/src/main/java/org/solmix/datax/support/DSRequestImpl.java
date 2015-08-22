@@ -111,11 +111,6 @@ public class DSRequestImpl  implements DSRequest,Cloneable
             return prepareReturn(response);
         }
         try {
-           
-            /*OperationInfo oi = getOperationInfo();
-            if(oi.getInvoker()!=null){
-                response = DMIDataService.execute(this, dsc, requestContext);
-            }*/
             response=getApplication().execute(this, requestContext);
         } finally {
             if (isFreeOnExecute()) {

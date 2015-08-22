@@ -178,7 +178,7 @@ public class MybatisDataService extends BaseDataService implements DataService
         String statement = getMybatisStatement(req);
         Object value=req.getRawValues();
         int result = session.update(statement, value);
-        res.setAffectedRows(new Long(result));
+        res.setAffectedRows(new Integer(result));
         res.setRawData(result);
         return res;
     }
@@ -187,7 +187,7 @@ public class MybatisDataService extends BaseDataService implements DataService
         String statement = getMybatisStatement(req);
         Object value=req.getRawValues();
         int result = session.update(statement, value);
-        res.setAffectedRows(new Long(result));
+        res.setAffectedRows(new Integer(result));
         res.setRawData(result);
         return res;
     }
@@ -197,7 +197,7 @@ public class MybatisDataService extends BaseDataService implements DataService
         String statement = getMybatisStatement(req);
         Object value=req.getRawValues();
         int result = session.delete(statement, value);
-        res.setAffectedRows(new Long(result));
+        res.setAffectedRows(new Integer(result));
         res.setRawData(result);
         return res;
     }
@@ -348,7 +348,7 @@ public class MybatisDataService extends BaseDataService implements DataService
             }
             res.setRawData(fetchList);
           } else if (DataTools.isRemove(type)) {
-              Long affect=0l;
+              Integer affect=0;
               for (Future<Object> future : futures) {
                   Integer so= (Integer)getFutureValue(future);
                   affect+=so;
@@ -356,7 +356,7 @@ public class MybatisDataService extends BaseDataService implements DataService
               res.setRawData(affect);
               res.setAffectedRows(affect);
           } else if (DataTools.isUpdate(type)) {
-              Long affect=0l;
+              Integer affect=0;
               for (Future<Object> future : futures) {
                   Integer so= (Integer)getFutureValue(future);
                   affect+=so;
@@ -364,7 +364,7 @@ public class MybatisDataService extends BaseDataService implements DataService
               res.setRawData(affect);
               res.setAffectedRows(affect);
           } else if (DataTools.isAdd(type)) {
-              Long affect=0l;
+              Integer affect=0;
               for (Future<Object> future : futures) {
                   Integer so= (Integer)getFutureValue(future);
                   affect+=so;

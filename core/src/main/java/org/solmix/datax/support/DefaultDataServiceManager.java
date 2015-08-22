@@ -154,13 +154,9 @@ public class DefaultDataServiceManager implements DataServiceManager,ContainerAw
         this.init = false;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.solmix.datax.DataServiceManager#addServiceClass(java.lang.Class)
-     */
     @Override
-    public void addService(Class<?> serviceClass) {
+    public <T> T getService(Class<T> serviceClass) {
+        return null;
         // TODO Auto-generated method stub
 
     }

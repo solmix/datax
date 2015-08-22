@@ -40,7 +40,7 @@ public interface DataServiceManager
     
     void setConfigLocation(String location);
     
-    void addService(Class<?> serviceClass);
+    <T> T getService(Class<T> serviceClass);
     
     DataService getDataService(String serviceName);
     

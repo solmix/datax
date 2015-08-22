@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 The Solmix Project
+ * Copyright 2015 The Solmix Project
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -16,18 +16,22 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.session.support;
+package org.solmix.datax.annotation;
 
-import org.solmix.datax.session.DataxSessionFactory;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年7月24日
+ * @version $Id$  2015年8月21日
  */
-
-public class DefaultDataxSessionFactory implements DataxSessionFactory
-{
+@Target({TYPE})
+@Retention(RUNTIME)
+public @interface DataService {
 
 }

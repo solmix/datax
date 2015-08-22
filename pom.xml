@@ -33,4 +33,10 @@
 	</scm>
 	<url>https://github.com/solmix/datax</url>
 	<description>datax framework </description>
+	<modules>
+		<module>core</module>
+		<module>jdbc</module>
+		<module>mybatis</module>
+		<module>wmix</module>
+	</modules>
 </project>

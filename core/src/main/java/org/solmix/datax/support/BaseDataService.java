@@ -123,6 +123,9 @@ public class BaseDataService implements DataService
         }
     }
     
+    /**
+     * 释放执行请求时缓存
+     */
     @Override
     public void freeResources() {
 

@@ -218,6 +218,10 @@ public class DataxSessionImpl implements DataxSession
        
     }
 
+    @Override
+    public DSResponse execute(DSRequest req){
+       return execute(req, null);
+    }
 
     private DSResponse execute(DSRequest req,OperationType type) {
         OperationInfo oi= req.getOperationInfo();

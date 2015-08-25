@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.solmix.commons.util.Assert;
 import org.solmix.datax.DataServiceManager;
+import org.solmix.datax.wmix.interceptor.OutFaultInterceptor;
 import org.solmix.datax.wmix.interceptor.SgtInInterceptor;
 import org.solmix.datax.wmix.interceptor.SgtOutInterceptor;
 import org.solmix.exchange.Endpoint;
@@ -69,6 +70,7 @@ public class DataxEndpoint extends AbstractWmixEndpoint implements Endpoint
         getOutFaultInterceptors().add(new MessageSenderInterceptor());
         getInInterceptors().add(new SgtInInterceptor());
         getOutInterceptors().add(new SgtOutInterceptor());
+        getOutFaultInterceptors().add(new OutFaultInterceptor());
     }
     
     @Override

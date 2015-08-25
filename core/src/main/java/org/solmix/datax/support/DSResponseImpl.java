@@ -72,8 +72,10 @@ public class DSResponseImpl implements DSResponse
 
     public DSResponseImpl(DSRequest request, Status status)
     {
-        DataService ds = request.getDataService();
-        setDataService(ds);
+        if(request!=null){
+            setDataService(request.getDataService());
+        }
+       
         if (status != null)
             setStatus(status);
     }
@@ -312,6 +314,13 @@ public class DSResponseImpl implements DSResponse
             } catch (Exception ee) {
                 LOG.debug((new StringBuilder()).append("Tried to convert inbound nested Map to: ").append(type.getName()).append(
                     " but DataTools.setProperties() on instantiated class failed").append(" with the following error: ").append(ee.getMessage()).toString());
+            }
+        }else{
+            try {
+                return TransformUtils.transformType(type, data);
+            } catch (Exception e) {
+                throw new IllegalArgumentException((new StringBuilder()).append("Can't convert value of type ").append(data.getClass().getName()).append(
+                    " to target type ").append(type.getName()).toString());
             }
         }
         throw new IllegalArgumentException((new StringBuilder()).append("Can't convert value of type ").append(data.getClass().getName()).append(

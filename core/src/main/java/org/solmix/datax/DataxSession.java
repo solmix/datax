@@ -93,10 +93,13 @@ public interface DataxSession
     void commit()throws TransactionException;
     
     List<DSResponse> execute(List<DSRequest> requests);
+
+    DSResponse execute(DSRequest req);
     
     DataServiceManager getDataServiceManager();
     
     <T> T getService(Class<T> serviceType);
+
 
   
 }

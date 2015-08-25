@@ -72,6 +72,8 @@ public class DefaultDataServiceManager implements DataServiceManager,ContainerAw
 
     private ConcurrentHashMap<String, DataServiceHolder> cached = new ConcurrentHashMap<String, DefaultDataServiceManager.DataServiceHolder>();
 
+    private ConcurrentHashMap<Class<?>, Object> proxys = new ConcurrentHashMap<Class<?>, Object>();
+    
     private boolean init;
 
     /** 加载该路径下的配置 */
@@ -101,7 +103,10 @@ public class DefaultDataServiceManager implements DataServiceManager,ContainerAw
     public DefaultDataServiceManager()
     {
     }
-
+    public DefaultDataServiceManager(Container container)
+    {
+        setContainer( container) ;
+    }
     @Override
     public void setContainer(Container container) {
         this.container = container;
@@ -154,11 +159,30 @@ public class DefaultDataServiceManager implements DataServiceManager,ContainerAw
         this.init = false;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T getService(Class<T> serviceClass) {
-        return null;
-        // TODO Auto-generated method stub
-
+        if (serviceClass == null) {
+            throw new IllegalArgumentException("DataService proxy interface is null!");
+        }
+        Object proxy=  proxys.get(serviceClass);
+        if(proxy==null){
+            if (!serviceClass.isInterface()) {
+                throw new IllegalArgumentException("DataService proxy Type:["
+                    + serviceClass.getName() + "] is not a interface!");
+            }
+            if (!serviceClass.isAnnotationPresent(org.solmix.datax.annotation.DataService.class)) {
+                throw new IllegalArgumentException("DataService proxy Type:["
+                    + serviceClass.getName() + "] ,without @"
+                    + org.solmix.datax.annotation.DataService.class.getSimpleName() + " Annotation!");
+            }
+            DataServiceProxy<T> dsp = new DataServiceProxy<T>(serviceClass,new DataxSessionImpl(this));
+            Object instance = dsp.newInstance();
+            proxys.putIfAbsent(serviceClass, instance);
+            return (T)proxys.get(serviceClass);
+        }else{
+            return (T)proxy;
+        }
     }
 
     @Override

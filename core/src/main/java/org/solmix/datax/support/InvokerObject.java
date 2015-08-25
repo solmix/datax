@@ -40,9 +40,8 @@ import org.slf4j.LoggerFactory;
 import org.solmix.commons.annotation.NotThreadSafe;
 import org.solmix.commons.util.DataUtils;
 import org.solmix.commons.util.ObjectUtils;
-import org.solmix.commons.util.TransformUtils;
-import org.solmix.commons.util.ObjectUtils.NullObject;
 import org.solmix.commons.util.Reflection;
+import org.solmix.commons.util.TransformUtils;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DataService;
 import org.solmix.datax.RequestContext;
@@ -245,7 +244,7 @@ public class InvokerObject
         if (isCollection(targetType)) {
             try {
                 Object newArgValue;
-                if (javaCollectionClass != NullObject.class) {
+                if (javaCollectionClass != void.class) {
                     newArgValue = javaCollectionClass.newInstance();
                 } else if (targetType.isInterface() || Modifier.isAbstract(targetType.getModifiers())) {
                     if (Map.class.isAssignableFrom(targetType)) {

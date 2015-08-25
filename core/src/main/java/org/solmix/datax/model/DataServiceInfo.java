@@ -57,6 +57,7 @@ public class DataServiceInfo
     protected String description;
 
     protected Map<String,FieldInfo> fields;
+    
     protected List<FieldInfo> fieldList;
 
     protected Map<String, OperationInfo> operations;

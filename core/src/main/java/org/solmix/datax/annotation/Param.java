@@ -25,8 +25,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import org.solmix.commons.util.ObjectUtils.NullObject;
-
 
 /**
  * 
@@ -51,12 +49,12 @@ public @interface Param {
     
     String expression() default "";
     
-    Class<?> collectionClass() default NullObject.class;
+    Class<?> collectionClass() default void.class;
 
     /**
      * @return
      */
-    Class<?> javaClass() default NullObject.class;
+    Class<?> javaClass() default void.class;
     
-    Class<?> javaKeyClass() default NullObject.class;
+    Class<?> javaKeyClass() default void.class;
 }

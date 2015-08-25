@@ -18,7 +18,7 @@
  */
 package org.solmix.datax.annotation;
 
-import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Retention;
@@ -28,11 +28,10 @@ import java.lang.annotation.Target;
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年8月21日
+ * @version $Id$  2015年8月24日
  */
-@Target({TYPE})
+@Target({PARAMETER})
 @Retention(RUNTIME)
-public @interface DataService {
-
-    String id() default "";
+public @interface Argument {
+    String key();
 }

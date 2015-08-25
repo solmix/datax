@@ -59,7 +59,7 @@ public class SgtInInterceptor extends AbstractInInterceptor
     @Override
     protected void postToSchema(DataTypeMap data, DataServiceManager manager, WmixMessage message, Exchange exchange) {
 
-        List<?> operations = data.getMap("operations").getList("elem");
+        List<?> operations = data.getList("operations");
         RequestContext requestContext = wrappedRequestcontext(exchange);
         if (operations != null) {
             if (operations.size() == 1) {

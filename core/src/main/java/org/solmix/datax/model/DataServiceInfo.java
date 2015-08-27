@@ -127,6 +127,9 @@ public class DataServiceInfo
     }
 
     public Collection<OperationInfo> getOperations() {
+        if(operations==null){
+            return null;
+        }
         return operations.values();
     }
 

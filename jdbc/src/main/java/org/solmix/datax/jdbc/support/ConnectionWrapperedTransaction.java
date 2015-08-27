@@ -48,21 +48,4 @@ public class ConnectionWrapperedTransaction<E> extends ConnectionTransaction
     }
 
 
-    @Override
-    public void commit() {
-
-    }
-
-    @Override
-    public void rollback() {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void close() {
-        // TODO Auto-generated method stub
-
-    }
-
 }

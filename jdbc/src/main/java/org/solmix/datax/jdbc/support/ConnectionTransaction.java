@@ -19,7 +19,10 @@
 package org.solmix.datax.jdbc.support;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.solmix.datax.transaction.Transaction;
 
 
@@ -33,6 +36,7 @@ public class ConnectionTransaction implements Transaction
 {
 
     private final Connection conn;
+    private static final Logger LOG = LoggerFactory.getLogger(ConnectionTransaction.class);
 
     public ConnectionTransaction(Connection conn){
         this.conn=conn;
@@ -50,7 +54,11 @@ public class ConnectionTransaction implements Transaction
      */
     @Override
     public void commit() {
-        // TODO Auto-generated method stub
+       try {
+        conn.commit();
+        } catch (SQLException e) {
+           LOG.warn("Commit connection exception:",e);
+        }
         
     }
 
@@ -61,8 +69,11 @@ public class ConnectionTransaction implements Transaction
      */
     @Override
     public void rollback() {
-        // TODO Auto-generated method stub
-        
+        try {
+            conn.rollback();
+        } catch (SQLException e) {
+           LOG.warn("Rollback connection exception:",e);
+        }
     }
 
     /**
@@ -72,7 +83,11 @@ public class ConnectionTransaction implements Transaction
      */
     @Override
     public void close() {
-        // TODO Auto-generated method stub
+        try {
+            conn.close();
+        } catch (SQLException e) {
+           LOG.warn("Colse connection exception:",e);
+        }
         
     }
 
@@ -83,8 +98,7 @@ public class ConnectionTransaction implements Transaction
      */
     @Override
     public void reset() {
-        // TODO Auto-generated method stub
-        
+       throw new UnsupportedOperationException("reset");
     }
 
     /**
@@ -94,7 +108,11 @@ public class ConnectionTransaction implements Transaction
      */
     @Override
     public boolean isOpen() {
-        // TODO Auto-generated method stub
+        try {
+            return !conn.isClosed();
+        } catch (SQLException e) {
+            LOG.warn("IsOpen exception:",e);
+        }
         return false;
     }
 
@@ -105,8 +123,7 @@ public class ConnectionTransaction implements Transaction
      */
     @Override
     public void released() {
-        // TODO Auto-generated method stub
-        
+        throw new UnsupportedOperationException("reset");
     }
 
     /**
@@ -116,8 +133,7 @@ public class ConnectionTransaction implements Transaction
      */
     @Override
     public void requested() {
-        // TODO Auto-generated method stub
-        
+        throw new UnsupportedOperationException("reset");
     }
 
 }

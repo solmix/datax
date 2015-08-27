@@ -236,6 +236,7 @@ public class DSCallImpl implements DSCall
         for (DSCallCompleteCallback callback : callbacks) {
             callback.onSuccess(this);
         }
+        getTransactionService().commit();
     }
     
     /**失败处理*/
@@ -262,10 +263,12 @@ public class DSCallImpl implements DSCall
                 }
             }
         }
-        if (callbacks != null)
+        if (callbacks != null){
             for (DSCallCompleteCallback callback : callbacks) {
                 callback.onFailure(this, transactionFailure);
             }
+        }
+        getTransactionService().rollback();
     }
     
     /**执行没抛错，检查执行结果是否为成功*/

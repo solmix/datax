@@ -172,7 +172,8 @@ public class BaseDataService implements DataService
        //验证
         OperationType type = oi.getType();
         DSResponse response = null;
-        if (type != OperationType.CUSTOM) {
+        //自定义的不自动验证
+        if (type != OperationType.CUSTOM  && oi.getInvoker() == null) {
             response = validateDSRequest(req);
             if (response != null) {
                 return transformResponse(response, transformers);

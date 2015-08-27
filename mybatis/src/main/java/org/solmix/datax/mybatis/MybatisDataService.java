@@ -125,7 +125,12 @@ public class MybatisDataService extends BaseDataService implements DataService
             req.setPartsOfTransaction(true);
             // dsc中已经存在该DataSource的事物对象
             if (transaction != null) {
-                if (transaction instanceof ConnectionTransaction) {
+                if (transaction instanceof ConnectionWrapperedTransaction) {
+                    Object wrap = ((ConnectionWrapperedTransaction<?>) transaction).getWrappedTransactionObject();
+                    if (wrap instanceof SqlSession) {
+                        session = (SqlSession) wrap;
+                    }
+                } else  if (transaction instanceof ConnectionTransaction) {
                     Connection conn = (Connection) transaction.getTransactionObject();
                     if (conn != null) {
                         session = sqlSessionFactory.openSession(conn);
@@ -135,12 +140,7 @@ public class MybatisDataService extends BaseDataService implements DataService
                     if (session != null && this.canStartTransaction(req, false)) {
                         ts.bindResource(dataSource, new ConnectionWrapperedTransaction<SqlSession>(session, session.getConnection()));
                     }
-                } else if (transaction instanceof ConnectionWrapperedTransaction) {
-                    Object wrap = ((ConnectionWrapperedTransaction<?>) transaction).getWrappedTransactionObject();
-                    if (wrap instanceof SqlSession) {
-                        session = (SqlSession) wrap;
-                    }
-                }
+                }  
                 // dsc中不存在该DataSource的事物对象
             } else {
                 if (this.canStartTransaction(req, false)) {
@@ -167,7 +167,7 @@ public class MybatisDataService extends BaseDataService implements DataService
                 return notSupported(req);
             }
         } finally {
-            if (usedTransaction && session != null) {
+            if (!usedTransaction && session != null) {
                 session.close();
             }
         }

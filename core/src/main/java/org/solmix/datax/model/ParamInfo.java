@@ -64,6 +64,7 @@ public class ParamInfo implements XMLSource
     public String getExpression() {
         return expression;
     }
+    @Override
     public XMLNode getXMLNode() {
         return node;
     }
@@ -71,6 +72,10 @@ public class ParamInfo implements XMLSource
     public Boolean getIsOverride() {
         return isOverride;
     }
+    /**
+     * 是否覆盖已有参数
+     * @return
+     */
     public boolean isOverride(){
         return isOverride==null?false:isOverride.booleanValue();
     }

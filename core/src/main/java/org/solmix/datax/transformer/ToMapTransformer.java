@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 The Solmix Project
+ * Copyright 2015 The Solmix Project
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -18,6 +18,11 @@
  */
 package org.solmix.datax.transformer;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.solmix.commons.util.TransformUtils;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.model.TransformerInfo;
@@ -26,27 +31,35 @@ import org.solmix.datax.model.TransformerInfo;
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年8月1日
+ * @version $Id$  2015年8月28日
  */
 
-public class TransformerAdaptor implements Transformer
+public class ToMapTransformer extends TransformerAdaptor
 {
 
-    @Override
-    public Object transformRequest(Object requestData, DSRequest request) throws Exception {
-        return requestData;
-    }
-
+    private String keyProp;
+    private String valueProp;
     
     @Override
     public Object transformResponse(Object responseData, DSResponse response,DSRequest request) throws Exception {
+        
+        if(responseData!=null&&responseData instanceof List<?>){
+            List data =(List)responseData;
+            Map actionMap= new LinkedHashMap();
+            for(Object o:data){
+                Map map =TransformUtils.transformType(Map.class, o);
+                  actionMap.put(map.get(keyProp), map.get(valueProp));
+            }
+            return actionMap;
+      }
         return responseData;
     }
 
 
     @Override
     public void init(TransformerInfo info) {
-        
+        keyProp= (String)info.getProperty("key");
+        valueProp= (String)info.getProperty("value");
     }
     
 }

@@ -71,7 +71,7 @@ public class TransformerInfo implements XMLSource
         target.name=source.name;
         target.node=source.node;
         target.lookup=source.lookup;
-        target.node=source.node;
+        target.clazz=source.clazz;
     }
     
     public Object getProperty(String key) {
@@ -118,9 +118,26 @@ public class TransformerInfo implements XMLSource
         }
 
     }
-    public static class Parser extends BaseXmlNodeParser<TransformerInfo>
+
+    public static class Parsers extends Parser
     {
 
+        public Parsers()
+        {
+            super(false);
+        }
+    }
+    public static class Parser extends BaseXmlNodeParser<TransformerInfo>
+    {
+        private boolean applyCurrentService;
+        public Parser(){
+            this(true);
+        }
+       
+        public Parser(boolean applyCurrentService)
+        {
+            this.applyCurrentService=applyCurrentService;
+        }
         @Override
         public TransformerInfo parse(XMLNode node, XmlParserContext context) {
 
@@ -143,8 +160,12 @@ public class TransformerInfo implements XMLSource
                 return new TransformerInfo(vi);
             }
             String id = node.getStringAttribute("id");
-            if (id != null) {
-                id = context.applyCurrentService(id, false);
+            if ( id != null  ) {
+                if(this.applyCurrentService){
+                    id = context.applyCurrentService(id, false);
+                }else{
+                    id=context.applyCurrentNamespace(id, false);
+                }
             }
             TransformerInfo ti = new TransformerInfo(node, id);
             Class<? extends Transformer> clzz = super.paseClass(node, Transformer.class);

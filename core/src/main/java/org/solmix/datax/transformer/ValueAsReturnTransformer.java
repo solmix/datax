@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 The Solmix Project
+ * Copyright 2015 The Solmix Project
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -21,36 +21,19 @@ package org.solmix.datax.transformer;
 
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
-import org.solmix.datax.model.TransformerInfo;
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$ 2015年6月29日
+ * @version $Id$ 2015年8月28日
  */
 
-public interface Transformer
+public class ValueAsReturnTransformer extends TransformerAdaptor
 {
 
-    void init(TransformerInfo info);
-    /**
-     * 转换请求
-     * 
-     * @param requestData 请求数据和DSRequest.getRawValues()相同
-     * @param request DS请求
-     * @return
-     * @throws Exception
-     */
-    Object transformRequest(Object requestData, DSRequest request) throws Exception;
+    @Override
+    public Object transformResponse(Object responseData, DSResponse response, DSRequest req) throws Exception {
 
-    /**
-     * 转换结果
-     * 
-     * @param responseData responseData 结果集和DSResponse.getRawData()相同
-     * @param response
-     * @return
-     * @throws Exception
-     */
-    Object transformResponse(Object responseData, DSResponse response,DSRequest request) throws Exception;
-
+        return req.getRawValues();
+    }
 }

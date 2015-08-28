@@ -35,6 +35,10 @@ public interface XmlNodeParserProvider
     public static final String SERVICE = CONFIGURATION + "/service";
 
     public static final String FIELDS = SERVICE + "/fields";
+    
+    public static final String TRANSFORMERS = CONFIGURATION + "/transformers/transformer";
+    
+    public static final String VALIDATORS = CONFIGURATION + "/validators/validator";
 
     public static final String FIELD = FIELDS + "/field";
 

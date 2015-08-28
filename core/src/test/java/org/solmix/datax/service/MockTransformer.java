@@ -42,7 +42,7 @@ public class MockTransformer extends TransformerAdaptor
     }
 
     @Override
-    public Object transformResponse(Object value,DSResponse response) {
+    public Object transformResponse(Object value,DSResponse response,DSRequest req) {
         String tt=value.toString();
          tt=tt+"-transformResponse";
         return tt;

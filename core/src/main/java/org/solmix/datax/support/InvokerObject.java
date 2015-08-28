@@ -20,6 +20,7 @@
 package org.solmix.datax.support;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -193,6 +194,8 @@ public class InvokerObject
         
         try {
             return method.invoke(instance, args);
+        }  catch (InvocationTargetException e) {
+            throw new InvokerException(e.getMessage(), e.getCause());
         }  catch (Exception e) {
             throw new InvokerException("Invoke Exception", e);
         }

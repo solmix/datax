@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 The Solmix Project
+ * Copyright 2015 The Solmix Project
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -16,37 +16,26 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
-package org.solmix.datax.transformer;
+package org.solmix.datax.wmix.serializer;
 
-import org.solmix.datax.DSRequest;
-import org.solmix.datax.DSResponse;
-import org.solmix.datax.model.TransformerInfo;
+import java.util.Date;
+
+import org.solmix.service.jackson.serializer.ContextualDateSerializer;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年8月1日
+ * @version $Id$  2015年8月27日
  */
 
-public class TransformerAdaptor implements Transformer
+public class DateSerializer extends ContextualDateSerializer
 {
-
-    @Override
-    public Object transformRequest(Object requestData, DSRequest request) throws Exception {
-        return requestData;
+    public DateSerializer()
+    {
+        super("new Date("     , ")");
     }
-
-    
+  
     @Override
-    public Object transformResponse(Object responseData, DSResponse response,DSRequest request) throws Exception {
-        return responseData;
-    }
-
-
-    @Override
-    public void init(TransformerInfo info) {
-        
-    }
-    
+    public Class<Date> handledType() { return Date.class; }
 }

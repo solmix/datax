@@ -12,8 +12,8 @@
 	<complexType name="configurationType">
 		<sequence>
 			<choice minOccurs="0" maxOccurs="unbounded">
-				<element name="service" type="ds:serviceType" minOccurs="0"
-					maxOccurs="unbounded">
+				<element name="service" type="ds:serviceType"
+					minOccurs="0" maxOccurs="unbounded">
 				</element>
 				<element name="fields">
 					<complexType>
@@ -22,9 +22,27 @@
 								maxOccurs="unbounded" type="ds:fieldType">
 							</element>
 						</sequence>
-						<attribute name="id" type="string" use="required"></attribute>
-						<anyAttribute namespace="##any" processContents="lax"></anyAttribute>
+						<attribute name="id" type="string"
+							use="required">
+						</attribute>
+						<anyAttribute namespace="##any"
+							processContents="lax">
+						</anyAttribute>
 					</complexType>
+				</element>
+				<element name="transformers" >
+				<complexType>
+					<sequence>
+						<element name="transformer" type="ds:transformerType" minOccurs="0" maxOccurs="unbounded"></element>
+					</sequence>
+				</complexType>
+				</element>
+				<element name="validators">
+					<complexType>
+					<sequence>
+						<element name="validator" type="ds:validatorType" minOccurs="0" maxOccurs="unbounded"></element>
+					</sequence>
+				</complexType>
 				</element>
 			</choice>
 		</sequence>
@@ -200,22 +218,7 @@
 	<complexType name="operationType">
 		<choice>
 			<choice minOccurs="0" maxOccurs="unbounded">
-				<element name="transformer">
-					<complexType>
-						<complexContent>
-							<extension base="ds:ref">
-								<sequence minOccurs="0"
-									maxOccurs="unbounded">
-									<any></any>
-								</sequence>
-								<attribute name="id" type="string">
-								</attribute>
-								<anyAttribute namespace="##any"
-									processContents="lax">
-								</anyAttribute>
-							</extension>
-						</complexContent>
-					</complexType>
+				<element name="transformer" type="ds:transformerType">
 				</element>
 				<element name="params">
 					<complexType>
@@ -358,4 +361,20 @@
     		<enumeration value="wrapped"></enumeration>
     	</restriction>
     </simpleType>
+    
+    <complexType name="transformerType">
+						<complexContent>
+							<extension base="ds:ref">
+								<sequence minOccurs="0"
+									maxOccurs="unbounded">
+									<any></any>
+								</sequence>
+								<attribute name="id" type="string">
+								</attribute>
+								<anyAttribute namespace="##any"
+									processContents="lax">
+								</anyAttribute>
+							</extension>
+						</complexContent>
+					</complexType>
 </schema>

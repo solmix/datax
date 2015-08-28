@@ -45,9 +45,12 @@ public class BaseXmlNodeParserProvider extends AbstractXmlNodeParserProvider imp
     @Override
     protected void config() {
         
+       bind(TRANSFORMERS, TransformerInfo.Parsers.class);
+       bind(VALIDATORS, ValidatorInfo.Parsers.class);
        bind(SERVICE, DataServiceInfo.Parser.class);
        bind(FIELD, FieldInfo.Parser.class);
               
+       
        bind(VALIDATOR, ValidatorInfo.Parser.class);
        bind(OPERATION, OperationInfo.Parser.class);
        bind(PARAM,ParamInfo.Parser.class);

@@ -32,6 +32,7 @@ import org.solmix.commons.xml.XMLParser;
 import org.solmix.datax.DATAX;
 import org.solmix.datax.DataServiceFactory;
 import org.solmix.datax.model.DataServiceInfo;
+import org.solmix.datax.model.TransformerInfo;
 import org.solmix.datax.repository.DefaultRepository;
 import org.solmix.datax.repository.builder.AbstractBuilder;
 import org.solmix.datax.repository.builder.BuilderException;
@@ -88,7 +89,7 @@ public class XMLDataServiceBuilder extends AbstractBuilder
         if(LOG.isTraceEnabled())
             LOG.trace(">>START :{}",uri);
         if(!repository.isResourceLoaded(uri)){
-            parseConfigurationElement(xmlParser.evalNode("/datax/configuration"));
+            parseConfigurationElement(xmlParser.evalNode(XmlNodeParserProvider.CONFIGURATION));
             repository.addLoadedResource(uri);
         }
         resolverReference();
@@ -136,11 +137,13 @@ public class XMLDataServiceBuilder extends AbstractBuilder
         XmlParserContext context = new XmlParserContext(repository, xmlNodeParserProvider);
         context.setServerType(serverType);
         context.setCurrentNamespace(namespace);
+        transformersToRepository(xmlNode.evalNodes("transformers"), context);
+        validatorsToRepository(xmlNode.evalNodes("validators"), context);
         // parse fields
         fieldsToRepository(xmlNode.evalNodes("fields"), context);
         // parse service element
         List<XMLNode> nodes = xmlNode.evalNodes("service");
-        XmlNodeParser<DataServiceInfo> parser = xmlNodeParserProvider.getXmlNodeParser("/datax/configuration/service", DataServiceInfo.class);
+        XmlNodeParser<DataServiceInfo> parser = xmlNodeParserProvider.getXmlNodeParser(XmlNodeParserProvider.SERVICE, DataServiceInfo.class);
         for (XMLNode node : nodes) {
             try {
                 if(LOG.isTraceEnabled())
@@ -150,6 +153,37 @@ public class XMLDataServiceBuilder extends AbstractBuilder
             } catch (IncludeNoFoundException e) {
                 DataServiceInfoResolver resolver = new DataServiceInfoResolver(node, context);
                 repository.addReferenceResolver(resolver);
+            }
+        }
+    }
+    
+    
+    protected void validatorsToRepository(List<XMLNode> nodes, XmlParserContext context) {
+        if (nodes == null || nodes.isEmpty()) {
+            return;
+        }
+        XmlNodeParser<TransformerInfo> parser = xmlNodeParserProvider.getXmlNodeParser(XmlNodeParserProvider.VALIDATORS, TransformerInfo.class);
+        for (XMLNode node : nodes) {
+            List<XMLNode> tt = node.evalNodes("validator");
+            if (tt != null && tt.size() > 0) {
+                for (XMLNode t : tt) {
+                    parser.parse(t, context);
+                }
+            }
+        }
+    }
+
+    protected void transformersToRepository(List<XMLNode> nodes, XmlParserContext context) {
+        if (nodes == null || nodes.isEmpty()) {
+            return;
+        }
+        XmlNodeParser<TransformerInfo> parser = xmlNodeParserProvider.getXmlNodeParser(XmlNodeParserProvider.TRANSFORMERS, TransformerInfo.class);
+        for (XMLNode node : nodes) {
+            List<XMLNode> tt = node.evalNodes("transformer");
+            if (tt != null && tt.size() > 0) {
+                for (XMLNode t : tt) {
+                    parser.parse(t, context);
+                }
             }
         }
     }

@@ -216,9 +216,25 @@ public class ValidatorInfo implements XMLSource
         }
 
     }
-    
+    public static class Parsers extends Parser
+    {
+
+        public Parsers()
+        {
+            super(false);
+        }
+    }
     public static class Parser extends BaseXmlNodeParser<ValidatorInfo>{
 
+        private boolean applyCurrentService;
+        public Parser(){
+            this(true);
+        }
+       
+        public Parser(boolean applyCurrentService)
+        {
+            this.applyCurrentService=applyCurrentService;
+        }
         @Override
         public ValidatorInfo parse(XMLNode node, XmlParserContext context) {
             String refid = node.getStringAttribute("refid");
@@ -236,8 +252,13 @@ public class ValidatorInfo implements XMLSource
                 return new ValidatorInfo(vi);
             }
             String id = node.getStringAttribute("id");
-            if (id != null) {
-                id = context.applyCurrentService(id, false);
+            if ( id != null) {
+                if(this.applyCurrentService){
+                    id = context.applyCurrentService(id, false);
+                }else{
+                    id=context.applyCurrentNamespace(id, false);
+                }
+                
             }
             ValidatorInfo vi = new ValidatorInfo(node, id);
             Class<? extends Validator> clzz = super.paseClass(node, Validator.class);

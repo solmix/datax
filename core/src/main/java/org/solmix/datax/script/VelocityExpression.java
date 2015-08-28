@@ -58,12 +58,18 @@ public class VelocityExpression
     }
     public Object evaluateValue(String expression,Map<String,Object> context){
         VelocityContext   vContext=new VelocityContext(context);
+        if(expression.startsWith("#")){
+            StringWriter out = new StringWriter();
+            instance.evaluate(vContext, out, "VelocityExpression",expression);
+            return out.toString();
+        }else{
         try {
             instance.evaluate(vContext, null, "VelocityExpression", new StringBuilder().append("#set($").append(DATAX.VT_TMP_NAME).append(" = ").append(expression).append(")\n").toString());
         } catch (Exception e) {
             throw new InvokerException("Velocity evalute exception:\n", e);
         }
        return vContext.get(DATAX.VT_TMP_NAME);
+        }
     }
     
     /**

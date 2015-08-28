@@ -36,6 +36,7 @@ import org.solmix.commons.collections.DataTypeMap;
 import org.solmix.commons.util.Assert;
 import org.solmix.commons.util.DataUtils;
 import org.solmix.commons.util.Reflection;
+import org.solmix.commons.util.StringUtils;
 import org.solmix.commons.util.TransformUtils;
 import org.solmix.datax.DATAX;
 import org.solmix.datax.DSCallException;
@@ -61,6 +62,7 @@ import org.solmix.datax.model.ParamInfo;
 import org.solmix.datax.model.TransactionPolicy;
 import org.solmix.datax.model.TransformerInfo;
 import org.solmix.datax.model.ValidatorInfo;
+import org.solmix.datax.script.VelocityExpression;
 import org.solmix.datax.transformer.TemplateTransformer;
 import org.solmix.datax.transformer.Transformer;
 import org.solmix.datax.transformer.TransformerException;
@@ -93,6 +95,8 @@ import org.w3c.dom.Element;
 
 public class BaseDataService implements DataService
 {
+    public static final String PARAM_VELOCITY=VelocityExpression.class.getName()+".param";
+    public static final String PARAM_VELOCITY_CONTEXT=VelocityExpression.class.getName()+".paramCtx";
     private static final Logger LOG = LoggerFactory.getLogger(BaseDataService.class);
     private static final Logger VALIDATION =LoggerFactory.getLogger(DATAX.VALIDATION_LOGNAME);
     private Container container;
@@ -176,7 +180,7 @@ public class BaseDataService implements DataService
         if (type != OperationType.CUSTOM  && oi.getInvoker() == null) {
             response = validateDSRequest(req);
             if (response != null) {
-                return transformResponse(response, transformers);
+                return transformResponse(response, transformers,req);
             }
         }
 
@@ -184,10 +188,10 @@ public class BaseDataService implements DataService
         // 配置了invoker优先处理
         if ((!req.isInvoked()) && oi.getInvoker() != null) {
             response = DMIDataService.execute(container, req, req.getDSCall());
-            return transformResponse(response, transformers);
+            return transformResponse(response, transformers,req);
         } else {
             response = executeDefault(req, type);
-            return transformResponse(response, transformers);
+            return transformResponse(response, transformers,req);
         }
     }
    
@@ -232,6 +236,7 @@ public class BaseDataService implements DataService
                    rm.addResourceResolver( new DSRequestResolver(req));
                    ResourceInjector injector = new ResourceInjector(rm);
                    injector.inject(transformer);
+                   transformer.init(tran);
                    transformers.add(transformer);
                   
                }
@@ -264,13 +269,13 @@ public class BaseDataService implements DataService
         }
     }
 
-    protected DSResponse transformResponse(DSResponse response, List<Transformer> transformers) {
+    protected DSResponse transformResponse(DSResponse response, List<Transformer> transformers,DSRequest req) {
         if (transformers==null||transformers.size()==0) {
             return response;
         }
         for(Transformer transformer :transformers){
             try {
-               Object transformedObject= transformer.transformResponse(response.getRawData(),response);
+               Object transformedObject= transformer.transformResponse(response.getRawData(),response,req);
                response.setRawData(transformedObject);
             } catch (Exception e) {
                 throw new TransformerException("Transformer DSRequest",e);
@@ -291,11 +296,11 @@ public class BaseDataService implements DataService
                 list = req.getValueSets();
                 List<Object> afters = new ArrayList<Object>();
                 for (Object o : list) {
-                    afters.add(injectParma(o, params));
+                    afters.add(injectParma(o, params,req));
                 }
                 req.setRawValues(afters);
             } else {
-                req.setRawValues(injectParma(values, params));
+                req.setRawValues(injectParma(values, params,req));
             }
         } catch (Exception e) {
             throw new DSCallException("Prepare params error", e);
@@ -304,7 +309,7 @@ public class BaseDataService implements DataService
     }
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private Object injectParma(Object values, Map<String, ParamInfo> params) throws Exception {
+    private Object injectParma(Object values, Map<String, ParamInfo> params,DSRequest req) throws Exception {
         Map map;
         boolean isMap=false;
         if(values instanceof Map){
@@ -315,10 +320,15 @@ public class BaseDataService implements DataService
         }
         for(String name:params.keySet()){
             ParamInfo param  = params.get(name);
-            if(map.containsKey(name)&&param.isOverride()){
-                map.put(name, param.getValue());
+            if(map.containsKey(name)){
+                if(param.isOverride()){
+                    map.put(name, getParamValue(param,req));
+                }
             }else{
-                map.put(name, param.getValue());
+                Object o=getParamValue(param,req);
+                if(o!=null){
+                    map.put(name, getParamValue(param,req));
+                }
             }
         }
         if(!isMap){
@@ -327,6 +337,35 @@ public class BaseDataService implements DataService
             return map;
         }
        
+    }
+
+    protected Object getParamValue(ParamInfo param, DSRequest req) {
+        if (param == null) {
+            return null;
+        }
+        Object o = param.getValue();
+        if (o != null) {
+            return o.toString().trim();
+        }
+        String expre = StringUtils.trimToNull(param.getExpression());
+        if (expre != null) {
+            VelocityExpression velocity = (VelocityExpression) req.getAttribute(PARAM_VELOCITY);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> vcontext = (Map<String, Object>) req.getAttribute(PARAM_VELOCITY_CONTEXT);
+            if (velocity == null) {
+                velocity = new VelocityExpression(container);
+                vcontext = velocity.prepareContext(req, req.getRequestContext());
+                req.setAttribute(PARAM_VELOCITY, velocity);
+                req.setAttribute(PARAM_VELOCITY_CONTEXT, vcontext);
+            }
+            o=velocity.evaluateValue(expre, vcontext);
+            if(o!=null&&o instanceof String){
+                return StringUtils.trimToNull((String)o);
+            }else{
+                return o;
+            }
+        }
+        return null;
     }
 
     /**

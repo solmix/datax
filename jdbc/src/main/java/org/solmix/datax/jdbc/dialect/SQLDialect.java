@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
+import org.solmix.commons.util.Assert;
 import org.solmix.commons.util.Reflection;
 import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.util.DataTools;
@@ -42,7 +42,7 @@ public abstract class SQLDialect
     
     public static final Map<String,Class<? extends SQLDialect>> buildIn = new HashMap<String, Class<? extends SQLDialect>>();
     static{
-        buildIn.put("h2db", H2DBDialect.class);
+        buildIn.put("h2", H2DBDialect.class);
         buildIn.put("hsqldb", HSQLDialect.class);
         buildIn.put("oracle", OracleDialect.class);
         buildIn.put("sqlserver", SqlServerDialect.class);

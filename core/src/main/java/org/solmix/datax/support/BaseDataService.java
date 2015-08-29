@@ -327,7 +327,7 @@ public class BaseDataService implements DataService
             }else{
                 Object o=getParamValue(param,req);
                 if(o!=null){
-                    map.put(name, getParamValue(param,req));
+                    map.put(name, o);
                 }
             }
         }
@@ -514,11 +514,11 @@ public class BaseDataService implements DataService
         Boolean validate = oi.getValidate();
         OperationType type =oi.getType();
         if(validate==null){
-            if(DataTools.isModificationOperation(type)){
+            /*if(DataTools.isModificationOperation(type)){
                 validate=Boolean.TRUE;
-            }else{
+            }else{默认为不验证*/
                 validate=Boolean.FALSE;
-            }
+             //            }
         }
         if(!validate){
             return null;

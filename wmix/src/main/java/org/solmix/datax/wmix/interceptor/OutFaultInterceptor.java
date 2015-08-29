@@ -27,6 +27,7 @@ import org.apache.commons.io.IOUtils;
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.DSResponse.Status;
 import org.solmix.datax.DataServiceManager;
+import org.solmix.datax.wmix.serializer.ResultObject;
 import org.solmix.exchange.Endpoint;
 import org.solmix.exchange.Exchange;
 import org.solmix.exchange.Message;
@@ -81,7 +82,7 @@ public class OutFaultInterceptor extends PhaseInterceptorSupport<Message>
         res.setRawData(e.getMessage());
         try {
             ObjectWriter<OutputStream> writer = dataProcessor.createWriter(OutputStream.class);
-            writer.write(res, out);
+            writer.write(new ResultObject(res), out);
         } finally {
             if (out != null) {
                 IOUtils.closeQuietly(out);

@@ -39,7 +39,7 @@ import org.solmix.datax.application.ApplicationManager;
 import org.solmix.datax.call.DSCall;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.model.OperationInfo;
-import org.solmix.datax.transaction.TransactionException;
+import org.solmix.runtime.transaction.TransactionException;
 
 
 /**
@@ -136,7 +136,7 @@ public class DSRequestImpl  implements DSRequest,Cloneable
        DataServiceInfo dsi= getDataService().getDataServiceInfo();
        OperationInfo oi= dsi.getOperationInfo(getOperationId());
        if(oi==null){
-           throw new OperationNoFoundException("operation: "+getOperationId()+"not sepcified in:"+getDataServiceId());
+           throw new OperationNoFoundException("operation: "+getOperationId()+" not sepcified in:"+getDataServiceId());
        }
        return oi;
     }
@@ -248,12 +248,18 @@ public class DSRequestImpl  implements DSRequest,Cloneable
             this.dataServiceId = dataService.getId();
         }
         if (this.dataServiceId == null && operationId != null) {
-            int index = operationId.lastIndexOf(".");
-            if (index != -1) {
-                return operationId.substring(0,index);
-            }
+          
+            this.dataServiceId=getDataServiceIdFormOperationId(this.operationId);
         }
         return dataServiceId;
+    }
+    
+    private String getDataServiceIdFormOperationId(String operationId){
+        int index = operationId.lastIndexOf(".");
+        if (index != -1) {
+            return operationId.substring(0,index);
+        }
+        return null;
     }
 
 
@@ -359,7 +365,15 @@ public class DSRequestImpl  implements DSRequest,Cloneable
      */
     @Override
     public void setOperationId(String operationId) {
-        this.operationId=operationId;
+        if (operationId == null) {
+            return;
+        } else if (!operationId.equals(this.operationId)) {
+            this.operationId = operationId;
+            if (this.dataServiceId != null && !this.dataServiceId.equals(getDataServiceIdFormOperationId(operationId))) {
+                this.dataServiceId = null;
+                this.dataService = null;
+            }
+        }
     }
 
     @Override

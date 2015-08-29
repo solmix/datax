@@ -17,7 +17,7 @@
  * or see the FSF site: http://www.fsf.org. 
  */
 
-package org.solmix.datax.transaction;
+package org.solmix.datax.call;
 
 import org.solmix.datax.DSCallException;
 import org.solmix.datax.DataxException;

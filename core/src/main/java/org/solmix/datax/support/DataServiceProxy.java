@@ -135,10 +135,11 @@ public class DataServiceProxy<T> implements InvocationHandler
               Array.set(array, i, list.get(i));
           }
           return array;
-       }else if(List.class.isAssignableFrom(returnType)){
+       }/*else if(List.class.isAssignableFrom(returnType)){
+            boolean b=returnType.getTypeParameters()[0] instanceof ParameterizedType;
            List<?> list= response.getResultList(returnType);
            return list;
-       }else{
+       }*/else{
            return response.getSingleResult(returnType);
        }
     }

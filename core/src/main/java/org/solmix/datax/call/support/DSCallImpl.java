@@ -37,14 +37,14 @@ import org.solmix.datax.DSResponse.Status;
 import org.solmix.datax.DataService;
 import org.solmix.datax.call.DSCall;
 import org.solmix.datax.call.DSCallCompleteCallback;
+import org.solmix.datax.call.TransactionFailedException;
 import org.solmix.datax.model.MergedType;
 import org.solmix.datax.model.OperationInfo;
 import org.solmix.datax.model.TransactionPolicy;
 import org.solmix.datax.support.DSResponseImpl;
-import org.solmix.datax.transaction.TransactionException;
-import org.solmix.datax.transaction.TransactionFailedException;
-import org.solmix.datax.transaction.TransactionService;
 import org.solmix.datax.util.DataTools;
+import org.solmix.runtime.transaction.TransactionException;
+import org.solmix.runtime.transaction.TransactionService;
 
 /**
  * 支持带事物机制的请求执行，但是只支持简单的事物，当出错时自动回滚，正常执行完毕时自动提交
@@ -214,7 +214,7 @@ public class DSCallImpl implements DSCall
         if(exceptionBroken){
             boolean transactionFailure = isXAFailure(request, res);
             if (transactionFailure) {
-                transactionFailed(request, res);
+                transactionFailed(request, res,transactionFailure);
                 throw new TransactionFailedException("transaction breaken because of one request failure.");
             }
         }
@@ -223,12 +223,16 @@ public class DSCallImpl implements DSCall
     }
     
     protected void transactionFailed(DSRequest request, DSResponse resp) throws DSCallException  {
+        transactionFailed(request,resp,false);
+    }
+    
+    protected void transactionFailed(DSRequest request, DSResponse resp,boolean transactionFailure) throws DSCallException  {
         if (request.isPartsOfTransaction()) {
             if (resp != null && resp.getStatus() == DSResponse.Status.STATUS_SUCCESS){
                 resp.setStatus(DSResponse.Status.STATUS_TRANSACTION_FAILED);
             }
         }
-        onFailure();
+        onFailure(transactionFailure);
     }
     
     protected void onSuccess()  {
@@ -238,19 +242,23 @@ public class DSCallImpl implements DSCall
         }
         getTransactionService().commit();
     }
-    
-    /**失败处理*/
     protected void onFailure() throws DSCallException {
+        onFailure(null);
+    }
+    /**失败处理*/
+    protected void onFailure(Boolean transactionFailure) throws DSCallException {
         status = STATUS.FAILED;
-        boolean transactionFailure = false;
         if (requests != null){
           //检查一串请求中是否有失败的
-            for (DSRequest req : requests) {
-                DSResponse resp = getResponse(req);
-                transactionFailure = isXAFailure(req, resp);
-                if(transactionFailure){
-                    break;
+            if(transactionFailure==null){
+                for (DSRequest req : requests) {
+                    DSResponse resp = getResponse(req);
+                    transactionFailure = isXAFailure(req, resp);
+                    if(transactionFailure){
+                        break;
+                    }
                 }
+                transactionFailure=transactionFailure==null?false:transactionFailure.booleanValue();
             }
             if (transactionFailure) {
                 for (DSRequest req : requests) {

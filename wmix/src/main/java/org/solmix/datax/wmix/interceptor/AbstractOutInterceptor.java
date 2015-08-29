@@ -19,12 +19,13 @@
 
 package org.solmix.datax.wmix.interceptor;
 
-import java.awt.List;
 import java.io.OutputStream;
+import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.solmix.datax.wmix.serializer.ResultObject;
 import org.solmix.exchange.Endpoint;
 import org.solmix.exchange.Exchange;
 import org.solmix.exchange.Message;
@@ -77,7 +78,7 @@ public class AbstractOutInterceptor extends PhaseInterceptorSupport<Message>
         }
         try {
             ObjectWriter<OutputStream> writer= dataProcessor.createWriter(OutputStream.class);
-            writer.write(result, out);
+            writer.write(new ResultObject(result), out);
         } finally{
             if(out!=null){
                 IOUtils.closeQuietly(out);

@@ -56,7 +56,7 @@ public class DataServiceInfoSerializer extends JsonSerializer<DataServiceInfo>
     public void serialize(DataServiceInfo value, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException {
         jgen.writeStartObject();
         jgen.writeStringField("ID", value.getId());
-        jgen.writeStringField("recordXPath", "/data");
+//        jgen.writeStringField("recordXPath", "/data");
         jgen.writeStringField("dataFormat", "json");
         jgen.writeBooleanField("clientOnly", false);
         List<FieldInfo> fields =value.getFields();

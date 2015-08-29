@@ -26,8 +26,8 @@ import org.solmix.datax.DSResponse;
 import org.solmix.datax.FreeResourcesHandler;
 import org.solmix.datax.model.MergedType;
 import org.solmix.datax.model.TransactionPolicy;
-import org.solmix.datax.transaction.TransactionException;
-import org.solmix.datax.transaction.TransactionService;
+import org.solmix.runtime.transaction.TransactionException;
+import org.solmix.runtime.transaction.TransactionService;
 
 
 /**

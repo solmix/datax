@@ -16,27 +16,38 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+package org.solmix.datax.wmix.serializer;
 
-package org.solmix.datax.transaction;
+import java.util.List;
 
-import java.util.Map;
+import org.solmix.datax.DSResponse;
+
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$ 2015年8月12日
+ * @version $Id$  2015年8月28日
  */
 
-public interface TransactionService
+public class ResultObject
 {
-
-    void rollback() throws TransactionException;
-
-    void commit() throws TransactionException;
-
-    void bindResource(Object object, Transaction transaction);
-
-    Map<Object, Transaction> getResourceMap();
-
-    Transaction getResource(Object object);
+    private Object o;
+    
+    public ResultObject(Object obj){
+        this.o=obj;
+    }
+//
+//    public boolean writeHeader(){
+//        
+//    }
+    public boolean isDSResponse(){
+        return o instanceof DSResponse;
+    }
+    
+    public boolean isDSResponseList(){
+        return o instanceof List;
+    }
+    public Object getReal(){
+        return o;
+    }
 }

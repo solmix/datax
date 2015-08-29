@@ -19,6 +19,7 @@
 package org.solmix.datax.wmix.serializer;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.attachment.Pageable;
@@ -36,12 +37,34 @@ import com.fasterxml.jackson.databind.SerializerProvider;
  * @version $Id$  2015年8月19日
  */
 
-public class DSResponseSerializer extends JsonSerializer<DSResponse>
+public class DSResponseSerializer extends JsonSerializer<ResultObject>
 {
 
     @Override
+    public void serialize(ResultObject response, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException {
+        if(response.isDSResponse()){
+            jgen.writeStartObject();
+            jgen.writeFieldName("response");
+            serialize((DSResponse)response.getReal(),jgen,provider);
+            jgen.writeEndObject();
+        }else if(response.isDSResponseList()){
+            List<DSResponse> res = (List<DSResponse>)response.getReal();
+            jgen.writeStartObject();
+            jgen.writeArrayFieldStart("responses");
+            for(DSResponse re:res){
+                serialize(re,jgen,provider);
+            }
+            jgen.writeEndArray();
+            jgen.writeEndObject();
+            
+        }else{
+            jgen.writeObject(response.getReal());
+        }
+       
+    }
+    
     public void serialize(DSResponse response, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException {
-
+       
         jgen.writeStartObject();
         jgen.writeNumberField("status", response.getStatus().value());
         jgen.writeBooleanField("isDSResponse", true);
@@ -67,7 +90,8 @@ public class DSResponseSerializer extends JsonSerializer<DSResponse>
             jgen.writeObjectField("errors",errors);
         }
         jgen.writeEndObject();
+       
     }
     @Override
-    public Class<DSResponse> handledType() { return DSResponse.class; }
+    public Class<ResultObject> handledType() { return ResultObject.class; }
 }

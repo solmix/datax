@@ -23,7 +23,7 @@ import java.util.List;
 import org.solmix.commons.annotation.NotThreadSafe;
 import org.solmix.datax.attachment.Pageable;
 import org.solmix.datax.model.TransactionPolicy;
-import org.solmix.datax.transaction.TransactionException;
+import org.solmix.runtime.transaction.TransactionException;
 
 
 /**

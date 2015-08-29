@@ -13,6 +13,7 @@ import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.call.DSCall;
 import org.solmix.datax.call.DSCallFactory;
 import org.solmix.datax.model.MergedType;
+import org.solmix.datax.model.OperationType;
 import org.solmix.datax.model.TransactionPolicy;
 import org.solmix.exchange.Exchange;
 import org.solmix.exchange.interceptor.Fault;
@@ -61,7 +62,13 @@ public class DataxInvoker implements Invoker
                 }
 
             } else if (o instanceof DSRequest) {
-                return ((DSRequest)o).execute();
+                DSRequest req = ((DSRequest)o);
+                DSResponse response= req.execute();
+                //删除时只返回失败或者成功的结果
+                if(req.getOperationInfo().getType()==OperationType.REMOVE){
+                    response.setRawData(null);
+                }
+                return response;
             } else if (o != null) {
                 throw new IllegalArgumentException("Illegal message type:" + o.getClass().getName());
             }

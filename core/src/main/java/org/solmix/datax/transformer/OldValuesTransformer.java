@@ -23,7 +23,7 @@ import java.util.Map;
 import org.solmix.commons.util.TransformUtils;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
-import org.solmix.datax.attachment.OldValuesBean;
+import org.solmix.datax.attachment.OldValues;
 
 
 /**
@@ -45,7 +45,7 @@ public class OldValuesTransformer extends TransformerAdaptor
     @Override
     public Object transformResponse(Object responseData, DSResponse response,DSRequest req) throws Exception {
         
-        OldValuesBean old=  req.getAttachment(OldValuesBean.class);
+        OldValues old=  req.getAttachment(OldValues.class);
         if(old!=null){
             Map oldmap=TransformUtils.transformType( Map.class,old.getOldValues());
             if(oldmap!=null){

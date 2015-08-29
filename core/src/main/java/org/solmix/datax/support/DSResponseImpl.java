@@ -19,6 +19,7 @@
 package org.solmix.datax.support;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -221,9 +222,35 @@ public class DSResponseImpl implements DSResponse
      * 
      * @see org.solmix.datax.DSResponse#getSingleResult(java.lang.Class)
      */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public <T> T getSingleResult(Class<T> type) {
-        return getResultInternal(type, rawData);
+        if(rawData==null){
+            return null;
+        }
+        if(Object.class == type){
+            if(Collection.class.isAssignableFrom(rawData.getClass())){
+                Collection<Object> coll = (Collection<Object>)rawData;
+                if(coll.size()==1){
+                    return getResultInternal(type,coll.iterator().next());
+                }else{
+                    throw new IllegalArgumentException("To Many result");
+                }
+            }else if(Map.class.isAssignableFrom(rawData.getClass())){
+                Map coll = (Map)rawData;
+                if(coll.size()==1){
+                    Object firstKey = coll.keySet().iterator().next();
+                    return getResultInternal(type,coll.get(firstKey));
+                }else{
+                    throw new IllegalArgumentException("To Many result");
+                }
+            }else{
+                return (T) rawData;
+            }
+        }else{
+            return getResultInternal(type, rawData);
+        }
+       
     }
 
     /**
@@ -258,8 +285,9 @@ public class DSResponseImpl implements DSResponse
         if(status!=Status.STATUS_SUCCESS){
             return null;
         }
-        if (type.isInstance(data))
+        if (type.isInstance(data)){
             return (T) data;
+        }
         // First, assume that the type is Map.
         if (Map.class.isAssignableFrom(type)) {
             if (data instanceof List<?>) {
@@ -309,6 +337,7 @@ public class DSResponseImpl implements DSResponse
                     }
 
                 } else {
+                    
                     return TransformUtils.transformType(type, data);
                 }
             } catch (Exception ee) {

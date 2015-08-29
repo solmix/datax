@@ -23,7 +23,7 @@ import java.sql.SQLException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.solmix.datax.transaction.Transaction;
+import org.solmix.runtime.transaction.Transaction;
 
 
 /**
@@ -50,7 +50,7 @@ public class ConnectionTransaction implements Transaction
     /**
      * {@inheritDoc}
      * 
-     * @see org.solmix.datax.transaction.Transaction#commit()
+     * @see org.solmix.runtime.transaction.Transaction#commit()
      */
     @Override
     public void commit() {
@@ -65,7 +65,7 @@ public class ConnectionTransaction implements Transaction
     /**
      * {@inheritDoc}
      * 
-     * @see org.solmix.datax.transaction.Transaction#rollback()
+     * @see org.solmix.runtime.transaction.Transaction#rollback()
      */
     @Override
     public void rollback() {
@@ -79,7 +79,7 @@ public class ConnectionTransaction implements Transaction
     /**
      * {@inheritDoc}
      * 
-     * @see org.solmix.datax.transaction.Transaction#close()
+     * @see org.solmix.runtime.transaction.Transaction#close()
      */
     @Override
     public void close() {
@@ -94,7 +94,7 @@ public class ConnectionTransaction implements Transaction
     /**
      * {@inheritDoc}
      * 
-     * @see org.solmix.datax.transaction.Transaction#reset()
+     * @see org.solmix.runtime.transaction.Transaction#reset()
      */
     @Override
     public void reset() {
@@ -104,7 +104,7 @@ public class ConnectionTransaction implements Transaction
     /**
      * {@inheritDoc}
      * 
-     * @see org.solmix.datax.transaction.Transaction#isOpen()
+     * @see org.solmix.runtime.transaction.Transaction#isOpen()
      */
     @Override
     public boolean isOpen() {
@@ -119,7 +119,7 @@ public class ConnectionTransaction implements Transaction
     /**
      * {@inheritDoc}
      * 
-     * @see org.solmix.datax.transaction.Transaction#released()
+     * @see org.solmix.runtime.transaction.Transaction#released()
      */
     @Override
     public void released() {
@@ -129,7 +129,7 @@ public class ConnectionTransaction implements Transaction
     /**
      * {@inheritDoc}
      * 
-     * @see org.solmix.datax.transaction.Transaction#requested()
+     * @see org.solmix.runtime.transaction.Transaction#requested()
      */
     @Override
     public void requested() {

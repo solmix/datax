@@ -358,22 +358,19 @@ public class DSRequestImpl  implements DSRequest,Cloneable
         this.appId = appId;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.solmix.datax.DSRequest#setOperationId(java.lang.String)
-     */
     @Override
-    public void setOperationId(String operationId) {
+    public boolean setOperationId(String operationId) {
         if (operationId == null) {
-            return;
+            return false;
         } else if (!operationId.equals(this.operationId)) {
             this.operationId = operationId;
             if (this.dataServiceId != null && !this.dataServiceId.equals(getDataServiceIdFormOperationId(operationId))) {
                 this.dataServiceId = null;
                 this.dataService = null;
             }
+            return true;
         }
+        return false;
     }
 
     @Override

@@ -92,8 +92,9 @@ public interface DSRequest
      * 全称 xxx.xxx.fetch 相对：fetch
      * 
      * @param operationId
+     * @return 是否重新设置了operation id.
      */
-    void setOperationId(String operationId);
+    boolean setOperationId(String operationId);
 
     /**
      * @return

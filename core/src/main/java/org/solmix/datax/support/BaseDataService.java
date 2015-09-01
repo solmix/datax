@@ -183,6 +183,14 @@ public class BaseDataService implements DataService
                 return transformResponse(response, transformers,req);
             }
         }
+        if(oi.getRedirect()!=null){
+            Object redirect = evaluteExpression(oi.getRedirect(),req);
+            if(redirect!=null){
+                if(req.setOperationId(redirect.toString())){
+                    return req.execute();
+                }
+            }
+        }
 
         req.setRequestStarted(true);
         // 配置了invoker优先处理
@@ -349,23 +357,27 @@ public class BaseDataService implements DataService
         }
         String expre = StringUtils.trimToNull(param.getExpression());
         if (expre != null) {
-            VelocityExpression velocity = (VelocityExpression) req.getAttribute(PARAM_VELOCITY);
-            @SuppressWarnings("unchecked")
-            Map<String, Object> vcontext = (Map<String, Object>) req.getAttribute(PARAM_VELOCITY_CONTEXT);
-            if (velocity == null) {
-                velocity = new VelocityExpression(container);
-                vcontext = velocity.prepareContext(req, req.getRequestContext());
-                req.setAttribute(PARAM_VELOCITY, velocity);
-                req.setAttribute(PARAM_VELOCITY_CONTEXT, vcontext);
-            }
-            o=velocity.evaluateValue(expre, vcontext);
-            if(o!=null&&o instanceof String){
-                return StringUtils.trimToNull((String)o);
-            }else{
-                return o;
-            }
+            return evaluteExpression(expre,req);
         }
         return null;
+    }
+    
+    protected Object evaluteExpression(String expression, DSRequest req){
+        VelocityExpression velocity = (VelocityExpression) req.getAttribute(PARAM_VELOCITY);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> vcontext = (Map<String, Object>) req.getAttribute(PARAM_VELOCITY_CONTEXT);
+        if (velocity == null) {
+            velocity = new VelocityExpression(container);
+            vcontext = velocity.prepareContext(req, req.getRequestContext());
+            req.setAttribute(PARAM_VELOCITY, velocity);
+            req.setAttribute(PARAM_VELOCITY_CONTEXT, vcontext);
+        }
+        Object o=velocity.evaluateValue(expression, vcontext);
+        if(o!=null&&o instanceof String){
+            return StringUtils.trimToNull((String)o);
+        }else{
+            return o;
+        }
     }
 
     /**

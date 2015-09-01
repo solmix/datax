@@ -285,6 +285,7 @@
 		<attribute name="validate" type="boolean"></attribute>
 		<attribute name="usedValidatedValues" type="boolean"></attribute>
 		<attribute name="oneway" type="boolean"></attribute>
+		<attribute name="redirect" type="string"></attribute>
 		<anyAttribute namespace="##any" processContents="lax"></anyAttribute>
 	</complexType>
 

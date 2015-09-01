@@ -68,9 +68,17 @@ public class DataxEndpoint extends AbstractWmixEndpoint implements Endpoint
         setOutFaultProcessor(new OutFaultChainProcessor(container,  getPhasePolicy()));
         getOutInterceptors().add(new MessageSenderInterceptor());
         getOutFaultInterceptors().add(new MessageSenderInterceptor());
-        getInInterceptors().add(new SgtInInterceptor());
-        getOutInterceptors().add(new SgtOutInterceptor());
+        prepareInInterceptors();
+        prepareOutInterceptors();
         getOutFaultInterceptors().add(new OutFaultInterceptor());
+    }
+    
+    protected void prepareOutInterceptors(){
+        getOutInterceptors().add(new SgtOutInterceptor());
+    }
+    
+    protected void prepareInInterceptors(){
+        getInInterceptors().add(new SgtInInterceptor());
     }
     
     @Override

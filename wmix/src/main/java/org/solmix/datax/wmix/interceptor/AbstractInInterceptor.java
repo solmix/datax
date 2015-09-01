@@ -41,6 +41,7 @@ import org.solmix.exchange.interceptor.phase.Phase;
 import org.solmix.exchange.interceptor.phase.PhaseInterceptorSupport;
 import org.solmix.exchange.model.ArgumentInfo;
 import org.solmix.wmix.exchange.WmixMessage;
+import org.solmix.wmix.parser.ParameterParser;
 
 
 /**
@@ -51,13 +52,16 @@ import org.solmix.wmix.exchange.WmixMessage;
 
 public abstract class AbstractInInterceptor extends PhaseInterceptorSupport<WmixMessage>
 {
-    public static final String PAYLOAD_NAME = "__payload";
+    public static final String PAYLOAD_NAME = "_payload_";
 
     public static final String DATAFORMAT = "_dataFormat";
 
     public static final String PROTOCOL = "_protocol";
 
 
+    public static final String POST = "post";
+    public static final String GET = "get";
+    
     public static final String DATASTYLE = "_dataStyle";
     public static final String XML_PREFIX = "<";
 
@@ -82,6 +86,7 @@ public abstract class AbstractInInterceptor extends PhaseInterceptorSupport<Wmix
         }
     }
 
+
     protected void handleParameters(WmixMessage message) {
         
     }
@@ -97,11 +102,15 @@ public abstract class AbstractInInterceptor extends PhaseInterceptorSupport<Wmix
         final Service service = endpoint.getService();
         DataProcessor dataProcessor = service.getDataProcessor();
         ArgumentInfo arg = message.get(ArgumentInfo.class);
-        HttpServletRequest request = (HttpServletRequest) message.get(WmixMessage.HTTP_REQUEST);
-        String payload = request.getParameter(PAYLOAD_NAME);
-        // back support
-        if (payload == null) {
-            payload = request.getParameter("_transaction");
+
+        String payload = null;
+        //在这里通过request不能取出参数，在这之前已经调用了getInputStream().
+        ParameterParser parameterParser = exchange.get(ParameterParser.class);
+        if (parameterParser != null) {
+            payload = parameterParser.getString(PAYLOAD_NAME);
+            if (payload == null) {
+                payload = parameterParser.getString("_transaction");
+            }
         }
         Map<String, Object> inputData;
         //从参数中读取数据

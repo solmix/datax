@@ -44,6 +44,7 @@ public class OperationInfo
     protected String id;
     
     protected String localId;
+    
     protected OperationType type;
     
     protected Boolean autoJoinTransactions;
@@ -61,6 +62,8 @@ public class OperationInfo
     protected InvokerInfo invoker;
     
     protected String refid;
+    
+    protected String redirect;
 
     private Map<String, ParamInfo> params;
     
@@ -167,6 +170,16 @@ public class OperationInfo
         return invoker;
     }
 
+    /**
+     * 重定向Velocity表达式<br>
+     * 
+     * 可以重定向当前请求去执行其他operatioinId的请求,和refid不同，refid时将refid的配置参数复制到当前opertion配置
+     * @return
+     */
+    public String getRedirect() {
+        return redirect;
+    }
+
     private static void copy(OperationInfo source,OperationInfo target){
         target.type=source.type;
         target.autoJoinTransactions=source.autoJoinTransactions;
@@ -177,6 +190,7 @@ public class OperationInfo
         target.transformers=source.transformers;
         target.node=source.node;
         target.oneway=source.oneway;
+        target.redirect=source.redirect;
     }
     public Map<String, ParamInfo> getParams() {
         return params;
@@ -275,6 +289,7 @@ public class OperationInfo
             Boolean autoJoinTransactions= node.getBooleanAttribute("autoJoinTransactions");
             Boolean validate= node.getBooleanAttribute("validate");
             Boolean oneway= node.getBooleanAttribute("oneway");
+            String redirect = node.getStringAttribute("redirect");
             Boolean usedValidatedValues= node.getBooleanAttribute("usedValidatedValues");
             Map<String ,ParamInfo> params = parseParams(node.evalNode("params"), context);
             List<TransformerInfo> transformers=parseTransformers(node.evalNodes("transformer"), context);
@@ -283,6 +298,7 @@ public class OperationInfo
             oi.autoJoinTransactions=autoJoinTransactions;
             oi.node=node;
             oi.params=params;
+            oi.redirect=redirect;
             oi.batch=batchOp;
             oi.transformers=transformers;
             oi.invoker=invoker;

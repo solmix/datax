@@ -44,7 +44,10 @@ public final class DATAX
     public final static Pattern ID_PATTERN = Pattern.compile("^[a-zA-Z]\\w+");
 
     public final static Pattern REF_ID_PATTERN = Pattern.compile("^([#a-zA-Z]\\w+[.])*[#a-zA-Z]\\w+");
-
+    /**
+     * 配置权限是，多个权限之间的分隔符号。
+     */
+    public static final String AUTH_SEPARATOR = ",";
     /**
      * 命名空间占位符 etc: <code>
      * namespace=com.example
@@ -67,6 +70,11 @@ public final class DATAX
 
     public static final String VALIDATION_TOPIC_PREFIX = "org/solmix/datax/validation/";
     
+    
+    /**
+     * 默认的模板输出Content-Type
+     */
+    public static final String TEMPLATE_CONTENT_TYPE_DEFAULT = "text/html";
     /**
      * Velocity 中{@link Container} 的名称
      */

@@ -18,7 +18,6 @@
  */
 package org.solmix.datax.support;
 
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -83,6 +82,7 @@ import org.solmix.runtime.bean.ConfiguredBeanProvider;
 import org.solmix.runtime.event.EventService;
 import org.solmix.runtime.event.TimeMonitorEvent;
 import org.solmix.runtime.i18n.ResourceBundleManager;
+import org.solmix.runtime.io.CachedOutputStream;
 import org.solmix.runtime.resource.ResourceInjector;
 import org.solmix.runtime.resource.ResourceManager;
 import org.solmix.runtime.resource.support.ResourceManagerImpl;
@@ -189,7 +189,7 @@ public class BaseDataService implements DataService
         if (type != OperationType.CUSTOM) {
             response = validateDSRequest(req);
             if (response != null) {
-                return transformResponse(response, transformers,req);
+                return transformResponse(response, transformers,req,oi);
             }
         }
         //支持重定向
@@ -209,10 +209,10 @@ public class BaseDataService implements DataService
         // 配置了invoker优先处理
         if ((!req.isInvoked()) && oi.getInvoker() != null) {
             response = DMIDataService.execute(container, req, req.getDSCall());
-            return transformResponse(response, transformers,req);
+            return transformResponse(response, transformers,req,oi);
         } else {
             response = executeDefault(req, type);
-            return transformResponse(response, transformers,req);
+            return transformResponse(response, transformers,req,oi);
         }
     }
    
@@ -243,10 +243,26 @@ public class BaseDataService implements DataService
             throw new ForwardException("No found forwardinfo for :"+forward);
         }
         DSCallTemplateContext context = new DSCallTemplateContext(container,req,res);
-        StringWriter  sw = new StringWriter();
+        CachedOutputStream  outputSteam = new CachedOutputStream();
          try {
-            templateService.evaluate(selected.getPath(), context, sw);
-            res.setRawData(sw.toString());
+             String tempalte=selected.getPath();
+            templateService.evaluate(tempalte, context, outputSteam);
+            res.setRawData(outputSteam);
+            //设置的Content-Type
+            String type=selected.getContentType();
+            if(type==null){
+                //默认为html
+                type=DATAX.TEMPLATE_CONTENT_TYPE_DEFAULT;
+            }
+            res.setAttribute("Content-Type", type);
+            Map<String,Object> values = req.getValues();
+            String filename=(String)values.get("filename");
+            if(filename==null){
+                filename=tempalte;
+            }
+            if(values.get("filename")!=null){
+                res.setAttribute("filename", values.get("filename"));
+            }
         } catch (Exception e) {
             throw new DSCallException("evaluate template error:", e);
         }
@@ -320,8 +336,11 @@ public class BaseDataService implements DataService
         }
     }
 
-    protected DSResponse transformResponse(DSResponse response, List<Transformer> transformers,DSRequest req) {
-        if (transformers==null||transformers.size()==0) {
+    protected DSResponse transformResponse(DSResponse response, List<Transformer> transformers,DSRequest req,OperationInfo oi) throws DSCallException {
+        
+        List<ForwardInfo> forwards = oi.getForwards();
+        
+        if (forwards==null&&(transformers==null||transformers.size()==0)) {
             return response;
         }
         for(Transformer transformer :transformers){
@@ -331,6 +350,9 @@ public class BaseDataService implements DataService
             } catch (Exception e) {
                 throw new TransformerException("Transformer DSRequest",e);
             }
+        }
+        if (forwards != null && forwards.size() > 0) {
+            response = forwardToTemplate(response, req, forwards);
         }
         return response;
     }
@@ -356,6 +378,7 @@ public class BaseDataService implements DataService
         } catch (Exception e) {
             throw new DSCallException("Prepare params error", e);
         }
+       
         return req;
     }
     

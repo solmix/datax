@@ -6,7 +6,7 @@
 
 		<service id="ds" lookup="container"
 			serviceClass="org.solmix.datax.service.MockDataService" serviceName="test"
-			scope="singleton" dropExtraFields="true">
+			scope="singleton" dropExtraFields="true" requireRoles="admin,check" requires="resource:fetch,resource:add">
 			<description>服务描述</description>
 			<fields>
 				<field name="field1" canEdit="true" canFilter="true"

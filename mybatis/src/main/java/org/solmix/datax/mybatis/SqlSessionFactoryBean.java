@@ -56,7 +56,6 @@ import org.solmix.runtime.Container;
 import org.solmix.runtime.ContainerAware;
 import org.solmix.runtime.resource.InputStreamResource;
 import org.solmix.runtime.resource.ResourceManager;
-import org.springframework.core.NestedIOException;
 
 /**
  * 
@@ -213,7 +212,7 @@ public class SqlSessionFactoryBean implements SqlSessionFactory, ContainerAware
             try {
                 configuration.setDatabaseId(this.databaseIdProvider.getDatabaseId(this.dataSource));
             } catch (SQLException e) {
-                throw new NestedIOException("Failed getting a databaseId", e);
+                throw new IOException("Failed getting a databaseId", e);
             }
         }
 

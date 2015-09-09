@@ -44,6 +44,8 @@ public class ForwardInfo implements XMLSource
 
     protected String script;
     
+    protected String contentType;
+    
     private Map<String, ParamInfo> params;
 
     private XMLNode node;
@@ -61,8 +63,10 @@ public class ForwardInfo implements XMLSource
     public String getName() {
         return name;
     }
-
     
+    public String getContentType() {
+        return contentType;
+    }
     public String getPath() {
         return path;
     }
@@ -85,10 +89,12 @@ public class ForwardInfo implements XMLSource
             String name = node.getStringAttribute("name");
             String method = node.getStringAttribute("path");
             String script = node.getStringAttribute("script");
+            String contentType = node.getStringAttribute("content-type");
             ForwardInfo ti = new ForwardInfo(node);
             ti.name=name;
             ti.path=method;
             ti.script=script;
+            ti.contentType=contentType;
             
             List<XMLNode> nodes= node.evalNodes("param");
             Map<String, ParamInfo> params = new LinkedHashMap<String, ParamInfo>(nodes.size());

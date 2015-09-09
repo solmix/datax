@@ -81,7 +81,8 @@
 		<attribute name="serviceName" type="string"></attribute>
 		<attribute name="scope" type="string"></attribute>
 		<attribute name="lookup" type="ds:lookupType"></attribute>
-		<anyAttribute namespace="##any" processContents="lax"></anyAttribute>
+        <attributeGroup ref="ds:auths"></attributeGroup>
+        <anyAttribute namespace="##any" processContents="lax"></anyAttribute>
 	</complexType>
 	<complexType name="validatorType">
 		<complexContent>
@@ -267,7 +268,8 @@
 		<attribute name="usedValidatedValues" type="boolean"></attribute>
 		<attribute name="oneway" type="boolean"></attribute>
 		<attribute name="redirect" type="string"></attribute>
-		<anyAttribute namespace="##any" processContents="lax"></anyAttribute>
+        <attributeGroup ref="ds:auths"></attributeGroup>
+        <anyAttribute namespace="##any" processContents="lax"></anyAttribute>
 	</complexType>
 
 	<complexType name="operationsType">
@@ -285,9 +287,6 @@
 		</sequence>
 	</complexType>
 
-	<group name="operationGroup">
-		<sequence></sequence>
-	</group>
 
 	<complexType name="ref">
 		<attribute name="class" type="string"></attribute>
@@ -381,4 +380,9 @@
 		<anyAttribute namespace="##any" processContents="lax">
 		</anyAttribute>
 	</complexType>
+
+	<attributeGroup name="auths">
+		<attribute name="requires" type="string"></attribute>
+		<attribute name="requireRoles" type="string"></attribute>
+	</attributeGroup>
 </schema>

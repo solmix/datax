@@ -22,7 +22,7 @@ import org.solmix.datax.wmix.interceptor.ExportInterceptor;
 
 
 /**
- * 
+ * 提供数据集的导出功能
  * @author solmix.f@gmail.com
  * @version $Id$  2015年9月1日
  */

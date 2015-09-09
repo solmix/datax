@@ -61,7 +61,7 @@ public class AbstractOutInterceptor extends PhaseInterceptorSupport<Message>
         final Service service = endpoint.getService();
         final DataProcessor dataProcessor = service.getDataProcessor();
         
-        Object content_type =message.get(Message.CONTENT_TYPE);
+        Object content_type =exchange.get(Message.ACCEPT_CONTENT_TYPE);
         Object encoding = exchange.get(Message.ENCODING);
         final HttpServletResponse response= (HttpServletResponse)message.get(WmixMessage.HTTP_RESPONSE);
         if(content_type!=null){

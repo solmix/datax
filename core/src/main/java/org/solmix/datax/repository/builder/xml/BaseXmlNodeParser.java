@@ -19,6 +19,7 @@
 package org.solmix.datax.repository.builder.xml;
 
 import org.solmix.commons.util.ClassLoaderUtils;
+import org.solmix.commons.util.StringUtils;
 import org.solmix.commons.xml.XMLNode;
 import org.solmix.datax.DATAX;
 import org.solmix.datax.repository.builder.BuilderException;
@@ -69,6 +70,14 @@ public abstract class BaseXmlNodeParser<T> implements XmlNodeParser<T>
         
     }
 
+    public String[] paseStringArray(XMLNode node,String name,String seprator){
+        String strArray =node.getStringAttribute(name);
+        if(strArray==null){
+            return null;
+        }
+        return  StringUtils.split(strArray,seprator);
+        
+    }
     public <E> Class<?> paseClass(XMLNode node,String name){
         String strclz =node.getStringAttribute(name);
         if(strclz==null){

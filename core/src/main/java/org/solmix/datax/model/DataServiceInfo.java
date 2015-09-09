@@ -71,6 +71,10 @@ public class DataServiceInfo
     protected String serviceName;
     
     protected XMLNode node;
+    
+    protected String[] requires;
+    
+    protected String[] requireRoles;
 
     public DataServiceInfo(String id,String serverType)
     {
@@ -107,9 +111,16 @@ public class DataServiceInfo
         return null;
     }
     
-    /**
-     * @return
-     */
+    
+    public String[] getRequires() {
+        return requires;
+    }
+    
+    
+    public String[] getRequireRoles() {
+        return requireRoles;
+    }
+
     public XMLNode getXMLNode() {
         return node;
     }
@@ -197,6 +208,8 @@ public class DataServiceInfo
                 String name = node.getStringAttribute("serviceName");
                 String scope = node.getStringAttribute("scope",SCOPE_SINGLETON);
                 DataServiceInfo dsi = new DataServiceInfo(id,context.getServerType());
+                String[] requires = paseStringArray(node, "requires",DATAX.AUTH_SEPARATOR);
+                String[] requireRoles=paseStringArray(node,"requireRoles",DATAX.AUTH_SEPARATOR);
                 dsi.fields = fields;
                 dsi.node=node;
                 dsi.fieldList=fieldList;
@@ -204,6 +217,8 @@ public class DataServiceInfo
                 dsi.operations = operations;
                 dsi.serviceClass = clazz;
                 dsi.serviceName = name;
+                dsi.requires=requires;
+                dsi.requireRoles=requireRoles;
                 dsi.lookup = lookup;
                 dsi.scope = scope;
                 return dsi;

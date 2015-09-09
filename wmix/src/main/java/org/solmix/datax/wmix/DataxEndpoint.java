@@ -41,7 +41,7 @@ import org.solmix.wmix.exchange.AbstractWmixEndpoint;
 import org.solmix.wmix.exchange.WmixMessage;
 
 /**
- * 
+ * 提供基于RestFul的数据输出
  * @author solmix.f@gmail.com
  * @version $Id$ 2015年8月13日
  */

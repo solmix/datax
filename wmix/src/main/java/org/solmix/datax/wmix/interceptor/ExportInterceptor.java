@@ -54,7 +54,7 @@ import org.solmix.service.export.support.MappedExportContext;
 import org.solmix.wmix.exchange.WmixMessage;
 
 /**
- * 
+ * 将执行结果作为数据集导出
  * @author solmix.f@gmail.com
  * @version $Id$ 2015年9月1日
  */
@@ -70,8 +70,6 @@ public class ExportInterceptor extends PhaseInterceptorSupport<Message>
     @Override
     public void handleMessage(Message message) throws Fault {
         final Exchange exchange = message.getExchange();
-        // Object content_type =message.get(Message.CONTENT_TYPE);
-        // Object encoding = exchange.get(Message.ENCODING);
         Message inMsg = exchange.getIn();
         DSRequest request = (DSRequest) inMsg.getContent(Object.class);
 

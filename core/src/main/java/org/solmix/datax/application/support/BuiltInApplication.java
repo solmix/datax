@@ -73,19 +73,14 @@ public class BuiltInApplication implements Application
         fmkDefinedOperations = operations.split(",");
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.solmix.datax.application.Application#execute(org.solmix.datax.DSRequest,
-     *      org.solmix.datax.RequestContext)
-     */
     @Override
     public DSResponse execute(DSRequest request, RequestContext context) throws DSCallException {
          DSResponse result =null;
          String operationid =request.getOperationId();
          result= new DSResponseImpl(request.getDataService(), request);
-         boolean exclude =security.isExclude(operationid);
+         boolean exclude =false;
          if(this.authenticationEnabled){
+             exclude =security.isExclude(operationid);
              if(this.security==null){
                 throw new java.lang.IllegalStateException("BuildIn application configured enable authentication,but the runtime ENV not have applicationSecurity instance");
              }else{
@@ -120,22 +115,13 @@ public class BuiltInApplication implements Application
         return result;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.solmix.datax.application.Application#setApplicationSecurity(org.solmix.datax.application.ApplicationSecurity)
-     */
+   
     @Override
     public void setApplicationSecurity(ApplicationSecurity security) {
         this.security=security;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.solmix.datax.application.Application#isPermitted(org.solmix.datax.DSRequest,
-     *      org.solmix.datax.RequestContext)
-     */
+   
     @Override
     public boolean isPermitted(DSRequest request, RequestContext context) {
         if(this.security!=null){

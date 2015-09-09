@@ -152,7 +152,10 @@ public class DefaultDataServiceManagerTest
         assertEquals(DataServiceInfo.SCOPE_SINGLETON, dsi.getScope());
         assertEquals(org.solmix.datax.service.MockDataService.class, dsi.getServiceClass());
         assertEquals("test", dsi.getServiceName());
+        assertEquals(new String[]{"admin","check"}, dsi.getRequireRoles());
+        assertEquals(new String[]{"resource:fetch","resource:add"}, dsi.getRequires());
         FieldInfo field = dsi.getFields().get(0);
+        
         assertEquals("field1", field.getName());
         assertEquals(Boolean.TRUE, field.getCanEdit());
         assertEquals(Boolean.TRUE, field.getCanExport());

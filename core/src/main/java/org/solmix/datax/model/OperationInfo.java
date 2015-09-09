@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.solmix.commons.annotation.Immutable;
 import org.solmix.commons.xml.XMLNode;
+import org.solmix.datax.DATAX;
 import org.solmix.datax.repository.builder.BuilderException;
 import org.solmix.datax.repository.builder.ReferenceNoFoundException;
 import org.solmix.datax.repository.builder.ReferenceResolver;
@@ -71,6 +72,10 @@ public class OperationInfo
     
     protected List<ForwardInfo> forwards;
     
+    protected String[] requires;
+    
+    protected String[] requireRoles;
+    
     OperationInfo()
     {
     }
@@ -105,6 +110,14 @@ public class OperationInfo
     }
 
     
+    public String[] getRequires() {
+        return requires;
+    }
+    
+    public String[] getRequireRoles() {
+        return requireRoles;
+    }
+
     public Boolean getOneway() {
         return oneway;
     }
@@ -198,6 +211,8 @@ public class OperationInfo
         target.oneway=source.oneway;
         target.redirect=source.redirect;
         target.forwards=source.forwards;
+        target.requires=source.requires;
+        target.requireRoles=source.requireRoles;
     }
     public Map<String, ParamInfo> getParams() {
         return params;
@@ -303,6 +318,8 @@ public class OperationInfo
             List<ForwardInfo> forwards=parseForwards(node.evalNodes("forward"), context);
             BatchOperations batchOp= parseBatch(node.evalNode("batch"),context);
             InvokerInfo invoker = parseInvoker(node.evalNode("invoker"),context);
+            String[] requires = paseStringArray(node, "requires",DATAX.AUTH_SEPARATOR);
+            String[] requireRoles=paseStringArray(node,"requireRoles",DATAX.AUTH_SEPARATOR);
             oi.autoJoinTransactions=autoJoinTransactions;
             oi.node=node;
             oi.params=params;
@@ -314,6 +331,8 @@ public class OperationInfo
             oi.oneway=oneway;
             oi.validate=validate;
             oi.usedValidatedValues=usedValidatedValues;
+            oi.requireRoles=requireRoles;
+            oi.requires=requires;
             if(!batch){
                 context.getRepositoryService().addOperationInfo(oi);
             }

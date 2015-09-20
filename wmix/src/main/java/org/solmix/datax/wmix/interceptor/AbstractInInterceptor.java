@@ -53,6 +53,8 @@ import org.solmix.wmix.parser.ParameterParser;
 public abstract class AbstractInInterceptor extends PhaseInterceptorSupport<WmixMessage>
 {
     public static final String PAYLOAD_NAME = "_payload_";
+    
+    public static final String SECOND_PAYLOAD_NAME = "_transaction";
 
     public static final String DATAFORMAT = "_dataFormat";
 
@@ -109,7 +111,7 @@ public abstract class AbstractInInterceptor extends PhaseInterceptorSupport<Wmix
         if (parameterParser != null) {
             payload = parameterParser.getString(PAYLOAD_NAME);
             if (payload == null) {
-                payload = parameterParser.getString("_transaction");
+                payload = parameterParser.getString(SECOND_PAYLOAD_NAME);
             }
         }
         Map<String, Object> inputData;
@@ -145,12 +147,12 @@ public abstract class AbstractInInterceptor extends PhaseInterceptorSupport<Wmix
             
             message.removeContent(InputStream.class);
         }
-        postToSchema(new DataTypeMap(inputData), dataServiceManager, message,exchange);
+        postToSchema(new DataTypeMap(inputData), dataServiceManager, message,exchange,parameterParser);
     }
     
     protected   RequestContext wrappedRequestcontext(Exchange exchange){
         return new ExchangeRequestContext(exchange);
     }
     
-    protected abstract void postToSchema(DataTypeMap mapdata,DataServiceManager manager, WmixMessage message,Exchange exchange) ;
+    protected abstract void postToSchema(DataTypeMap mapdata,DataServiceManager manager, WmixMessage message,Exchange exchange, ParameterParser parameterParser) ;
 }

@@ -255,14 +255,7 @@ public class BaseDataService implements DataService
                 type=DATAX.TEMPLATE_CONTENT_TYPE_DEFAULT;
             }
             res.setAttribute("Content-Type", type);
-            Map<String,Object> values = req.getValues();
-            String filename=(String)values.get("filename");
-            if(filename==null){
-                filename=tempalte;
-            }
-            if(values.get("filename")!=null){
-                res.setAttribute("filename", values.get("filename"));
-            }
+            
         } catch (Exception e) {
             throw new DSCallException("evaluate template error:", e);
         }
@@ -340,17 +333,17 @@ public class BaseDataService implements DataService
         
         List<ForwardInfo> forwards = oi.getForwards();
         
-        if (forwards==null&&(transformers==null||transformers.size()==0)) {
-            return response;
-        }
-        for(Transformer transformer :transformers){
-            try {
-               Object transformedObject= transformer.transformResponse(response.getRawData(),response,req);
-               response.setRawData(transformedObject);
-            } catch (Exception e) {
-                throw new TransformerException("Transformer DSRequest",e);
+        if (transformers!=null && transformers.size()>0) {
+            for(Transformer transformer :transformers){
+                try {
+                   Object transformedObject= transformer.transformResponse(response.getRawData(),response,req);
+                   response.setRawData(transformedObject);
+                } catch (Exception e) {
+                    throw new TransformerException("Transformer DSRequest",e);
+                }
             }
         }
+       
         if (forwards != null && forwards.size() > 0) {
             response = forwardToTemplate(response, req, forwards);
         }

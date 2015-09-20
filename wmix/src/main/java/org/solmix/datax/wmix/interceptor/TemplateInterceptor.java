@@ -26,7 +26,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.solmix.commons.util.ServletUtils;
 import org.solmix.datax.DATAX;
+import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
+import org.solmix.datax.export.ExportConfig;
 import org.solmix.exchange.Exchange;
 import org.solmix.exchange.Message;
 import org.solmix.exchange.interceptor.Fault;
@@ -57,6 +59,7 @@ public class TemplateInterceptor extends PhaseInterceptorSupport<Message>
 
         final HttpServletResponse httpResponse = (HttpServletResponse) message.get(WmixMessage.HTTP_RESPONSE);
         DSResponse response = (DSResponse) message.getContent(Object.class);
+        DSRequest request = (DSRequest)exchange.getIn().getContent(Object.class);
         OutputStream out = message.getContent(OutputStream.class);
         Object rawData=response.getRawData();
         String contentType = (String)response.getAttribute(Message.CONTENT_TYPE);
@@ -68,9 +71,10 @@ public class TemplateInterceptor extends PhaseInterceptorSupport<Message>
             httpResponse.setContentType(contentType);
             //不是输出为text的采用下载方式。
             if(!DATAX.TEMPLATE_CONTENT_TYPE_DEFAULT.equals(contentType)){
-                String filename = (String)response.getAttribute("filename");
-                if(filename==null){
-                    filename="template";
+                ExportConfig export= request.getAttachment(ExportConfig.class);
+                String filename="template";
+                if(export!=null){
+                    filename=export.getExportFilename();
                 }
                 String fileNameEncoding = ServletUtils.encodeParameter("filename", filename);
                 httpResponse.addHeader("content-disposition", "attachment;" + fileNameEncoding);

@@ -366,6 +366,7 @@
 		<attribute name="name" type="string"></attribute>
 		<attribute name="path" type="string"></attribute>
 		<attribute name="script" type="string"></attribute>
+		<attribute name="content-type" type="string"></attribute>
 	</complexType>
 	<complexType name="paramType">
 

@@ -21,12 +21,9 @@ package org.solmix.datax.wmix.interceptor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.solmix.commons.collections.DataTypeMap;
 import org.solmix.commons.util.Assert;
@@ -43,6 +40,7 @@ import org.solmix.datax.call.support.DefaultDSCallFactory;
 import org.solmix.datax.export.ExportConfig;
 import org.solmix.exchange.Exchange;
 import org.solmix.wmix.exchange.WmixMessage;
+import org.solmix.wmix.parser.ParameterParser;
 
 /**
  * 
@@ -57,9 +55,7 @@ public class SgtInInterceptor extends AbstractInInterceptor
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    protected void postToSchema(DataTypeMap data, DataServiceManager manager, WmixMessage message, Exchange exchange) {
-
-      
+    protected void postToSchema(DataTypeMap data, DataServiceManager manager, WmixMessage message, Exchange exchange, ParameterParser parameterParser) {
         List<?> operations = data.getList("operations");
         RequestContext requestContext = wrappedRequestcontext(exchange);
         if (operations != null) {
@@ -67,6 +63,11 @@ public class SgtInInterceptor extends AbstractInInterceptor
                 DSRequest request = manager.createDSRequest();
                 prepareRequest(request, new DataTypeMap((Map) operations.get(0)), true);
                 request.setRequestContext(requestContext);
+                for(String key:parameterParser.keySet()){
+                    if(!PAYLOAD_NAME.equals(key)&&!SECOND_PAYLOAD_NAME.equals(key)){
+                        request.setAttribute(key, parameterParser.get(key));
+                    }
+                }
                 message.setContent(Object.class, request);
             } else if (operations.size() > 1) {
                 List<DSRequest> ml = new ArrayList<DSRequest>();
@@ -138,50 +139,46 @@ public class SgtInInterceptor extends AbstractInInterceptor
         this.dscFactory = dscFactory;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected void handleParameters(WmixMessage message) {
         final Exchange exchange = message.getExchange();
         final DataServiceManager manager = exchange.get(DataServiceManager.class);
-        HttpServletRequest request=(HttpServletRequest)  message.get(WmixMessage.HTTP_REQUEST);
-        Enumeration<String> e = request.getParameterNames();
-        if (e == null)
-            return;
+        ParameterParser parameterParser = exchange.get(ParameterParser.class);
+       
         DSRequest dsr = manager.createDSRequest();
         Map<String,Object> values = new HashMap<String, Object>();
-        while (e.hasMoreElements()) {
-            String key = e.nextElement();
+        for(String key:parameterParser.keySet()){
             if("_appID".equals(key)){
-                dsr.setApplicationId(request.getParameter(key));
+                dsr.setApplicationId(parameterParser.getString(key));
             }else if("_startRow".equals(key)){
                 PagedBean page = new PagedBean();
-                page.setStartRow(Integer.valueOf(request.getParameter("_startRow")));
-                page.setEndRow(Integer.valueOf(request.getParameter("_endRow")));
+                page.setStartRow(parameterParser.getInt("_startRow"));
+                page.setEndRow(parameterParser.getInt("_endRow"));
                 dsr.addAttachment(Pageable.class, page);
             }else if("_exportResults".equals(key)){
-                if(DataUtils.asBoolean(request.getParameter("_exportResults"))){
+                if(parameterParser.getBoolean("_exportResults")){
                     ExportConfig export = new ExportConfig();
-                    export.setExportAs(request.getParameter("_exportAs"));
-                    export.setExportDatesAsFormattedString(DataUtils.asBoolean(request.getParameter("_exportDatesAsFormattedString")));
-                    export.setExportDelimiter(request.getParameter("_exportDelimiter"));
-                    export.setExportDisplay(request.getParameter("_exportDisplay"));
-                    export.setExportFilename(request.getParameter("_exportFilename"));
-                    String exportFields = request.getParameter("_exportFields");
+                    export.setExportAs(parameterParser.getString("_exportAs"));
+                    export.setExportDatesAsFormattedString(parameterParser.getBoolean("_exportDatesAsFormattedString"));
+                    export.setExportDelimiter(parameterParser.getString("_exportDelimiter"));
+                    export.setExportDisplay(parameterParser.getString("_exportDisplay"));
+                    export.setExportFilename(parameterParser.getString("_exportFilename"));
+                    String exportFields = parameterParser.getString("_exportFields");
                     if (exportFields != null) {
                         export.setExportFields(Arrays.asList(exportFields.split(",")));
                     }
-                    export.setExportFooter(request.getParameter("_exportFooter"));
-                    export.setExportHeader(request.getParameter("_exportHeader"));
-                    export.setLineBreakStyle(request.getParameter("_lineBreakStyle"));
+                    export.setExportFooter(parameterParser.getString("_exportFooter"));
+                    export.setExportHeader(parameterParser.getString("_exportHeader"));
+                    export.setLineBreakStyle(parameterParser.getString("_lineBreakStyle"));
 
                     dsr.addAttachment(ExportConfig.class, export);
                 }
             }else if("_action".equals(key)){
-                dsr.setOperationId(request.getParameter("_action"));
+                dsr.setOperationId(parameterParser.getString("_action"));
             }else if(key.startsWith("_")){
-                dsr.setAttribute(key, request.getParameter(key));
+                dsr.setAttribute(key, parameterParser.getString(key));
             }else{
-                values.put(key, request.getParameter(key));
+                values.put(key, parameterParser.getString(key));
             }
         }
         dsr.setRawValues(values);

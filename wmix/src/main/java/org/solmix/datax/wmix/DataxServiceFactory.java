@@ -39,7 +39,7 @@ public class DataxServiceFactory extends AbstractServiceFactory {
     protected void initDataProcessor() {
        getDataProcessor().initialize(getService());
        service.setDataProcessor(getDataProcessor());
-       pulishEvent(ServiceFactoryEvent.DATABINDING_INITIALIZED, getDataProcessor());
+       pulishEvent(ServiceFactoryEvent.DATAPROCESSOR_INITIALIZED, getDataProcessor());
     }
     @Override
     protected DataProcessor defaultDataProcessor() {

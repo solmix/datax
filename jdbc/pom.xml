@@ -20,4 +20,5 @@
   		<scope>provided</scope>
   	</dependency>
   </dependencies>
+  <name>Datax :: Jdbc</name>
 </project>

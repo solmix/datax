@@ -53,4 +53,5 @@
 		</dependency>
 		
 	</dependencies>
+	<name>Datax :: Mybatis</name>
 </project>

@@ -18,7 +18,6 @@
  */
 package org.solmix.datax.mybatis.type;
 
-import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -36,8 +35,7 @@ public class IntegerStringTypeHandler extends StringTypeHandler
 
     @Override
     public void setNonNullParameter(PreparedStatement ps, int i, String parameter, JdbcType jdbcType) throws SQLException {
-        ps.setBigDecimal(i, BigDecimal.valueOf(Long.valueOf(parameter)));
-
+        ps.setInt(i, Integer.valueOf(parameter));
     }
 
 }

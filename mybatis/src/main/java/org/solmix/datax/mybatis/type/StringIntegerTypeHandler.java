@@ -18,25 +18,44 @@
  */
 package org.solmix.datax.mybatis.type;
 
-import java.math.BigDecimal;
+import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年9月23日
+ * @version $Id$  2015年9月24日
  */
 
-public class DecimalStringTypeHandler extends StringTypeHandler
+public class StringIntegerTypeHandler extends BaseTypeHandler<Integer>
 {
 
     @Override
-    public void setNonNullParameter(PreparedStatement ps, int i, String parameter, JdbcType jdbcType) throws SQLException {
-        ps.setBigDecimal(i, BigDecimal.valueOf(Long.valueOf(parameter)));
+    public void setNonNullParameter(PreparedStatement ps, int i, Integer parameter, JdbcType jdbcType) throws SQLException {
+        ps.setString(i, parameter.toString());
+    }
+
+    @Override
+    public Integer getNullableResult(ResultSet rs, String columnName) throws SQLException {
+        return rs.getInt(columnName);
+    }
+
+  
+    @Override
+    public Integer getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
+        return rs.getInt(columnIndex);
+    }
+
+   
+    @Override
+    public Integer getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
+        return cs.getInt(columnIndex);
     }
 
 }

@@ -35,7 +35,7 @@ import org.apache.ibatis.type.JdbcType;
 public class TimeStampStringTypeHandler extends StringTypeHandler
 {
 
-    private java.text.SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd  HH:MM:SS");
+    private java.text.SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     @Override
     public void setNonNullParameter(PreparedStatement ps, int i, String parameter, JdbcType jdbcType) throws SQLException {
         try {

@@ -53,7 +53,7 @@ public class OutFaultInterceptor extends PhaseInterceptorSupport<Message>
      */
     public OutFaultInterceptor()
     {
-        super(Phase.ENCODE);
+        super(Phase.MARSHAL);
     }
 
     @Override

@@ -354,7 +354,7 @@ public class BaseDataService implements DataService
         Object values = req.getRawValues();
         // 如果为空，就不做处理
         if (values == null) {
-            return req;
+            values=new HashMap<Object, Object>();
         }
         List<?> list = null;
         try {

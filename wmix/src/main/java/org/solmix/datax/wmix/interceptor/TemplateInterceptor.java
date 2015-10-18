@@ -50,7 +50,7 @@ public class TemplateInterceptor extends PhaseInterceptorSupport<Message>
 
     public TemplateInterceptor()
     {
-        super(Phase.DECODE);
+        super(Phase.UNMARSHAL);
     }
 
     @Override

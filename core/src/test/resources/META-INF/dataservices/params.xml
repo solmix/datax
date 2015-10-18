@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<datax xmlns="http://www.solmix.org/schema/datax-ds/v1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.solmix.org/schema/datax-ds/v1.0.0 http://www.solmix.org/schema/datax-ds/v1.0.0">
+	<configuration namespace="com.params">
+		<service id="default">
+			<operations>
+				<fetch>
+				<invoker class="org.solmix.datax.support.CallDataService" method="batchFetch"/>
+				<params>
+				<param key="integer" isOverride="true" value="5"/>
+				<param key="float" value="5.1"/>
+				<param key="float" value="5.1"/>
+				</params>
+				</fetch>
+			</operations>
+		</service>
+		
+	</configuration>
+</datax>

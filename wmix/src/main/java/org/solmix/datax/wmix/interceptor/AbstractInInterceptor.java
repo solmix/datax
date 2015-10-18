@@ -70,7 +70,7 @@ public abstract class AbstractInInterceptor extends PhaseInterceptorSupport<Wmix
     public static final String JSON_PREFIX = "{";
     public AbstractInInterceptor()
     {
-        super(Phase.DECODE);
+        super(Phase.UNMARSHAL);
     }
 
     @Override

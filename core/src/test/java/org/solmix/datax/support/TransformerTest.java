@@ -16,41 +16,37 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+
 package org.solmix.datax.support;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.junit.Assert;
-
-import static org.junit.Assert.*;
-
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.solmix.commons.util.DateUtils;
 import org.solmix.datax.DSCallException;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
-import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.DSResponse.Status;
+import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.service.MockDataService;
-import org.solmix.datax.validation.ErrorMessage;
-import org.solmix.datax.validation.ErrorReport;
 import org.solmix.runtime.Container;
 import org.solmix.runtime.ContainerFactory;
-
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年8月1日
+ * @version $Id$ 2015年8月1日
  */
 
 public class TransformerTest
 {
+
     Container c;
 
     @Before
@@ -58,21 +54,23 @@ public class TransformerTest
         c = ContainerFactory.getDefaultContainer(true);
         Assert.assertNotNull(c);
     }
+
     @After
-    public void tearDown(){
-        if(c!=null){
+    public void tearDown() {
+        if (c != null) {
             c.close();
         }
     }
+
     @Test
     public void testDefaultScucess() {
-        DataServiceManager dsm=   c.getExtension(DataServiceManager.class);
-        DSRequest add=dsm.createDSRequest();
+        DataServiceManager dsm = c.getExtension(DataServiceManager.class);
+        DSRequest add = dsm.createDSRequest();
         MappedRequestContext mrc = new MappedRequestContext();
         MockDataService mock = new MockDataService();
-        mrc.put("dateUtil",new DateUtils());
+        mrc.put("dateUtil", new DateUtils());
         add.setRequestContext(mrc);
-        Map<String,Object> values= new LinkedHashMap<String,Object>();
+        Map<String, Object> values = new LinkedHashMap<String, Object>();
         values.put("text", "aaa");
         values.put("boolean", "true");
         values.put("integer", "1");
@@ -83,22 +81,21 @@ public class TransformerTest
         values.put("sequence", "1");
         values.put("intEnum", "2");
         values.put("enum", "bbb");
-       
-       
+
         add.setOperationId("com.transformer.default.add");
         add.setRawValues(values);
         try {
-            DSResponse addres= add.execute();
-            Assert.assertEquals(Status.STATUS_SUCCESS,addres.getStatus());
-          String res= addres.getSingleResult(String.class);
-          assertEquals(res, "aaa-transformRequest-transformResponse");
-          @SuppressWarnings("unchecked")
-        Map<String,Object> request=(Map<String, Object>) add.getRawValues();
-          assertEquals("5", request.get("integer").toString());
-          assertEquals("5.1", request.get("float").toString());
+            DSResponse addres = add.execute();
+            Assert.assertEquals(Status.STATUS_SUCCESS, addres.getStatus());
+            String res = addres.getSingleResult(String.class);
+            assertEquals(res, "aaa-transformRequest-transformResponse");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> request = (Map<String, Object>) add.getRawValues();
+            assertEquals("5", request.get("integer").toString());
+            assertEquals("5.1", request.get("float").toString());
         } catch (DSCallException e) {
             Assert.fail(e.getMessage());
         }
     }
-  
+
 }

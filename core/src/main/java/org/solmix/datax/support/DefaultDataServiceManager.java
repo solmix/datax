@@ -173,7 +173,7 @@ public class DefaultDataServiceManager implements DataServiceManager,ContainerAw
             }
             if (!serviceClass.isAnnotationPresent(org.solmix.datax.annotation.DataService.class)) {
                 throw new IllegalArgumentException("DataService proxy Type:["
-                    + serviceClass.getName() + "] ,without @"
+                    + serviceClass.getName() + "] ,without @,"
                     + org.solmix.datax.annotation.DataService.class.getSimpleName() + " Annotation!");
             }
             DataServiceProxy<T> dsp = new DataServiceProxy<T>(serviceClass,new DataxSessionImpl(this));

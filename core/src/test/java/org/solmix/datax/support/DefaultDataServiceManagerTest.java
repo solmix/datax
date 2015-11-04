@@ -167,7 +167,7 @@ public class DefaultDataServiceManagerTest
         assertEquals("字段1", field.getExportTitle());
         assertEquals("load.ds1.field", field.getForeignKey());
         assertEquals(Integer.valueOf(248000), field.getMaxFileSize());
-        assertEquals("字段@,", field.getTitle());
+        assertEquals("字段@", field.getTitle());
         assertEquals("1", field.getRootValue());
         assertEquals(FieldType.TEXT, field.getType());
         

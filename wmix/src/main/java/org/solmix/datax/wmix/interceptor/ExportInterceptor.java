@@ -64,7 +64,7 @@ public class ExportInterceptor extends PhaseInterceptorSupport<Message>
 
     public ExportInterceptor()
     {
-        super(Phase.UNMARSHAL);
+        super(Phase.MARSHAL);
     }
 
     @Override

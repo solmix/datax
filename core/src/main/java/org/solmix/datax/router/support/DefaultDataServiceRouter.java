@@ -329,11 +329,6 @@ public class DefaultDataServiceRouter implements DataServiceRouter<RequestToken>
         resources.add(resource);
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.solmix.runtime.ProductionAware#setProduction(boolean)
-     */
     @Override
     public void setProduction(boolean productionMode) {
         this.productionMode = productionMode;

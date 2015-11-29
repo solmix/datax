@@ -162,21 +162,11 @@ public class PageInterceptor implements Interceptor
         return builder.build();
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.apache.ibatis.plugin.Interceptor#plugin(java.lang.Object)
-     */
     @Override
     public Object plugin(Object target) {
         return Plugin.wrap(target, this);
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.apache.ibatis.plugin.Interceptor#setProperties(java.util.Properties)
-     */
     @Override
     public void setProperties(Properties properties) {
         // nothing todo

@@ -127,10 +127,6 @@ public interface DSRequest
 
     List<?> getValueSets();
 
-//    Map<String, Object> getOldValues();
-
-//    List<?> getOldValueSets();
-
     /**
      * @param rawValues
      */

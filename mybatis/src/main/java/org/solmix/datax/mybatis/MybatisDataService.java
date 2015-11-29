@@ -202,7 +202,6 @@ public class MybatisDataService extends BaseDataService implements DataService
         return res;
     }
 
-    @SuppressWarnings("rawtypes")
     protected DSResponse executeFetch(DSRequest req,SqlSession session,DataSource dataSource)throws DSCallException {
         DSResponse res = new DSResponseImpl(req,Status.STATUS_SUCCESS);
         String mybatisStatement = getMybatisStatement(req);

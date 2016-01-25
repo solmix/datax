@@ -19,6 +19,11 @@
   		<version>4.0.6.RELEASE</version>
   		<scope>provided</scope>
   	</dependency>
+  	<dependency>
+			<groupId>com.mchange</groupId>
+			<artifactId>c3p0</artifactId>
+			<version>0.9.5.1</version>
+		</dependency>
   </dependencies>
   <name>Solmix :: Datax :: Jdbc</name>
   <build>

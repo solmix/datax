@@ -21,6 +21,7 @@ package org.solmix.datax.support;
 import java.io.IOException;
 
 import org.solmix.datax.DataService;
+import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.DataxSession;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.runtime.resource.InputStreamResource;
@@ -36,11 +37,11 @@ import org.solmix.runtime.resource.ResourceResolver;
 public class DataServiceResolver implements ResourceResolver
 {
 
-    private DefaultDataServiceManager dataServiceManager;
+    private DataServiceManager dataServiceManager;
     /**
      * @param defaultDataServiceManager
      */
-    public DataServiceResolver(DefaultDataServiceManager dataServiceManager)
+    public DataServiceResolver(DataServiceManager dataServiceManager)
     {
         this.dataServiceManager=dataServiceManager;
     }

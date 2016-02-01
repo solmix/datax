@@ -334,7 +334,9 @@ public class DSResponseImpl implements DSResponse
                         return _return;
 
                     } else {
-                        LOG.warn("The data is List is empty ,return object is null ");
+                        if(!(type == Void.class)){
+                            LOG.warn("The data is List is empty ,return object is null ");    
+                        }
                         return null;
                     }
 

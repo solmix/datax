@@ -80,7 +80,7 @@ public class DefaultDataServiceManager implements DataServiceManager,ContainerAw
     private String location;
 
     /** 是否加载默认目录的配置 */
-    private boolean loadDefault = true;
+    private boolean loadDefault=true;
 
     private List<String> resources;
 

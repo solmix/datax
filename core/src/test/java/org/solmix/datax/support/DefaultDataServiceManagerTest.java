@@ -61,21 +61,20 @@ import org.solmix.runtime.resource.ResourceManager;
 public class DefaultDataServiceManagerTest
 {
 
-    DefaultDataServiceManager dsm;
 
     Container c;
 
     @Before
     public void setup() {
         System.out.println(new MonitorServiceImpl().getMonitorInfo().getUsedMemory());
-        c = ContainerFactory.getDefaultContainer(true);
-        dsm = c.getExtension(DefaultDataServiceManager.class);
-        Assert.assertNotNull(dsm);
+        c = ContainerFactory.getThreadDefaultContainer(true);
+        
     }
 
   
     @Test
     public void testCreateDSRequest() {
+        DefaultDataServiceManager dsm = c.getExtension(DefaultDataServiceManager.class);
         DSRequest ds= dsm.createDSRequest();
         Assert.assertNotNull(ds.getApplication());
     }
@@ -85,6 +84,7 @@ public class DefaultDataServiceManagerTest
     }
     @Test
     public void testDefinitionResources() {
+        DefaultDataServiceManager dsm = c.getExtension(DefaultDataServiceManager.class);
         dsm.setLoadDefault(false);
         dsm.addResource("classpath:META-INF/dataservice1/ds2.xml");
        
@@ -111,6 +111,7 @@ public class DefaultDataServiceManagerTest
     
 //    @Test(expected=BuilderException.class)
     public void testXMLBatchException() {
+        DefaultDataServiceManager dsm = c.getExtension(DefaultDataServiceManager.class);
         //配置了batch就不能配置其他的选项
         dsm.setLoadDefault(false);
         dsm.addResource("classpath:META-INF/dataservice1/ds3.xml");
@@ -120,6 +121,7 @@ public class DefaultDataServiceManagerTest
     }
 //    @Test
     public void testResolver() {
+        DefaultDataServiceManager dsm = c.getExtension(DefaultDataServiceManager.class);
         dsm.setLoadDefault(false);
         dsm.addResource("classpath:META-INF/resolver/ds2.xml");
         dsm.addResource("classpath:META-INF/resolver/ds1.xml");
@@ -134,6 +136,7 @@ public class DefaultDataServiceManagerTest
     }
     @Test
     public void testLoading() {
+        DefaultDataServiceManager dsm = c.getExtension(DefaultDataServiceManager.class);
         MonitorServiceImpl ms = new MonitorServiceImpl();
         MonitorInfo old = new MonitorServiceImpl().getMonitorInfo();
         dsm.setLoadDefault(false);
@@ -264,6 +267,7 @@ public class DefaultDataServiceManagerTest
     }
     @Test
     public void testContainerResolver() {
+        DefaultDataServiceManager dsm = c.getExtension(DefaultDataServiceManager.class);
         dsm.setLoadDefault(false);
         dsm.addResource("classpath:META-INF/dataservice1/load.xml");
         

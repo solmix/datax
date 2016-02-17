@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,6 +45,12 @@ public class DSRequestImplTest
     public void setup() {
         c = ContainerFactory.getDefaultContainer(true);
         Assert.assertNotNull(c);
+    }
+    @After
+    public void tearDown() {
+        if (c != null) {
+            c.close();
+        }
     }
     @Test
     public void test(){

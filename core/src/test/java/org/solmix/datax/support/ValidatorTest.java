@@ -18,23 +18,24 @@
  */
 package org.solmix.datax.support;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.junit.After;
 import org.junit.Assert;
-
-import static org.junit.Assert.*;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.solmix.datax.DSCallException;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
-import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.DSResponse.Status;
+import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.validation.ErrorMessage;
 import org.solmix.datax.validation.ErrorReport;
 import org.solmix.runtime.Container;
@@ -55,6 +56,12 @@ public class ValidatorTest
     public void setup() {
         c = ContainerFactory.getDefaultContainer(true);
         Assert.assertNotNull(c);
+    }
+    @After
+    public void tearDown() {
+        if (c != null) {
+            c.close();
+        }
     }
     @Test
     public void testDefaultFail() {

@@ -18,6 +18,8 @@
  */
 package org.solmix.datax.repository;
 
+import java.util.Set;
+
 import org.solmix.datax.model.DataServiceInfo;
 
 
@@ -33,6 +35,8 @@ public interface RepositoryService
     DataServiceInfo getDataService(String name);
     
     DataServiceInfo getDerivedDataService(String name);
+    
+    Set<String> getServiceKeys();
     
     /**
      * 将自动生成的DataServiceInfo放入repository，该方法是线程安全的。

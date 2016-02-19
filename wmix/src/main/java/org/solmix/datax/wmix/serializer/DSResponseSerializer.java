@@ -41,18 +41,20 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 
 public class DSResponseSerializer extends JsonSerializer<ResultObject>
 {
-
+    public static final String RESPONSE="response",RESPONSES="responses",STATUS="status",ISDSRESPONSE="isDSResponse",
+        AUTH="AUTH",AFFECTED_ROWS="affectedRows",INVALIDATE_CACHE="invalidateCache",START_ROW="startRow",
+        END_ROW="endRow",TOTAL_ROWS="totalRows", DATA="data", ERRORS="errors";
     @Override
     public void serialize(ResultObject response, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException {
         if (response.isDSResponse()) {
             jgen.writeStartObject();
-            jgen.writeFieldName("response");
+            jgen.writeFieldName(RESPONSE);
             serialize((DSResponse) response.getReal(), jgen, provider);
             jgen.writeEndObject();
         } else if (response.isDSResponseList()) {
             List<DSResponse> res = (List<DSResponse>) response.getReal();
             jgen.writeStartObject();
-            jgen.writeArrayFieldStart("responses");
+            jgen.writeArrayFieldStart(RESPONSES);
             for (DSResponse re : res) {
                 serialize(re, jgen, provider);
             }
@@ -69,35 +71,35 @@ public class DSResponseSerializer extends JsonSerializer<ResultObject>
 
         jgen.writeStartObject();
         Status status = response.getStatus();
-        jgen.writeNumberField("status", status.value());
-        jgen.writeBooleanField("isDSResponse", true);
+        jgen.writeNumberField(STATUS, status.value());
+        jgen.writeBooleanField(ISDSRESPONSE, true);
         if (status == Status.STATUS_LOGIN_REQUIRED) {
-            jgen.writeObjectField("AUTH", DATAX.LOGIN_REQUIRED_MARKER);
+            jgen.writeObjectField(AUTH, DATAX.LOGIN_REQUIRED_MARKER);
         } else if (status == Status.STATUS_LOGIN_SUCCESS) {
-            jgen.writeObjectField("AUTH", DATAX.LOGIN_SUCCESS_MARKER);
+            jgen.writeObjectField(AUTH, DATAX.LOGIN_SUCCESS_MARKER);
         } else if (status == Status.STATUS_MAX_LOGIN_ATTEMPTS_EXCEEDED) {
-            jgen.writeObjectField("AUTH", DATAX.MAX_LOGIN_ATTEMPTS_EXCEEDED_MARKER);
+            jgen.writeObjectField(AUTH, DATAX.MAX_LOGIN_ATTEMPTS_EXCEEDED_MARKER);
         } else {
             if (response.getAffectedRows() != null) {
-                jgen.writeNumberField("affectedRows", response.getAffectedRows());
+                jgen.writeNumberField(AFFECTED_ROWS, response.getAffectedRows());
             }
             Object invalidate = response.getAttribute(Constants.INVALIDATE_CACHE);
             Pageable page = response.getAttachment(Pageable.class);
             if (invalidate != null) {
-                jgen.writeBooleanField("invalidateCache", Boolean.valueOf(invalidate.toString()));
+                jgen.writeBooleanField(INVALIDATE_CACHE, Boolean.valueOf(invalidate.toString()));
             }
             if (page != null) {
-                jgen.writeNumberField("startRow", page.getStartRow());
-                jgen.writeNumberField("endRow", page.getEndRow());
-                jgen.writeNumberField("totalRows", page.getTotalRow());
+                jgen.writeNumberField(START_ROW, page.getStartRow());
+                jgen.writeNumberField(END_ROW, page.getEndRow());
+                jgen.writeNumberField(TOTAL_ROWS, page.getTotalRow());
             }
             Object o = response.getRawData();
             if (o != null) {
-                jgen.writeObjectField("data", o);
+                jgen.writeObjectField(DATA, o);
             }
             Object[] errors = response.getErrors();
             if (errors != null && errors.length > 0) {
-                jgen.writeObjectField("errors", errors);
+                jgen.writeObjectField(ERRORS, errors);
             }
         }
         jgen.writeEndObject();

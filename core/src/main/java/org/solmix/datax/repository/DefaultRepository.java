@@ -126,6 +126,7 @@ public class DefaultRepository implements RepositoryService
           this.name = name;
         }
 
+        @Override
         @SuppressWarnings("unchecked")
         public V put(String key, V value) {
           if (containsKey(key))
@@ -141,6 +142,7 @@ public class DefaultRepository implements RepositoryService
           return super.put(key, value);
         }
 
+        @Override
         public V get(Object key) {
           V value = super.get(key);
           if (value == null) {
@@ -233,5 +235,11 @@ public class DefaultRepository implements RepositoryService
         } else {
             return drived.replace(id, info);
         }
+    }
+
+
+    @Override
+    public Set<String> getServiceKeys() {
+        return services.keySet();
     }
 }

@@ -56,6 +56,7 @@ import org.solmix.runtime.Container;
 import org.solmix.runtime.bean.ConfiguredBeanProvider;
 import org.solmix.runtime.resource.ResourceInjector;
 import org.solmix.runtime.resource.ResourceManager;
+import org.solmix.runtime.resource.support.ObjectTypeResolver;
 import org.solmix.runtime.resource.support.ResourceManagerImpl;
 
 
@@ -454,6 +455,7 @@ public class InvokerObject
     /**
      * @return
      */
+    @SuppressWarnings("unchecked")
     public Object getServiceInstance() {
             switch (lookup) {
                 case CONTAINER:
@@ -469,26 +471,24 @@ public class InvokerObject
                             serviceInstance=container.getExtensionLoader(clazz).getExtension(serviceName);
                         }
                     }
+                    
                     if(serviceInstance!=null){
-                        ResourceManagerImpl rm = new ResourceManagerImpl(new DSRequestResolver(request),new RequestContextResourceResolver(requestContext));
+                        ResourceManagerImpl rm = new ResourceManagerImpl(new DSRequestResolver(request),new RequestContextResourceResolver(requestContext),new ObjectTypeResolver(invokerInfo));
                         ResourceInjector injector = new ResourceInjector(rm);
+                        injector.injectAware(serviceInstance);
                         injector.inject(serviceInstance);
+                        injector.construct(serviceInstance);
+                    }else{
+                        if(invokerInfo.isAutoCreated()){
+                            Object instance= newServiceinstance();
+                            container.setExtension(instance, (Class<Object>)clazz);
+                            serviceInstance=instance;
+                        }
+                      
                     }
                     break;
                 case NEW:
-                    try {
-                        serviceInstance = Reflection.newInstance(clazz);
-                    } catch (Exception e) {
-                       throw new InvokerException("Instance object",e);
-                    }
-                    if(serviceInstance!=null){
-                        ResourceManager rma= container.getExtension(ResourceManager.class);
-                        ResourceManagerImpl rm = new ResourceManagerImpl(rma.getResourceResolvers());
-                        rm.addResourceResolver( new RequestContextResourceResolver(requestContext));
-                        rm.addResourceResolver( new DSRequestResolver(request));
-                        ResourceInjector injector = new ResourceInjector(rm);
-                        injector.inject(serviceInstance);
-                    }
+                    serviceInstance= newServiceinstance();
                     break;
                 default:
                     break;
@@ -497,6 +497,28 @@ public class InvokerObject
             
         return serviceInstance;
     }
+    
+    private Object newServiceinstance(){
+        Object serviceInstance=null;
+        try {
+            serviceInstance = Reflection.newInstance(clazz);
+        } catch (Exception e) {
+           throw new InvokerException("Instance object",e);
+        }
+        if(serviceInstance!=null){
+            ResourceManager rma= container.getExtension(ResourceManager.class);
+            ResourceManagerImpl rm = new ResourceManagerImpl(rma.getResourceResolvers());
+            rm.addResourceResolver( new RequestContextResourceResolver(requestContext));
+            rm.addResourceResolver( new DSRequestResolver(request));
+            rm.addResourceResolver(new ObjectTypeResolver(invokerInfo));
+            ResourceInjector injector = new ResourceInjector(rm);
+            injector.injectAware(serviceInstance);
+            injector.inject(serviceInstance);
+            injector.construct(serviceInstance);
+        }
+        return serviceInstance;
+    }
+    
     private static String getFormattedParamTypes(Object params[]) {
         String result = "";
         if (params == null || params.length == 0)

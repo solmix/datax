@@ -34,17 +34,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.solmix.commons.util.DataUtils;
 import org.solmix.commons.util.Reflection;
-import org.solmix.commons.util.StringUtils;
 import org.solmix.datax.DataService;
 import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.model.FieldType;
-import org.solmix.datax.model.InvokerInfo;
 import org.solmix.datax.model.LookupType;
 import org.solmix.datax.model.ValidatorInfo;
 import org.solmix.datax.script.VelocityExpression;
 import org.solmix.datax.support.DSRequestResolver;
-import org.solmix.datax.support.InvokerException;
 import org.solmix.datax.support.RequestContextResourceResolver;
 import org.solmix.runtime.Container;
 import org.solmix.runtime.bean.ConfiguredBeanProvider;
@@ -194,7 +191,9 @@ public class DefaultValidatorService implements ValidatorService
                   rm.addResourceResolver( new RequestContextResourceResolver(context.getRequestContext()));
                   rm.addResourceResolver( new DSRequestResolver(context.getDSRequest()));
                   ResourceInjector injector = new ResourceInjector(rm);
+                  injector.injectAware(validator);
                   injector.inject(validator);
+                  injector.construct(validator);
               }
              return validator.validate(validatorInfo, value, fieldName, record, context);
           }

@@ -46,6 +46,8 @@ public class InvokerInfo implements XMLSource
     
     protected LookupType lookup;
     
+    protected Boolean autoCreated;
+    
     protected Map<Integer,MethodArgInfo> methodArgs;
     
     public InvokerInfo(){
@@ -82,6 +84,10 @@ public class InvokerInfo implements XMLSource
     public String getMethodName() {
         return methodName;
     }
+    
+    public boolean isAutoCreated(){
+        return autoCreated!=null&&autoCreated;
+    }
 
     public static class Parser extends BaseXmlNodeParser<InvokerInfo>
     {
@@ -92,6 +98,7 @@ public class InvokerInfo implements XMLSource
             String method = node.getStringAttribute("method");
             InvokerInfo ti = new InvokerInfo(node);
             String strlookup= node.getStringAttribute("lookup");
+            Boolean autoCreated=node.getBooleanAttribute("autoCreated");
             LookupType lookup;
             if(strlookup==null){
                 lookup=LookupType.NEW;
@@ -105,6 +112,7 @@ public class InvokerInfo implements XMLSource
             ti.methodArgs=args;
             ti.lookup=lookup;
             ti.clazz = clzz;
+            ti.autoCreated=autoCreated;
             return ti;
 
         }

@@ -312,6 +312,7 @@
 		<attribute name="name" type="string"></attribute>
 		<attribute name="method" type="string"></attribute>
 		<attribute name="lookup" type="ds:lookupType"></attribute>
+		<attribute name="autoCreated" type="boolean"></attribute>
 		<anyAttribute processContents="lax" namespace="##any"></anyAttribute>
 	</complexType>
 

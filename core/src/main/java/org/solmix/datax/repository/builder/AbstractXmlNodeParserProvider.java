@@ -82,6 +82,7 @@ public abstract class AbstractXmlNodeParserProvider implements XmlNodeParserProv
            ResourceManager resourceManager = container.getExtension(ResourceManager.class);
            if (resourceManager != null) {
                ResourceInjector injector = new ResourceInjector(resourceManager);
+               injector.injectAware(p);
                injector.inject(p);
                injector.construct(p);
            }

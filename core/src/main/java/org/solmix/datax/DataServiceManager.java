@@ -57,5 +57,7 @@ public interface DataServiceManager
      DSRequest createDSRequest();
      
      DSResponse createDsResponse(DSRequest request);
+     
+     DataxSession openSession();
 
 }

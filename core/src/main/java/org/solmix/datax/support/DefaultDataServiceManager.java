@@ -41,6 +41,7 @@ import org.solmix.datax.DataServiceFactory;
 import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.DataServiceNoFoundException;
 import org.solmix.datax.DataxRuntimeException;
+import org.solmix.datax.DataxSession;
 import org.solmix.datax.application.ApplicationManager;
 import org.solmix.datax.call.DSCallFactory;
 import org.solmix.datax.call.support.DefaultDSCallFactory;
@@ -507,6 +508,10 @@ public class DefaultDataServiceManager implements DataServiceManager,ContainerAw
     
     public void setApplicationManager(ApplicationManager applicationManager) {
         this.applicationManager = applicationManager;
+    }
+    @Override
+    public DataxSession openSession() {
+        return new DataxSessionImpl(this);
     }
 
     

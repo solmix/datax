@@ -51,6 +51,7 @@
 		<solmix.osgi.import.pkg>
 		javax.annotation,
 		org.springframework.jdbc*;resolution:=optional,
+		com.mchange.v2.c3p0*;resolution:=optional,
 		*
 		</solmix.osgi.import.pkg>
 		<solmix.osgi.dynamic.import>*</solmix.osgi.dynamic.import>

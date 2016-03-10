@@ -63,6 +63,11 @@
 			<artifactId>solmix-service-export</artifactId>
 			<version>0.6.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
   </dependencies>
   <name>Solmix :: Datax :: Wmix</name>
 	<build>

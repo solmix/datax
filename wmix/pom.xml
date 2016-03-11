@@ -10,7 +10,6 @@
   	<dependency>
   		<groupId>org.solmix.wmix</groupId>
   		<artifactId>wmix-core</artifactId>
-  		<version>0.6.1-SNAPSHOT</version>
   	</dependency>
   	<dependency>
 			<groupId>org.solmix.wmix</groupId>
@@ -51,17 +50,14 @@
 		<dependency>
 			<groupId>org.solmix.datax</groupId>
 			<artifactId>datax-core</artifactId>
-			<version>0.6.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.solmix.services</groupId>
 			<artifactId>solmix-service-jackson</artifactId>
-			<version>0.6.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.solmix.services</groupId>
 			<artifactId>solmix-service-export</artifactId>
-			<version>0.6.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>

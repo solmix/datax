@@ -50,6 +50,8 @@ public class OperationInfo
     
     protected Boolean autoJoinTransactions;
     
+    protected Boolean controller;
+    
     protected Boolean validate;
     
     protected Boolean oneway;
@@ -75,11 +77,19 @@ public class OperationInfo
     protected String[] requires;
     
     protected String[] requireRoles;
+
+    private String description;
+    
     
     OperationInfo()
     {
     }
 
+    /**描述信息*/
+    public String getDescription() {
+        return description;
+    }
+    
     /**
      * 在同一个DataService中id不能重复。
      * 
@@ -113,6 +123,16 @@ public class OperationInfo
     public String[] getRequires() {
         return requires;
     }
+    
+    /**
+     * 标记为控制层,默认为真
+     * @return
+     */
+    public Boolean isController(){
+        return controller;
+    }
+    
+    
     
     public String[] getRequireRoles() {
         return requireRoles;
@@ -199,20 +219,36 @@ public class OperationInfo
         return redirect;
     }
 
-    private static void copy(OperationInfo source,OperationInfo target){
+    private static void copy(OperationInfo target,OperationInfo source){
+        if(target.type==null)
         target.type=source.type;
+        if(target.autoJoinTransactions==null)
         target.autoJoinTransactions=source.autoJoinTransactions;
+        if(target.validate==null)
         target.validate=source.validate;
+        if(target.usedValidatedValues==null)
         target.usedValidatedValues=source.usedValidatedValues;
+        if(target.params==null)
         target.params=source.params;
+        if(target.invoker==null)
         target.invoker=source.invoker;
+        if(target.transformers==null)
         target.transformers=source.transformers;
         target.node=source.node;
+        if(target.oneway==null)
         target.oneway=source.oneway;
+        if(target.redirect==null)
         target.redirect=source.redirect;
+        if(target.forwards==null)
         target.forwards=source.forwards;
+        if(target.requires==null)
         target.requires=source.requires;
+        if(target.requireRoles==null)
         target.requireRoles=source.requireRoles;
+        if(target.controller==null)
+        target.controller=source.controller;
+        if(target.description==null)
+        target.description=source.description;
     }
     public Map<String, ParamInfo> getParams() {
         return params;
@@ -222,11 +258,12 @@ public class OperationInfo
         private final String ref;
         private XmlParserContext context;
 //        private String serviceid;
-        public OperationInfoResolver(String id,String serviceid,OperationType type,String refid,XmlParserContext context){
+        public OperationInfoResolver(String id,String serviceid,OperationType type,String refid,String localId,XmlParserContext context){
             this.ref=refid;
             this.context=context;
             this.id=id;
             this.type=type;
+            this.localId=localId;
         }
         
         @Override
@@ -236,7 +273,7 @@ public class OperationInfo
                 throw new BuilderException("operation:"+id+" type is "+type+" but ref:"+vi.id+" type is "+vi.type);
             }
             refid=vi.getId();
-            copy(vi, this);
+            copy(this,vi);
             context.getRepositoryService().addOperationInfo(this);
         }
         
@@ -279,35 +316,23 @@ public class OperationInfo
             }
             OperationType type = OperationType.fromValue(strType);
             
-            OperationInfo oi= new OperationInfo(id,localId,type);
+            OperationInfo oi= null;
+            OperationInfo refoi = null;
             if(refid!=null){
-                OperationInfo refoi = null;
                 try {
                     refid=parseRefid(refid, context);
                     refoi = context.getOperationInfo(refid);
+                    oi= new OperationInfo(id,localId,type);
                 } catch (ReferenceNoFoundException e) {
-                    OperationInfoResolver v = new OperationInfoResolver(id,context.getCurrentService(),type,refid, context);
+                    OperationInfoResolver v = new OperationInfoResolver(id,context.getCurrentService(),type,refid,localId, context);
                     context.getRepositoryService().addReferenceResolver(v);
-                    return v;
+                    oi=v;
+                }catch (Exception e) {
+                    throw new BuilderException("Can't found operation ref:"+context.applyCurrentService(refid, true),e);
                 }
-                if(refoi!=null){
-                    //类型不一致
-                    if(refoi.type!=oi.type){
-                        throw new BuilderException("operation:"+oi.id+" type is "+oi.type+" but ref:"+refoi.id+" type is "+refoi.type);
-                    }
-                    oi.refid=refoi.getId();
-                    copy(refoi, oi);
-                    //batch中配置的不能被引用，不要加入引用列表。
-                    if(!batch){
-                        context.getRepositoryService().addOperationInfo(oi);
-                    }
-                    return oi;
-                }else{
-                    throw new BuilderException("Can't found operation ref:"+context.applyCurrentService(refid, true));
-                }
+            }else{
+                oi= new OperationInfo(id,localId,type);
             }
-            
-            
             Boolean autoJoinTransactions= node.getBooleanAttribute("autoJoinTransactions");
             Boolean validate= node.getBooleanAttribute("validate");
             Boolean oneway= node.getBooleanAttribute("oneway");
@@ -320,6 +345,8 @@ public class OperationInfo
             InvokerInfo invoker = parseInvoker(node.evalNode("invoker"),context);
             String[] requires = paseStringArray(node, "requires",DATAX.AUTH_SEPARATOR);
             String[] requireRoles=paseStringArray(node,"requireRoles",DATAX.AUTH_SEPARATOR);
+            Boolean controller= node.getBooleanAttribute("controller");
+            String description = node.evalString("description");
             oi.autoJoinTransactions=autoJoinTransactions;
             oi.node=node;
             oi.params=params;
@@ -333,8 +360,19 @@ public class OperationInfo
             oi.usedValidatedValues=usedValidatedValues;
             oi.requireRoles=requireRoles;
             oi.requires=requires;
+            oi.controller=controller;
+            oi.description=description;
+            //batch中配置的不能被引用，不要加入引用列表。
             if(!batch){
                 context.getRepositoryService().addOperationInfo(oi);
+            }
+            if (refid != null && refoi != null) {
+                // 类型不一致
+                if (refoi.type != oi.type) {
+                    throw new BuilderException("operation:" + oi.id + " type is " + oi.type + " but ref:" + refoi.id + " type is " + refoi.type);
+                }
+                oi.refid = refoi.getId();
+                copy(oi, refoi);
             }
             return oi;
         }

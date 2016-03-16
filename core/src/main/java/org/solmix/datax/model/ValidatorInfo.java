@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.solmix.commons.annotation.Immutable;
 import org.solmix.commons.xml.XMLNode;
+import org.solmix.datax.repository.builder.BuilderException;
 import org.solmix.datax.repository.builder.ReferenceNoFoundException;
 import org.solmix.datax.repository.builder.ReferenceResolver;
 import org.solmix.datax.repository.builder.XmlParserContext;
@@ -116,24 +117,39 @@ public class ValidatorInfo implements XMLSource
         this(string);
         this.properties=properties;
     }
-    private static void copy(ValidatorInfo source,ValidatorInfo target){
+    private static void copy(ValidatorInfo target,ValidatorInfo source){
         target.id=source.id;
+        if(target.type==null)
         target.type=source.type;
+        if(target.name==null)
         target.name=source.name;
+        if(target.errorMessage==null)
         target.errorMessage=source.errorMessage;
+        if(target.serverOnly==null)
         target.serverOnly=source.serverOnly;
+        if(target.clientOnly==null)
         target.clientOnly=source.clientOnly;
+        if(target.validateOnChange==null)
         target.validateOnChange=source.validateOnChange;
+        if(target.max==null)
         target.max=source.max;
+        if(target.min==null)
         target.min=source.min;
+        if(target.exclusive==null)
         target.exclusive=source.exclusive;
+        if(target.expression==null)
         target.expression=source.expression;
+        if(target.substring==null)
         target.substring=source.substring;
+        if(target.operator==null)
         target.operator=source.operator;
+        if(target.count==null)
         target.count=source.count;
+        if(target.clazz==null)
         target.clazz=source.clazz;
-        target.node=source.node;
+        if(target.lookup==null)
         target.lookup=source.lookup;
+        if(target.properties==null)
         target.properties=source.properties;
         target.node=source.node;
     }
@@ -208,7 +224,7 @@ public class ValidatorInfo implements XMLSource
         @Override
         public void resolve() {
           ValidatorInfo vi= context.getValidatorInfo(refid);
-          copy(vi, this);
+          copy(this,vi);
         }
         @Override
         public String toString(){
@@ -238,19 +254,6 @@ public class ValidatorInfo implements XMLSource
         @Override
         public ValidatorInfo parse(XMLNode node, XmlParserContext context) {
             String refid = node.getStringAttribute("refid");
-            if (refid != null) {
-                refid=parseRefid(refid,context);
-                ValidatorInfo vi = null;
-                try {
-                    vi = context.getValidatorInfo(refid);
-                } catch (ReferenceNoFoundException e) {
-                    ValidatorInfoResolver v = new ValidatorInfoResolver(refid, context);
-                    context.getRepositoryService().addReferenceResolver(v);
-                    return v;
-                }
-
-                return new ValidatorInfo(vi);
-            }
             String id = node.getStringAttribute("id");
             if ( id != null) {
                 if(this.applyCurrentService){
@@ -261,6 +264,23 @@ public class ValidatorInfo implements XMLSource
                 
             }
             ValidatorInfo vi = new ValidatorInfo(node, id);
+            ValidatorInfo refvi = null;
+            if (refid != null) {
+                refid=parseRefid(refid,context);
+                try {
+                    refvi = context.getValidatorInfo(refid);
+                    vi = new ValidatorInfo(node, id);
+                } catch (ReferenceNoFoundException e) {
+                    ValidatorInfoResolver v = new ValidatorInfoResolver(refid, context);
+                    context.getRepositoryService().addReferenceResolver(v);
+                    vi=v;
+                }catch (Exception e) {
+                    throw new BuilderException("Can't found validator ref:"+context.applyCurrentService(refid, true),e);
+                }
+            }else{
+                vi = new ValidatorInfo(node, id);
+            }
+           
             Class<? extends Validator> clzz = super.paseClass(node, Validator.class);
             Long count = node.getLongAttribute("count");
             String errorMessage = node.getStringAttribute("errorMessage");
@@ -305,6 +325,9 @@ public class ValidatorInfo implements XMLSource
             vi.type = type;
             vi.lookup=lookup;
             vi.validateOnChange=validateOnChange;
+            if(refid!=null&&refvi!=null){
+                copy(vi, refvi);
+            }
             return vi;
         }
         

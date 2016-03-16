@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.solmix.commons.annotation.Immutable;
 import org.solmix.commons.xml.XMLNode;
+import org.solmix.datax.repository.builder.BuilderException;
 import org.solmix.datax.repository.builder.ReferenceNoFoundException;
 import org.solmix.datax.repository.builder.ReferenceResolver;
 import org.solmix.datax.repository.builder.XmlParserContext;
@@ -58,19 +59,19 @@ public class TransformerInfo implements XMLSource
         this.id = id;
     }
 
-    public TransformerInfo(TransformerInfo vi)
-    {
-        copy(vi,this);
-    }
+  
     @Override
     public XMLNode getXMLNode() {
         return node;
     }
-    private static void copy(TransformerInfo source,TransformerInfo target){
+    private static void copy(TransformerInfo target,TransformerInfo source){
         target.id=source.id;
+        if(target.name==null)
         target.name=source.name;
         target.node=source.node;
+        if(target.lookup==null)
         target.lookup=source.lookup;
+        if(target.clazz==null)
         target.clazz=source.clazz;
     }
     
@@ -102,15 +103,16 @@ public class TransformerInfo implements XMLSource
 
         private final String refid;
         private XmlParserContext context;
-        public TransformerInfoResolver(String refid,XmlParserContext context){
+        public TransformerInfoResolver(String id,String refid,XmlParserContext context){
             this.refid=refid;
+            this.id=id;
             this.context=context;
         }
         
         @Override
         public void resolve() {
             TransformerInfo vi= context.getTransformerInfo(refid);
-          copy(vi, this);
+          copy(this, vi);
         }
         @Override
         public String toString(){
@@ -143,22 +145,6 @@ public class TransformerInfo implements XMLSource
 
             String containerRef = node.getStringAttribute("container-ref");
             String refid = node.getStringAttribute("refid");
-            if (refid != null && containerRef != null) {
-                LOG.warn("Validator2 configure both container-ref:{} and refid:{},ignore container-ref", containerRef, refid);
-            }
-            if (refid != null) {
-                TransformerInfo vi = null;
-                refid=parseRefid(refid, context);
-                try {
-                    vi = context.getTransformerInfo(refid);
-                } catch (ReferenceNoFoundException e) {
-                    TransformerInfoResolver v = new TransformerInfoResolver(refid, context);
-                    context.getRepositoryService().addReferenceResolver(v);
-                    return v;
-                }
-
-                return new TransformerInfo(vi);
-            }
             String id = node.getStringAttribute("id");
             if ( id != null  ) {
                 if(this.applyCurrentService){
@@ -167,7 +153,28 @@ public class TransformerInfo implements XMLSource
                     id=context.applyCurrentNamespace(id, false);
                 }
             }
-            TransformerInfo ti = new TransformerInfo(node, id);
+            if (refid != null && containerRef != null) {
+                LOG.warn("Validator2 configure both container-ref:{} and refid:{},ignore container-ref", containerRef, refid);
+            }
+            TransformerInfo ti = null;
+            TransformerInfo refti = null;
+            if (refid != null) {
+                refid=parseRefid(refid, context);
+                try {
+                    refti = context.getTransformerInfo(refid);
+                    ti = new TransformerInfo(node, id);
+                } catch (ReferenceNoFoundException e) {
+                    TransformerInfoResolver v = new TransformerInfoResolver(id,refid, context);
+                    context.getRepositoryService().addReferenceResolver(v);
+                    ti=v;
+                }catch (Exception e) {
+                    throw new BuilderException("Can't found transfomer ref:"+context.applyCurrentService(refid, true),e);
+                }
+            }else{
+                ti = new TransformerInfo(node, id);
+            }
+           
+          
             Class<? extends Transformer> clzz = super.paseClass(node, Transformer.class);
            
 
@@ -186,6 +193,9 @@ public class TransformerInfo implements XMLSource
             ti.name = name;
             ti.clazz = clzz;
             ti.lookup=lookup;
+            if(refid!=null&&refti!=null){
+                copy(ti, refti);
+            }
             return ti;
 
         }

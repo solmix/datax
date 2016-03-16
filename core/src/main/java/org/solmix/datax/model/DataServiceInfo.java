@@ -75,6 +75,9 @@ public class DataServiceInfo
     protected String[] requires;
     
     protected String[] requireRoles;
+    
+   
+    protected Boolean controller;
 
     public DataServiceInfo(String id,String serverType)
     {
@@ -90,7 +93,15 @@ public class DataServiceInfo
     public String getId() {
         return id;
     }
-
+    
+    /**
+     * 标记为控制层,默认为真
+     * @return
+     */
+    public boolean isController(){
+        return controller==null ||controller;
+    }
+    
     public String getDescription() {
         return description;
     }
@@ -210,6 +221,7 @@ public class DataServiceInfo
                 DataServiceInfo dsi = new DataServiceInfo(id,context.getServerType());
                 String[] requires = paseStringArray(node, "requires",DATAX.AUTH_SEPARATOR);
                 String[] requireRoles=paseStringArray(node,"requireRoles",DATAX.AUTH_SEPARATOR);
+                Boolean controller= node.getBooleanAttribute("controller");
                 dsi.fields = fields;
                 dsi.node=node;
                 dsi.fieldList=fieldList;
@@ -221,6 +233,7 @@ public class DataServiceInfo
                 dsi.requireRoles=requireRoles;
                 dsi.lookup = lookup;
                 dsi.scope = scope;
+                dsi.controller=controller;
                 return dsi;
             } finally {
                 context.setCurrentService(orig);

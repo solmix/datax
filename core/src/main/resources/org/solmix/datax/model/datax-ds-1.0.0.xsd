@@ -62,10 +62,13 @@
 				<element name="fields" minOccurs="0" maxOccurs="1">
 					<complexType>
 						<sequence>
-							<choice minOccurs="0" maxOccurs="unbounded">
-								<element name="include" type="ds:includeType">
+							<choice minOccurs="0"
+								maxOccurs="unbounded">
+								<element name="include"
+									type="ds:includeType">
 								</element>
-								<element name="field" type="ds:fieldType">
+								<element name="field"
+									type="ds:fieldType">
 								</element>
 							</choice>
 						</sequence>
@@ -81,8 +84,9 @@
 		<attribute name="serviceName" type="string"></attribute>
 		<attribute name="scope" type="string"></attribute>
 		<attribute name="lookup" type="ds:lookupType"></attribute>
-        <attributeGroup ref="ds:auths"></attributeGroup>
-        <anyAttribute namespace="##any" processContents="lax"></anyAttribute>
+		<attribute name="controller" type="boolean"></attribute>
+		<attributeGroup ref="ds:auths"></attributeGroup>
+		<anyAttribute namespace="##any" processContents="lax"></anyAttribute>
 	</complexType>
 	<complexType name="validatorType">
 		<complexContent>
@@ -232,6 +236,7 @@
 				</element>
 				<element name="forward" type="ds:forwardType"></element>
 				<element name="extensions" type="ds:extensionsType"></element>
+				<element name="description" type="string" minOccurs="0" maxOccurs="1"></element>
 				<any processContents="lax" minOccurs="0"
 					maxOccurs="unbounded" namespace="##other">
 				</any>
@@ -252,11 +257,14 @@
 							<element name="update"
 								type="ds:operationType">
 							</element>
-							<element name="forward" type="ds:forwardType"></element>
+							<element name="forward"
+								type="ds:forwardType">
+							</element>
 							<any namespace="##other"></any>
 						</choice>
 					</sequence>
-					<attribute name="transactionPolicy" type="ds:transactionPolicy" />
+					<attribute name="transactionPolicy"
+						type="ds:transactionPolicy" />
 					<attribute name="merged" type="ds:mergedType"></attribute>
 				</complexType>
 			</element>
@@ -268,8 +276,9 @@
 		<attribute name="usedValidatedValues" type="boolean"></attribute>
 		<attribute name="oneway" type="boolean"></attribute>
 		<attribute name="redirect" type="string"></attribute>
-        <attributeGroup ref="ds:auths"></attributeGroup>
-        <anyAttribute namespace="##any" processContents="lax"></anyAttribute>
+		<attribute name="controller" type="boolean"></attribute>
+		<attributeGroup ref="ds:auths"></attributeGroup>
+		<anyAttribute namespace="##any" processContents="lax"></anyAttribute>
 	</complexType>
 
 	<complexType name="operationsType">

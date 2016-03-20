@@ -126,6 +126,7 @@ public final class DATAX
     
     /**template 中的数据*/
     public static final String VM_DATA = "data";
+    
     /**
      * Velocity 表达式生成的临时结果标示
      */

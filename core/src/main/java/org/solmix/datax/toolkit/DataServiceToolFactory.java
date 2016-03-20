@@ -23,7 +23,7 @@ import javax.annotation.Resource;
 import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.DataxSession;
 import org.solmix.datax.support.DataxSessionImpl;
-import org.solmx.service.toolkit.ToolFactory;
+import org.solmix.service.toolkit.ToolFactory;
 
 
 /**
@@ -45,7 +45,7 @@ public class DataServiceToolFactory implements ToolFactory
     /**
      * {@inheritDoc}
      * 
-     * @see org.solmx.service.toolkit.ToolFactory#createTool()
+     * @see org.solmix.service.toolkit.ToolFactory#createTool()
      */
     @Override
     public Object createTool() throws Exception {

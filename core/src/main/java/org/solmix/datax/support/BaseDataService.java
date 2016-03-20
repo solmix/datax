@@ -86,7 +86,7 @@ import org.solmix.runtime.io.CachedOutputStream;
 import org.solmix.runtime.resource.ResourceInjector;
 import org.solmix.runtime.resource.ResourceManager;
 import org.solmix.runtime.resource.support.ResourceManagerImpl;
-import org.solmx.service.template.TemplateService;
+import org.solmix.service.template.TemplateService;
 import org.w3c.dom.Element;
 
 

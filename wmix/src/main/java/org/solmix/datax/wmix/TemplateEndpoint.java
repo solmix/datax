@@ -18,7 +18,8 @@
  */
 package org.solmix.datax.wmix;
 
-import org.solmix.datax.wmix.interceptor.TemplateInterceptor;
+import org.solmix.datax.wmix.interceptor.TemplateInInterceptor;
+import org.solmix.datax.wmix.interceptor.TemplateOutInterceptor;
 
 
 /**
@@ -34,6 +35,11 @@ public class TemplateEndpoint extends DataxEndpoint
     
     @Override
     protected void prepareOutInterceptors(){
-        getOutInterceptors().add(new TemplateInterceptor());
+        getOutInterceptors().add(new TemplateOutInterceptor());
+    }
+    
+    @Override
+    protected void prepareInInterceptors(){
+        getInInterceptors().add(new TemplateInInterceptor(container));
     }
 }

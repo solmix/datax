@@ -35,8 +35,8 @@ import org.solmix.exchange.interceptor.Fault;
 import org.solmix.exchange.interceptor.phase.Phase;
 import org.solmix.exchange.interceptor.phase.PhaseInterceptorSupport;
 import org.solmix.runtime.io.CachedOutputStream;
+import org.solmix.service.template.TemplateException;
 import org.solmix.wmix.exchange.WmixMessage;
-import org.solmx.service.template.TemplateException;
 
 
 /**
@@ -45,14 +45,18 @@ import org.solmx.service.template.TemplateException;
  * @version $Id$  2015年9月9日
  */
 
-public class TemplateInterceptor extends PhaseInterceptorSupport<Message>
+public class TemplateOutInterceptor extends PhaseInterceptorSupport<Message>
 {
 
-    public TemplateInterceptor()
+    public TemplateOutInterceptor()
     {
-        super(Phase.UNMARSHAL);
+        super(Phase.MARSHAL);
     }
 
+    public TemplateOutInterceptor(String phase)
+    {
+        super(phase);
+    }
     @Override
     public void handleMessage(Message message) throws Fault {
         final Exchange exchange = message.getExchange();

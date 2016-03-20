@@ -68,4 +68,13 @@ public enum DSProtocol implements ValueEnum
     {
        return this.value;
     }
+    
+    public static DSProtocol fromValue(String v) {
+        for (DSProtocol c : DSProtocol.values()) {
+            if (c.value.equals(v)) {
+                return c;
+            }
+        }
+        throw new IllegalArgumentException(v);
+    }
 }

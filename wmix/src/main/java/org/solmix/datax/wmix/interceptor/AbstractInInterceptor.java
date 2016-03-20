@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.solmix.commons.collections.DataTypeMap;
 import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.RequestContext;
+import org.solmix.datax.wmix.Constants;
 import org.solmix.datax.wmix.context.ExchangeRequestContext;
 import org.solmix.datax.wmix.type.DSProtocol;
 import org.solmix.exchange.Endpoint;
@@ -52,34 +53,25 @@ import org.solmix.wmix.parser.ParameterParser;
 
 public abstract class AbstractInInterceptor extends PhaseInterceptorSupport<WmixMessage>
 {
-    public static final String PAYLOAD_NAME = "_payload_";
     
-    public static final String SECOND_PAYLOAD_NAME = "_transaction";
-
-    public static final String DATAFORMAT = "_dataFormat";
-
-    public static final String PROTOCOL = "_protocol";
-
-
-    public static final String POST = "post";
-    public static final String GET = "get";
-    
-    public static final String DATASTYLE = "_dataStyle";
-    public static final String XML_PREFIX = "<";
-
-    public static final String JSON_PREFIX = "{";
     public AbstractInInterceptor()
     {
         super(Phase.UNMARSHAL);
+    }
+    
+    
+    public AbstractInInterceptor(String phase)
+    {
+        super(phase);
     }
 
     @Override
     public void handleMessage(WmixMessage message) throws Fault {
         HttpServletRequest request=(HttpServletRequest)  message.get(WmixMessage.HTTP_REQUEST);
-        Object protocol =request.getParameter(PROTOCOL);
+        Object protocol =request.getParameter(Constants.PROTOCOL);
         DSProtocol pro=null;
         if(protocol!=null){
-            pro=DSProtocol.valueOf(protocol.toString());
+            pro=DSProtocol.fromValue(protocol.toString());
         }
         if (pro == null||DSProtocol.POSTXML==pro||DSProtocol.POSTMESSAGE==pro){
             handlePostMessage(message);
@@ -109,9 +101,9 @@ public abstract class AbstractInInterceptor extends PhaseInterceptorSupport<Wmix
         //在这里通过request不能取出参数，在这之前已经调用了getInputStream().
         ParameterParser parameterParser = exchange.get(ParameterParser.class);
         if (parameterParser != null) {
-            payload = parameterParser.getString(PAYLOAD_NAME);
+            payload = parameterParser.getString(Constants.PAYLOAD_NAME);
             if (payload == null) {
-                payload = parameterParser.getString(SECOND_PAYLOAD_NAME);
+                payload = parameterParser.getString(Constants.SECOND_PAYLOAD_NAME);
             }
         }
         Map<String, Object> inputData;
@@ -119,9 +111,9 @@ public abstract class AbstractInInterceptor extends PhaseInterceptorSupport<Wmix
         if (payload != null) {
             String content = (String) message.get(Message.CONTENT_TYPE);
             if (content == null) {
-                if (payload.startsWith(JSON_PREFIX)) {
+                if (payload.startsWith(Constants.JSON_PREFIX)) {
                     content = "json";
-                } else if (payload.startsWith(XML_PREFIX)) {
+                } else if (payload.startsWith(Constants.XML_PREFIX)) {
                     content = "xml";
                 } else {
                     throw new IllegalArgumentException("Not support content-type :" + payload);

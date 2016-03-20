@@ -38,11 +38,13 @@ import org.solmix.datax.attachment.PagedBean;
 import org.solmix.datax.call.DSCallFactory;
 import org.solmix.datax.call.support.DefaultDSCallFactory;
 import org.solmix.datax.export.ExportConfig;
+import org.solmix.datax.wmix.Constants;
 import org.solmix.exchange.Exchange;
 import org.solmix.wmix.exchange.WmixMessage;
 import org.solmix.wmix.parser.ParameterParser;
 
 /**
+ * For SmartClient JS Binding interceptor.
  * 
  * @author solmix.f@gmail.com
  * @version $Id$ 2015年8月16日
@@ -64,7 +66,7 @@ public class SgtInInterceptor extends AbstractInInterceptor
                 prepareRequest(request, new DataTypeMap((Map) operations.get(0)), true);
                 request.setRequestContext(requestContext);
                 for(String key:parameterParser.keySet()){
-                    if(!PAYLOAD_NAME.equals(key)&&!SECOND_PAYLOAD_NAME.equals(key)){
+                    if(!Constants.PAYLOAD_NAME.equals(key)&&!Constants.SECOND_PAYLOAD_NAME.equals(key)){
                         request.setAttribute(key, parameterParser.get(key));
                     }
                 }
@@ -80,9 +82,7 @@ public class SgtInInterceptor extends AbstractInInterceptor
                 }
                 message.setContent(List.class, ml);
             }
-
         }
-
     }
 
     private void prepareRequest(DSRequest request, DataTypeMap operation, boolean joinTransaction) {

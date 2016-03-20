@@ -27,8 +27,8 @@ import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.RequestContext;
 import org.solmix.runtime.Container;
-import org.solmx.service.template.support.MappedTemplateContext;
-import org.solmx.service.toolkit.ToolkitService;
+import org.solmix.service.template.support.MappedTemplateContext;
+import org.solmix.service.toolkit.ToolkitService;
 
 /**
  * 
@@ -52,7 +52,6 @@ public class DSCallTemplateContext extends MappedTemplateContext
 
     protected void initResponse(DSRequest request, DSResponse response) {
         put(DATAX.VM_DSREQUEST, request);
-      
         if (request.getDSCall() != null) {
             put(DATAX.VM_DSC, request.getDSCall());
         }

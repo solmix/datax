@@ -22,7 +22,7 @@ package org.solmix.datax.transformer;
 import javax.annotation.Resource;
 
 import org.solmix.datax.model.TransformerInfo;
-import org.solmx.service.template.TemplateService;
+import org.solmix.service.template.TemplateService;
 
 /**
  * 

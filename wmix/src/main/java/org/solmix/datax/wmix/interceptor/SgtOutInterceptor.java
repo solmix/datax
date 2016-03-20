@@ -20,6 +20,7 @@ package org.solmix.datax.wmix.interceptor;
 
 
 /**
+ * For SmartClient JS Binding interceptor.
  * 
  * @author solmix.f@gmail.com
  * @version $Id$  2015年8月19日

@@ -101,7 +101,13 @@ public class BuiltInApplication implements Application
                 result.setStatus(Status.STATUS_AUTHORIZATION_FAILURE);
             }else{
                 DataService ds =request.getDataService();
-                result=ds.execute(request);
+                if(security!=null){
+                    result=security.excute(ds,request);
+                }else{
+                    //没有security 按照默认执行
+                    result = ds.execute(request);
+                }
+               
             }
             if (result != null && result.getStatus() == Status.UNSET) {
                 result.setStatus(Status.STATUS_SUCCESS);

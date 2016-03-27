@@ -64,6 +64,11 @@
 			<artifactId>servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.solmix.services</groupId>
+			<artifactId>solmix-service-freemarker</artifactId>
+			<scope>provided</scope>
+		</dependency>
   </dependencies>
   <name>Solmix :: Datax :: Wmix</name>
 	<build>
@@ -92,6 +97,7 @@
 		javax.annotation,
 		org.springframework.jdbc*;resolution:=optional,
 		org.solmix.service.export*;resolution:=optional,
+		freemarker.template*;resolution:=optional,
 		*
 		</solmix.osgi.import.pkg>
 		<solmix.osgi.dynamic.import></solmix.osgi.dynamic.import>

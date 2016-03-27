@@ -90,8 +90,8 @@ public abstract class AbstractWmixTests
      */
     protected static void prepareServlet(String app) throws Exception {
         // Servlet container
-        File webXml = new File(TestUtils.srcdir, "WEB-INF/web.xml");
-        ServletRunner servletRunner = new PatchedServletRunner(webXml, "");
+        File xml = new File(TestUtils.srcdir, "WEB-INF/web.xml");
+        ServletRunner servletRunner = new PatchedServletRunner(xml, "");
 
         // Servlet client
         client = servletRunner.newClient();
@@ -101,7 +101,7 @@ public abstract class AbstractWmixTests
         // Filter
         WmixFilter filter = (WmixFilter) client.newInvocation("http://127.0.0.1/" + app).getFilter();
 
-        // Webx Controller
+        //  Controller
         component = filter.getComponents().getComponent(app);
 
         controller = component.getController();

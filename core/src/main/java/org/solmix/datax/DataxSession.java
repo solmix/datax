@@ -19,6 +19,7 @@
 package org.solmix.datax;
 
 import java.util.List;
+import java.util.Map;
 
 import org.solmix.commons.annotation.NotThreadSafe;
 import org.solmix.datax.attachment.Pageable;
@@ -37,6 +38,10 @@ public interface DataxSession
 {
     
     <T> T fetchOne(String operationId,Class<T> resultType);
+    
+    Map<String,Object> fetchOne(String operationId);
+    
+    Map<String,Object> fetchOne(String operationId,Object parameter);
     
     <T> T fetchOne(String operationId, Object parameter,Class<T> resultType);
     
@@ -99,6 +104,12 @@ public interface DataxSession
     DataServiceManager getDataServiceManager();
     
     <T> T getService(Class<T> serviceType);
+
+    DSRequest createDSRequest(String operationId, Object parameters);
+
+    DSRequest createDSRequest(String operationId);
+
+    DSRequest createDSRequest(String operationId, Object parameters, Pageable page);
 
 
   

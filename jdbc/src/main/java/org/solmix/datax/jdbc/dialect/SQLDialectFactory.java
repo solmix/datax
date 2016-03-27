@@ -44,7 +44,7 @@ public class SQLDialectFactory
 
     private final static SQLDialectFactory instance = new SQLDialectFactory();
 
-    private final Map<DataSource, SQLDialect> dataSourceCache = new WeakHashMap<DataSource, SQLDialect>(16);
+    private Map<DataSource, SQLDialect> dataSourceCache = new WeakHashMap<DataSource, SQLDialect>(16);
 
     private final Map<String, SQLDialect> dialectMap = new HashMap<String, SQLDialect>();
 
@@ -72,7 +72,12 @@ public class SQLDialectFactory
             LOG.debug("Looking up default SQLDialect for DataSource [" + dataSource + "]");
         }
         synchronized (this.dataSourceCache) {
-            SQLDialect dialect = this.dataSourceCache.get(dataSource);
+            SQLDialect dialect=null;
+            try {
+                dialect = this.dataSourceCache.get(dataSource);
+            } catch (Exception e) {
+                this.dataSourceCache= new WeakHashMap<DataSource, SQLDialect>(16);
+            }
             if (dialect != null) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("SQLDialect found in cache  for DataSource " + dataSource);

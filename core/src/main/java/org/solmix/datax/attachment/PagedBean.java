@@ -16,57 +16,68 @@
  * http://www.gnu.org/licenses/ 
  * or see the FSF site: http://www.fsf.org. 
  */
+
 package org.solmix.datax.attachment;
-
-
 
 /**
  * 
  * @author solmix.f@gmail.com
- * @version $Id$  2015年7月15日
+ * @version $Id$ 2015年7月15日
  */
 
 public class PagedBean implements Pageable
 {
+
     private Integer endRow;
 
     private Integer startRow;
-    
+
     private Integer totalRow;
 
     private Integer batchSize;
 
-    
+    public PagedBean()
+    {
+
+    }
+
+    public PagedBean(Integer startRow, Integer endRow)
+    {
+        this(startRow, endRow, null);
+    }
+
+    public PagedBean(Integer startRow, Integer endRow, Integer batchSize)
+    {
+        this.startRow = startRow;
+        this.endRow = endRow;
+        this.batchSize = batchSize;
+    }
+
     @Override
     public Integer getEndRow() {
         return endRow;
     }
 
-    
     @Override
     public void setEndRow(Integer endRow) {
         this.endRow = endRow;
     }
 
-    
     @Override
     public Integer getStartRow() {
         return startRow;
     }
 
-    
     @Override
     public void setStartRow(Integer startRow) {
         this.startRow = startRow;
     }
 
-    
     @Override
     public Integer getTotalRow() {
         return totalRow;
     }
 
-    
     @Override
     public void setTotalRow(Integer totalRow) {
         this.totalRow = totalRow;

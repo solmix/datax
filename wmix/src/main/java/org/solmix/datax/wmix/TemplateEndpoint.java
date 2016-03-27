@@ -42,4 +42,8 @@ public class TemplateEndpoint extends DataxEndpoint
     protected void prepareInInterceptors(){
         getInInterceptors().add(new TemplateInInterceptor(container));
     }
+   /* @Override
+    protected void prepareOutFaultInterceptors(){
+        getOutFaultInterceptors().add(new TemplateOutFaultInterceptor());
+    }*/
 }

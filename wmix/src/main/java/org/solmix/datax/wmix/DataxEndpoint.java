@@ -70,9 +70,12 @@ public class DataxEndpoint extends AbstractWmixEndpoint implements Endpoint
         getOutFaultInterceptors().add(new MessageSenderInterceptor());
         prepareInInterceptors();
         prepareOutInterceptors();
-        getOutFaultInterceptors().add(new OutFaultInterceptor());
+        prepareOutFaultInterceptors();
     }
     
+    protected void prepareOutFaultInterceptors(){
+        getOutFaultInterceptors().add(new OutFaultInterceptor());
+    }
     protected void prepareOutInterceptors(){
         getOutInterceptors().add(new SgtOutInterceptor());
     }

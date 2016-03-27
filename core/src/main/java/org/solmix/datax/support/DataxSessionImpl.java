@@ -21,6 +21,7 @@ package org.solmix.datax.support;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.solmix.commons.util.Assert;
 import org.solmix.datax.DSCallException;
@@ -249,15 +250,16 @@ public class DataxSessionImpl implements DataxSession
         }
     }
     
-    private DSRequest createDSRequest(String operationId, Object parameters) {
+    @Override
+    public DSRequest createDSRequest(String operationId, Object parameters) {
         return createDSRequest(operationId,parameters,null);
     }
-    
-    private DSRequest createDSRequest(String operationId) {
+    @Override
+    public DSRequest createDSRequest(String operationId) {
         return createDSRequest(operationId,null,null);
     }
-    
-    private DSRequest createDSRequest(String operationId, Object parameters, Pageable page) {
+    @Override
+    public DSRequest createDSRequest(String operationId, Object parameters, Pageable page) {
         DSRequest request = dataServiceManager.createDSRequest();
         request.setOperationId(operationId);
         if (parameters != null) {
@@ -267,6 +269,18 @@ public class DataxSessionImpl implements DataxSession
             request.addAttachment(Pageable.class, page);
         }
         return request;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> fetchOne(String operationId) {
+        return fetchOne(operationId,Map.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Map<String, Object> fetchOne(String operationId, Object parameter) {
+        return fetchOne(operationId,parameter,Map.class);
     }
 
   

@@ -36,10 +36,6 @@ public class ResultObject
     public ResultObject(Object obj){
         this.o=obj;
     }
-//
-//    public boolean writeHeader(){
-//        
-//    }
     public boolean isDSResponse(){
         return o instanceof DSResponse;
     }

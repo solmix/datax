@@ -54,6 +54,7 @@ import org.solmix.datax.model.MethodArgInfo;
 import org.solmix.datax.script.VelocityExpression;
 import org.solmix.runtime.Container;
 import org.solmix.runtime.bean.ConfiguredBeanProvider;
+import org.solmix.runtime.exception.InvokerException;
 import org.solmix.runtime.resource.ResourceInjector;
 import org.solmix.runtime.resource.ResourceManager;
 import org.solmix.runtime.resource.support.ObjectTypeResolver;

@@ -31,6 +31,7 @@ import org.solmix.datax.DSResponse;
 import org.solmix.datax.DSResponse.Status;
 import org.solmix.datax.DataService;
 import org.solmix.datax.DataServiceManager;
+import org.solmix.datax.DataServiceNoFoundException;
 import org.solmix.datax.FreeResourcesHandler;
 import org.solmix.datax.OperationNoFoundException;
 import org.solmix.datax.RequestContext;
@@ -133,7 +134,11 @@ public class DSRequestImpl  implements DSRequest,Cloneable
      */
     @Override
     public OperationInfo getOperationInfo() {
-       DataServiceInfo dsi= getDataService().getDataServiceInfo();
+        DataService ds = getDataService();
+       if(ds==null){
+           throw new DataServiceNoFoundException("No found DataService for :"+dataServiceId);
+       }
+       DataServiceInfo dsi=ds.getDataServiceInfo();
        OperationInfo oi= dsi.getOperationInfo(getOperationId());
        if(oi==null){
            throw new OperationNoFoundException("operation: "+getOperationId()+" not sepcified in:"+getDataServiceId());

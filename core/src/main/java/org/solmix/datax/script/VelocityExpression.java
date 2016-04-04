@@ -33,8 +33,8 @@ import org.solmix.datax.DATAX;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DataService;
 import org.solmix.datax.RequestContext;
-import org.solmix.datax.support.InvokerException;
 import org.solmix.runtime.Container;
+import org.solmix.runtime.exception.InvokerException;
 import org.solmix.service.toolkit.ToolkitService;
 import org.solmix.service.velocity.VelocityEngine;
 

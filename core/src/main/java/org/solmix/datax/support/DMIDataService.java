@@ -32,6 +32,7 @@ import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.model.InvokerInfo;
 import org.solmix.datax.model.OperationInfo;
 import org.solmix.runtime.Container;
+import org.solmix.runtime.exception.InvokerException;
 
 /**
  * Direct Method Invoke DataService.

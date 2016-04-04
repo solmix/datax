@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.solmix.commons.collections.DataTypeMap;
 import org.solmix.commons.util.DataUtils;
 import org.solmix.commons.util.TransformUtils;
 import org.solmix.datax.DSRequest;
@@ -296,7 +297,12 @@ public class DSResponseImpl implements DSResponse
                 if (((List<?>) data).size() == 0) {
                     return null;
                 } else if (((List<?>) data).get(0) instanceof Map<?, ?>) {
-                    return (T) ((List<?>) data).get(0);
+                    if(type == DataTypeMap.class){
+                        return (T)new DataTypeMap((Map) ((List<?>) data).get(0));
+                    }else{
+                        return (T) ((List<?>) data).get(0);
+                    }
+                    
                 }
             } else if (data instanceof Map<?, ?>) {
                 return (T) data;

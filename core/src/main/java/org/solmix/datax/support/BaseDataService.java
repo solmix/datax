@@ -494,11 +494,11 @@ public class BaseDataService implements DataService
         } else if (DataTools.isAdd(type)) {
             return executeAdd(req);
         } else {
-            return executeCustomer(req);
+            return executeCustom(req);
         }
     }
 
-    protected DSResponse executeCustomer(DSRequest req)throws DSCallException {
+    protected DSResponse executeCustom(DSRequest req)throws DSCallException {
         return notSupported(req);
     }
 

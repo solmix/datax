@@ -60,7 +60,7 @@ public class DataTools
 
     }
 
-    public static boolean isCustomer(OperationType operationType) {
+    public static boolean isCustom(OperationType operationType) {
         return operationType == OperationType.CUSTOM;
     }
 

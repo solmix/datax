@@ -163,6 +163,8 @@ public class MybatisDataService extends BaseDataService implements DataService
                 return executeUpdate(req,session);
             } else if (DataTools.isAdd(type)) {
                 return executeAdd(req,session);
+            } else if (DataTools.isCustom(type)) {
+                return executeCustom(req);
             }else{
                 return notSupported(req);
             }
@@ -171,6 +173,12 @@ public class MybatisDataService extends BaseDataService implements DataService
                 session.close();
             }
         }
+    }
+
+    @Override
+    protected DSResponse executeCustom(DSRequest req)throws DSCallException {
+        DSResponse res = new DSResponseImpl(req,Status.STATUS_SUCCESS);
+        return res;
     }
 
     protected DSResponse executeAdd(DSRequest req,SqlSession session) throws DSCallException{

@@ -109,7 +109,7 @@ public class DataxWmixTest extends AbstractWmixTests
                public void run() {
                    try {
                        InvocationContext ipc = invokePostContext("/datax/datax/1?a=b&d=e", str);
-                       controller.service(ipc.getRequest(), ipc.getResponse());
+                       rest.service(ipc.getRequest(), ipc.getResponse());
                        // System.out.println("Thread"+Thread.currentThread().getId()+":"+latch.getCount());
                        count++;
                        if (count % 1000 == 0) {

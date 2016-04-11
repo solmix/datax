@@ -77,7 +77,7 @@ public class DataServiceInfo
     protected String[] requireRoles;
     
    
-    protected Boolean controller;
+    protected Boolean rest;
 
     public DataServiceInfo(String id,String serverType)
     {
@@ -95,11 +95,11 @@ public class DataServiceInfo
     }
     
     /**
-     * 标记为控制层,默认为真
+     * 标记为rest api,可通过json或者xml调用
      * @return
      */
-    public boolean isController(){
-        return controller==null ||controller;
+    public boolean isRest(){
+        return rest==null ||rest;
     }
     
     public String getDescription() {
@@ -221,7 +221,7 @@ public class DataServiceInfo
                 DataServiceInfo dsi = new DataServiceInfo(id,context.getServerType());
                 String[] requires = paseStringArray(node, "requires",DATAX.AUTH_SEPARATOR);
                 String[] requireRoles=paseStringArray(node,"requireRoles",DATAX.AUTH_SEPARATOR);
-                Boolean controller= node.getBooleanAttribute("controller");
+                Boolean rest= node.getBooleanAttribute("rest");
                 dsi.fields = fields;
                 dsi.node=node;
                 dsi.fieldList=fieldList;
@@ -233,7 +233,7 @@ public class DataServiceInfo
                 dsi.requireRoles=requireRoles;
                 dsi.lookup = lookup;
                 dsi.scope = scope;
-                dsi.controller=controller;
+                dsi.rest=rest;
                 return dsi;
             } finally {
                 context.setCurrentService(orig);

@@ -50,7 +50,7 @@ public class OperationInfo
     
     protected Boolean autoJoinTransactions;
     
-    protected Boolean controller;
+    protected Boolean rest;
     
     protected Boolean validate;
     
@@ -125,11 +125,11 @@ public class OperationInfo
     }
     
     /**
-     * 标记为控制层,默认为真
+     * 标记为rest api,可通过json或者xml调用,默认为真
      * @return
      */
-    public Boolean isController(){
-        return controller;
+    public Boolean isRest(){
+        return rest;
     }
     
     
@@ -245,8 +245,8 @@ public class OperationInfo
         target.requires=source.requires;
         if(target.requireRoles==null)
         target.requireRoles=source.requireRoles;
-        if(target.controller==null)
-        target.controller=source.controller;
+        if(target.rest==null)
+        target.rest=source.rest;
         if(target.description==null)
         target.description=source.description;
     }
@@ -345,7 +345,7 @@ public class OperationInfo
             InvokerInfo invoker = parseInvoker(node.evalNode("invoker"),context);
             String[] requires = paseStringArray(node, "requires",DATAX.AUTH_SEPARATOR);
             String[] requireRoles=paseStringArray(node,"requireRoles",DATAX.AUTH_SEPARATOR);
-            Boolean controller= node.getBooleanAttribute("controller");
+            Boolean rest= node.getBooleanAttribute("rest");
             String description = node.evalString("description");
             oi.autoJoinTransactions=autoJoinTransactions;
             oi.node=node;
@@ -360,7 +360,7 @@ public class OperationInfo
             oi.usedValidatedValues=usedValidatedValues;
             oi.requireRoles=requireRoles;
             oi.requires=requires;
-            oi.controller=controller;
+            oi.rest=rest;
             oi.description=description;
             //batch中配置的不能被引用，不要加入引用列表。
             if(!batch){

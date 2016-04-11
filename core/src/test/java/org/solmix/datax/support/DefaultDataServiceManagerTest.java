@@ -149,7 +149,7 @@ public class DefaultDataServiceManagerTest
         assertEquals(1, dsi.getFields().size());
         assertEquals(BaseDataServiceFactory.BASE, dsi.getServerType());
         assertEquals("load.ds", dsi.getId());
-        Assert.assertTrue(!dsi.isController());
+        Assert.assertTrue(!dsi.isRest());
         assertEquals("true", dsi.getProperty("dropExtraFields"));
         assertEquals(LookupType.CONTAINER, dsi.getLookup());
         assertEquals(DataServiceInfo.SCOPE_SINGLETON, dsi.getScope());
@@ -206,7 +206,7 @@ public class DefaultDataServiceManagerTest
         assertEquals(Boolean.TRUE, oi.getAutoJoinTransactions());
         assertEquals(Boolean.TRUE, oi.getUsedValidatedValues());
         assertEquals("aaaa", oi.getExtension("customCriteriaFields"));
-        Assert.assertNull(oi.isController());
+        Assert.assertNull(oi.isRest());
         
         //oneway extension
         assertEquals(Boolean.TRUE, oi.getOneway());
@@ -223,7 +223,7 @@ public class DefaultDataServiceManagerTest
         OperationInfo oi2=dsi.getOperationInfo("#feth2");
         assertEquals(oi.getId(), oi2.getRefid());
         assertEquals(Boolean.TRUE,oi2.getAutoJoinTransactions());
-        Assert.assertFalse(oi2.isController());
+        Assert.assertFalse(oi2.isRest());
         
        Map<String,ParamInfo> params= oi.getParams();
        assertEquals("key", params.get("key").getKey());

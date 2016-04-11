@@ -84,7 +84,7 @@
 		<attribute name="serviceName" type="string"></attribute>
 		<attribute name="scope" type="string"></attribute>
 		<attribute name="lookup" type="ds:lookupType"></attribute>
-		<attribute name="controller" type="boolean"></attribute>
+		<attribute name="rest" type="boolean"></attribute>
 		<attributeGroup ref="ds:auths"></attributeGroup>
 		<anyAttribute namespace="##any" processContents="lax"></anyAttribute>
 	</complexType>
@@ -276,7 +276,7 @@
 		<attribute name="usedValidatedValues" type="boolean"></attribute>
 		<attribute name="oneway" type="boolean"></attribute>
 		<attribute name="redirect" type="string"></attribute>
-		<attribute name="controller" type="boolean"></attribute>
+		<attribute name="rest" type="boolean"></attribute>
 		<attributeGroup ref="ds:auths"></attributeGroup>
 		<anyAttribute namespace="##any" processContents="lax"></anyAttribute>
 	</complexType>

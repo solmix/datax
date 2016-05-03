@@ -37,7 +37,7 @@ import com.mchange.v2.c3p0.AbstractComboPooledDataSource;
 public class RSAComboPooledDataSource extends AbstractComboPooledDataSource
 {
 
-    private String publicKey ="MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCC5rAsApe+inUuzq8oqSN/HsPaGOEaQ6rHdrHgKtHr7kvFPBBkSMUFXdGJGwvT3h7eRfH0q2Yr24OrNfnYZQH3tN7UxbFtmB/ULbBjCzhCr9iIZZ/NJjNlJ682PCIrlEQ9ytv3akw607piAsq7dZJZmCebuSV08dosygy/ybyipQIDAQAB";
+    private String privateKey ="MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAILmsCwCl76KdS7OryipI38ew9oY4RpDqsd2seAq0evuS8U8EGRIxQVd0YkbC9PeHt5F8fSrZivbg6s1+dhlAfe03tTFsW2YH9QtsGMLOEKv2Ihln80mM2UnrzY8IiuURD3K2/dqTDrTumICyrt1klmYJ5u5JXTx2izKDL/JvKKlAgMBAAECgYBRNfOoajdgdB/9WSccT8sA68JQRc0p8T87nmz+iTJRcDa79+angOoSyUDdEdWFrTFzbuuMguXRYc/PYZ5O3WOZObifoHvaGP/hDW7S8+oVuK1IFEnveM+33r2EzceAnpKR4FtfSWq7A4ziEoY1PujpxZWTBDD/dzCdRvwgRK+7QQJBAME+wyCNkBOu5BKYnIloMS9f0KSDDkk/srca/fBUEjSZbZhRUvETRXEoYeOjxuTf2hvFjiGNAhSHx/0OOia13zUCQQCtaQS5diDx7Vh26x6ugn6MZYwUb+Bvt35+HqvjLzD9k5PELDaZQf9MxfWsceny79ttWgWFloyj6XanOGokZvOxAkEAq44RYmPqhV7dARlU1rOV/q28J2BlnWecO+wNhn7MTr/qyK9hx71JB8VG6fWqi+Oi2MbQgD6TmzBTvfcUbutFBQJAL3gUBwDDO/aQxNzP5U1rfts9YUrO0UYVpkiXHPWKH6AKTyUbPRDH5ig6fB4iwJHQKzr9T/hKP4RlKplS1OwpwQJAZVYVCwYuNiWv45fugTZzOD6viDPh/Pbd3cC/BYaw4TdnBXV6KzNQjsghd5vXsgyVbt4kCDn37Cj90KVriuuQqg==";
     public RSAComboPooledDataSource()
     { super(); }
 
@@ -68,32 +68,12 @@ public class RSAComboPooledDataSource extends AbstractComboPooledDataSource
             throw new IOException("Unsupported Serialized Version: " + version);
         }
     }
+   
     @Override
-    public void setJdbcUrl( String jdbcUrl )
+    public void setPassword( String password )
     { 
         try {
-           byte[] decodedata= RSAUtils.decryptByPublicKey( Base64Utils.decode(jdbcUrl), publicKey);
-            super.setJdbcUrl(new String(decodedata));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-    }
-    @Override
-    public void setUser( String jdbcUrl )
-    { 
-        try {
-            byte[] decodedata= RSAUtils.decryptByPublicKey(Base64Utils.decode(jdbcUrl), publicKey);
-             super.setUser(new String(decodedata));
-         } catch (Exception e) {
-             e.printStackTrace();
-         }
-    }
-    @Override
-    public void setPassword( String jdbcUrl )
-    { 
-        try {
-            byte[] decodedata= RSAUtils.decryptByPublicKey(Base64Utils.decode(jdbcUrl), publicKey);
+            byte[] decodedata= RSAUtils.decryptByPrivateKey(Base64Utils.decode(password), privateKey);
              super.setPassword(new String(decodedata));
          } catch (Exception e) {
              e.printStackTrace();

@@ -38,10 +38,10 @@ import org.junit.After;
 import org.junit.Assert;
 import org.solmix.commons.util.ServletUtils;
 import org.solmix.runtime.Container;
+import org.solmix.test.TestUtils;
 import org.solmix.wmix.Component;
 import org.solmix.wmix.Controller;
 import org.solmix.wmix.servlet.WmixFilter;
-import org.solmix.wmix.test.TestUtils;
 
 import com.meterware.httpunit.PostMethodWebRequest;
 import com.meterware.httpunit.WebResponse;

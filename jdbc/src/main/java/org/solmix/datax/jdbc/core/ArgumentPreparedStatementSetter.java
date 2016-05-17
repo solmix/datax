@@ -21,11 +21,6 @@ package org.solmix.datax.jdbc.core;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import org.springframework.jdbc.core.ParameterDisposer;
-import org.springframework.jdbc.core.PreparedStatementSetter;
-import org.springframework.jdbc.core.SqlParameterValue;
-import org.springframework.jdbc.core.SqlTypeValue;
-import org.springframework.jdbc.core.StatementCreatorUtils;
 
 /**
  * 
@@ -33,7 +28,7 @@ import org.springframework.jdbc.core.StatementCreatorUtils;
  * @version $Id$  2016年5月8日
  */
 
-public class   ArgumentPreparedStatementSetter implements PreparedStatementSetter, ParameterDisposer {
+public class   ArgumentPreparedStatementSetter implements PreparedStatementSetter {
 
     private final Object[] args;
 
@@ -75,9 +70,5 @@ public class   ArgumentPreparedStatementSetter implements PreparedStatementSette
           }
     }
 
-    @Override
-    public void cleanupParameters() {
-          StatementCreatorUtils.cleanupParameters(this.args);
-    }
 
 }

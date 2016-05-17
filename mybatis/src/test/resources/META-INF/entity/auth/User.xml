@@ -128,15 +128,7 @@
 		#{userId, jdbcType=VARCHAR},
 		#{groupId, jdbcType=VARCHAR})
 	</insert>
-<!-- 更新登陆时间 -->
-  <update id="updateUserLogin" parameterType="cn.sg.gdw.security.entity.UserEntity">
-      update AUTH_USERS
-    <set>
-      LAST_LOGIN_TIME = #{lastLoginTime, jdbcType=TIMESTAMP},
-      LAST_LOGIN_IP = #{lastLoginIp, jdbcType=VARCHAR}
-      </set>
-    where USER_ID= #{userId, jdbcType=VARCHAR}
-  </update>
+
   <!-- 锁定解除 -->
   <update id="lockUser" parameterType="map">
       update AUTH_USERS
@@ -238,37 +230,7 @@
       </set>
     where USER_ID = #{userId, jdbcType=VARCHAR}
   </update>
-	<insert id="addUser" parameterType="cn.sg.gdw.security.entity.UserEntity">
-		INSERT INTO
-		AUTH_USERS (
-		USER_ID,
-		USER_NAME,
-		PASSWORD,
-		TRUENAME,
-		CREATE_DATE,
-		STATUS,
-		LAST_LOGIN_TIME,
-		LAST_LOGIN_IP,
-		PWD_REMIND_TIME,
-		COMMENTS,
-		CREATE_ID,
-		CREATE_NAME,
-		SCOPE_ID)
-		VALUES
-		(#{userId, jdbcType=INTEGER},
-		#{userName, jdbcType=VARCHAR},
-		#{password, jdbcType=VARCHAR},
-		#{trueName, jdbcType=VARCHAR},
-		#{createDate, jdbcType=TIMESTAMP},
-		#{status, jdbcType=VARCHAR},
-		#{lastLoginTime, jdbcType=TIMESTAMP},
-		#{lastLoginIp, jdbcType=VARCHAR},
-		#{pwdRemindTime, jdbcType=TIMESTAMP},
-		#{comments, jdbcType=VARCHAR},
-		#{createId, jdbcType=VARCHAR},
-		#{createName, jdbcType=VARCHAR},
-		#{scopeId, jdbcType=VARCHAR})
-	</insert>
+	
 	<delete id="removeUserByName" parameterType="map">
 		DELETE FROM AUTH_USERS WHERE USER_NAME=#{userName}
 	</delete>
@@ -282,23 +244,6 @@
 		DELETE FROM AUTH_USER_GROUP_RELA   WHERE USER_ID=#{userId}
 	</delete>
 	
-	<resultMap id="userResultMap" type="cn.sg.gdw.security.entity.UserEntity">
-    <id property="userId" column="USER_ID" jdbcType="INTEGER" />
-    <result property="comments" column="COMMENTS" jdbcType="VARCHAR" />
-    <result property="userName" column="USER_NAME" jdbcType="VARCHAR" />
-    <result property="trueName" column="TRUENAME" jdbcType="VARCHAR" />
-    <result property="password" column="PASSWORD" jdbcType="VARCHAR" />
-    <result property="createDate" column="CREATE_DATE" jdbcType="TIMESTAMP" />
-    <result property="createName" column="CREATE_NAME" jdbcType="VARCHAR" />
-    <result property="status" column="STATUS" jdbcType="INTEGER" />
-    <result property="lastLoginTime" column="LAST_LOGIN_TIME" jdbcType="TIMESTAMP" />
-    <result property="lastChangePassword" column="LAST_CHANGE_PASSWORD" jdbcType="TIMESTAMP" />
-    <result property="lastLoginIp" column="LAST_LOGIN_IP" jdbcType="VARCHAR" />
-    <result property="lockTime" column="LOCK_TIME" jdbcType="TIMESTAMP" />
-    <result property="pwdRemindTime" column="PWD_REMIND_TIME" jdbcType="TIMESTAMP" />
-    <result property="scopeName" column="SCOPE_NAME" jdbcType="VARCHAR" />
-    <result property="scopeId" column="SCOPE_ID" jdbcType="VARCHAR" />  
-    <result property="superFlag" column="SUPER_FLAG" jdbcType="INTEGER" />
-  </resultMap>
+	
 </mapper>
 			

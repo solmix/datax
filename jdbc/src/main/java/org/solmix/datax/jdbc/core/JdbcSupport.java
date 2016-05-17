@@ -31,16 +31,10 @@ import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.solmix.commons.util.Assert;
 import org.solmix.datax.jdbc.SQLRuntimeException;
 import org.solmix.datax.jdbc.helper.DataSourceHelper;
 import org.solmix.datax.jdbc.helper.JdbcHelper;
-import org.springframework.jdbc.SQLWarningException;
-import org.springframework.jdbc.core.ArgumentPreparedStatementSetter;
-import org.springframework.jdbc.core.ParameterDisposer;
-import org.springframework.jdbc.core.PreparedStatementCallback;
-import org.springframework.jdbc.core.PreparedStatementCreator;
-import org.springframework.jdbc.core.PreparedStatementSetter;
-import org.springframework.util.Assert;
 
 /**
  * 
@@ -159,8 +153,8 @@ public class JdbcSupport
 
     public <T> T execute(CallableStatementCreator csc, CallableStatementCallback<T> action) throws SQLException {
 
-        Assert.notNull(csc, "CallableStatementCreator must not be null");
-        Assert.notNull(action, "Callback object must not be null");
+        Assert.isNotNull(csc, "CallableStatementCreator must not be null");
+        Assert.isNotNull(action, "Callback object must not be null");
         if (LOG.isDebugEnabled()) {
             String sql = getSql(csc);
             LOG.debug("Calling stored procedure" + (sql != null ? " [" + sql + "]" : ""));
@@ -177,11 +171,7 @@ public class JdbcSupport
             handleWarnings(cs);
             return result;
         } catch (SQLException ex) {
-            // Release Connection early, to avoid potential connection pool deadlock
-            // in the case when the exception translator hasn't been initialized yet.
-            if (csc instanceof ParameterDisposer) {
-                ((ParameterDisposer) csc).cleanupParameters();
-            }
+          
             String sql = getSql(csc);
             csc = null;
             JdbcHelper.closeStatement(cs);
@@ -190,9 +180,7 @@ public class JdbcSupport
             con = null;
             throw ex;
         } finally {
-            if (csc instanceof ParameterDisposer) {
-                ((ParameterDisposer) csc).cleanupParameters();
-            }
+           
             JdbcHelper.closeStatement(cs);
             DataSourceHelper.releaseConnection(con, getDataSource());
         }
@@ -212,9 +200,9 @@ public class JdbcSupport
                 handleWarnings(stmt.getWarnings());
           }
     }
-    protected void handleWarnings(SQLWarning warning) throws SQLWarningException {
+    protected void handleWarnings(SQLWarning warning) throws SQLException {
         if (warning != null) {
-              throw new SQLWarningException("Warning not ignored", warning);
+              throw new SQLException("Warning not ignored", warning);
         }
   }
     protected void applyStatementSettings(Statement stmt) throws SQLException {
@@ -238,8 +226,8 @@ public class JdbcSupport
     }
     public <T> T execute(PreparedStatementCreator psc, PreparedStatementCallback<T> action) throws SQLException {
 
-        Assert.notNull(psc, "PreparedStatementCreator must not be null");
-        Assert.notNull(action, "Callback object must not be null");
+        Assert.isNotNull(psc, "PreparedStatementCreator must not be null");
+        Assert.isNotNull(action, "Callback object must not be null");
         if (LOG.isDebugEnabled()) {
             String sql = getSql(psc);
             LOG.debug("Executing prepared SQL statement" + (sql != null ? " [" + sql + "]" : ""));
@@ -258,9 +246,7 @@ public class JdbcSupport
         } catch (SQLException ex) {
             // Release Connection early, to avoid potential connection pool deadlock
             // in the case when the exception translator hasn't been initialized yet.
-            if (psc instanceof ParameterDisposer) {
-                ((ParameterDisposer) psc).cleanupParameters();
-            }
+           
             String sql = getSql(psc);
             psc = null;
             JdbcHelper.closeStatement(ps);
@@ -269,9 +255,7 @@ public class JdbcSupport
             con = null;
             throw ex;
         } finally {
-            if (psc instanceof ParameterDisposer) {
-                ((ParameterDisposer) psc).cleanupParameters();
-            }
+           
             JdbcHelper.closeStatement(ps);
             DataSourceHelper.releaseConnection(con, getDataSource());
         }
@@ -318,7 +302,7 @@ public class JdbcSupport
 
     public <T> T query(PreparedStatementCreator psc, final PreparedStatementSetter pss, final ResultSetExtractor<T> rse) throws SQLException {
 
-        Assert.notNull(rse, "ResultSetExtractor must not be null");
+        Assert.isNotNull(rse, "ResultSetExtractor must not be null");
         LOG.debug("Executing prepared SQL query");
 
         return execute(psc, new PreparedStatementCallback<T>() {
@@ -335,9 +319,7 @@ public class JdbcSupport
                     return rse.extractData(rsToUse);
                 } finally {
                     JdbcHelper.closeResultSet(rs);
-                    if (pss instanceof ParameterDisposer) {
-                        ((ParameterDisposer) pss).cleanupParameters();
-                    }
+                  
                 }
             }
         });
@@ -350,7 +332,7 @@ public class JdbcSupport
 
         public SimpleCallableStatementCreator(String callString)
         {
-            Assert.notNull(callString, "Call string must not be null");
+            Assert.isNotNull(callString, "Call string must not be null");
             this.callString = callString;
         }
 
@@ -372,7 +354,7 @@ public class JdbcSupport
 
         public SimplePreparedStatementCreator(String sql)
         {
-            Assert.notNull(sql, "SQL must not be null");
+            Assert.isNotNull(sql, "SQL must not be null");
             this.sql = sql;
         }
 

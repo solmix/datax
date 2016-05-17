@@ -14,7 +14,7 @@
 			value="classpath:META-INF/mybatis/mybatis-config.xml" />
 		<property name="mapperLocations">
 			<list>
-				<value>classpath:META-INF/entity/*.xml</value>
+				<value>classpath:META-INF/entity/auth/*.xml</value>
 			</list>
 		</property>
 	</bean>

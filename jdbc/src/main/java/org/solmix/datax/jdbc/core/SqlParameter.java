@@ -3,7 +3,8 @@ package org.solmix.datax.jdbc.core;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.springframework.util.Assert;
+import org.solmix.commons.util.Assert;
+
 
 public class SqlParameter {
 	/** The name of the parameter, if any */
@@ -89,7 +90,7 @@ public class SqlParameter {
 	 * @param otherParam the SqlParameter object to copy from
 	 */
 	public SqlParameter(SqlParameter otherParam) {
-		Assert.notNull(otherParam, "SqlParameter object must not be null");
+		Assert.isNotNull(otherParam, "SqlParameter object must not be null");
 		this.name = otherParam.name;
 		this.sqlType = otherParam.sqlType;
 		this.typeName = otherParam.typeName;

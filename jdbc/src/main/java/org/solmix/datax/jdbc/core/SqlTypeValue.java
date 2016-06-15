@@ -3,8 +3,6 @@ package org.solmix.datax.jdbc.core;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import org.springframework.jdbc.core.JdbcOperations;
-import org.springframework.jdbc.support.JdbcUtils;
 
 public interface SqlTypeValue {
 	/**
@@ -14,7 +12,7 @@ public interface SqlTypeValue {
 	 * @see java.sql.Types
 	 * @see JdbcOperations#update(String, Object[])
 	 */
-	int TYPE_UNKNOWN = JdbcUtils.TYPE_UNKNOWN;
+	int TYPE_UNKNOWN =  Integer.MIN_VALUE;
 
 
 	/**

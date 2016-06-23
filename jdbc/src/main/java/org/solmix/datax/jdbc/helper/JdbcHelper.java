@@ -31,12 +31,22 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.solmix.commons.util.DataUtils;
+import org.solmix.commons.util.Reflection;
+import org.solmix.datax.jdbc.core.EmptyResultJdbcException;
+import org.solmix.datax.jdbc.core.IncorrectResultSizeJdbcException;
 import org.solmix.datax.jdbc.support.MetaDataAccessException;
+
 
 /**
  * 
@@ -286,5 +296,199 @@ public class JdbcHelper
             }
         }
         return result.toString();
+    }
+    public static <T> T requiredSingleResult(Collection<T> results) throws IncorrectResultSizeJdbcException {
+		int size = (results != null ? results.size() : 0);
+		if (size == 0) {
+			throw new EmptyResultJdbcException(1);
+		}
+		if (results.size() > 1) {
+			throw new IncorrectResultSizeJdbcException(1, size);
+		}
+		return results.iterator().next();
+	}
+    
+    public static List<Map<String, ?>> toListOfMaps(ResultSet rs) throws SQLException {
+        return toListOfMaps(rs, -1L, false);
+    }
+
+  
+    public static List<Map<String, ?>> toListOfMaps(ResultSet rs, boolean brokenCursorAPIs) throws SQLException {
+        return toListOfMaps(rs, -1L, brokenCursorAPIs);
+    }
+
+    public static List<Map<String, ?>> toListOfMaps(ResultSet rs, long numRows) throws SQLException {
+        return toListOfMaps(rs, numRows, false);
+    }
+
+
+    public static List<Map<String, ?>> toListOfMaps(ResultSet resultSet, long numRows, boolean hasBrokenCursorAPIs) throws SQLException {
+        List<Map<String, ?>> __return = new ArrayList<Map<String, ?>>(128);
+        /**
+         * get bean class name from datasource.
+         */
+        long _$ = System.currentTimeMillis();
+        // If ResultSet is null.
+        if (hasBrokenCursorAPIs) {
+            if (!resultSet.next())
+                return __return;
+        } else {
+            boolean isBeforeFirst = false;
+            boolean isAfterLast = false;
+            try {
+                isBeforeFirst = resultSet.isBeforeFirst();
+                isAfterLast = resultSet.isAfterLast();
+            } catch (SQLException ignored) {
+            	logger.debug("isBeforeFirst()/isAfterLast() throwing exceptions .", ignored);
+            }
+            if ((isBeforeFirst || isAfterLast || resultSet.getRow() == 0) && !resultSet.next())
+                return __return;
+        }
+        long i = 0;
+        do {
+            if (i >= numRows && numRows != -1L)
+                break;
+            Map<String, ?> map = toAttributeMap(resultSet);
+            __return.add(map);
+            /**
+             * java.sql.ResultSet.next() move cursor to new row set.
+             */
+            if (!resultSet.next())
+                break;
+            i++;
+
+        } while (true);
+        long $_ = System.currentTimeMillis();
+        return __return;
+
+    }
+
+    public static Map<String, List<Object>> toMapOfLists(ResultSet rs) throws SQLException {
+        Map<String, List<Object>> result = new HashMap<String, List<Object>>(128);
+        ResultSetMetaData header = rs.getMetaData();
+        for (int ii = 1; ii <= header.getColumnCount(); ii++)
+            result.put(header.getColumnName(ii), new ArrayList<Object>());
+        while (rs.next()) {
+            int ii = 1;
+            while (ii <= header.getColumnCount()) {
+                result.get(header.getColumnName(ii)).add(rs.getObject(ii));
+                ii++;
+            }
+        }
+        return result;
+    }
+
+    public static List<List<Object>> toFormatList(ResultSet results, List<String> column) throws SQLException {
+
+        List<List<Object>> __return = new ArrayList<List<Object>>(128);
+        if (results == null)
+            return __return;
+        ResultSetMetaData header = results.getMetaData();
+        List<Object> _tmp;
+        boolean writeFlag = false;
+        while (results.next()) {
+            int i = 1;
+            _tmp = new ArrayList<Object>();
+            while (i <= header.getColumnCount()) {
+                if (!writeFlag) {
+                    if (column == null) {
+                        column = new ArrayList<String>();
+                    }
+                    column.add(header.getColumnName(i));
+                }
+                _tmp.add(results.getObject(i));
+                i++;
+            }
+            writeFlag = true;
+            __return.add(_tmp);
+        }
+        return __return;
+
+    }
+
+    public static List<Object> toValuesList(ResultSet results, String column) throws SQLException {
+        List<Object> valuesList = new ArrayList<Object>(128);
+        do {
+            if (!results.next())
+                break;
+            Object value = results.getObject(column.toUpperCase());
+            if (value != null)
+                valuesList.add(value);
+        } while (true);
+        return valuesList;
+    }
+
+    /**
+     * @param <T>
+     * @param results
+     * @param clz
+     * @return
+     * @throws SQLException
+     */
+    public static <T> List<T> toListofBeans(ResultSet results, Class<T> clz) throws SQLException {
+        List<?> list = toListOfMaps(results);
+        List<T> _return = new ArrayList<T>();
+        if (list == null)
+            return null;
+        try {
+            for (Object o : list) {
+                Map<Object, Object> data = null;
+                if (o instanceof Map<?, ?>) {
+                    data = (Map<Object, Object>) o;
+                } else {
+                    continue;
+                }
+                T obj = Reflection.newInstance(clz);
+                DataUtils.setProperties(data, obj, false);
+                _return.add(obj);
+            }
+        } catch (Exception e) {
+        	logger.error("can not transform data to bean object", e);
+        }
+        return _return;
+
+    }
+
+    public static Map<String, ?> toAttributeMap(ResultSet resultSet) throws SQLException {
+        return toAttributeMap(resultSet, null, true, null, null);
+    }
+
+    /**
+     * @param resultSet
+     * @param rsmd
+     * @param useColumnLabel
+     * @param caseInsensitiveMap
+     * @param outputs
+     * @return
+     * @throws SQLException
+     */
+    public static Map<String, ?> toAttributeMap(ResultSet resultSet,  
+    		ResultSetMetaData rsmd, 
+    		boolean useColumnLabel,
+    		Map<String, String> caseInsensitiveMap, 
+    		List<String> outputs) throws SQLException {
+        if (rsmd == null)
+            rsmd = resultSet.getMetaData();
+        int count = rsmd.getColumnCount();
+        Map<String, Object> __return = new HashMap<String, Object>();
+        for (int colCursor = 1; colCursor <= count; colCursor++) {
+            String columnName;
+            if (useColumnLabel)
+                columnName = rsmd.getColumnLabel(colCursor);
+            else
+                columnName = rsmd.getColumnName(colCursor);
+            if (caseInsensitiveMap != null && caseInsensitiveMap.get(columnName) != null)
+                columnName = caseInsensitiveMap.get(columnName);
+            Object obj = resultSet.getObject(colCursor);
+            if (outputs != null && !outputs.contains(columnName))
+                continue;
+            if (obj == null) {
+                __return.put(columnName, obj);
+                continue;
+            }
+            
+            __return.put(columnName, obj);
+        }
+        return __return;
     }
 }

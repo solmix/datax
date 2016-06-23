@@ -19,6 +19,7 @@
 
 package org.solmix.datax.jdbc.core;
 
+import java.sql.BatchUpdateException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -26,15 +27,26 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.solmix.commons.util.Assert;
+import org.solmix.commons.util.ObjectUtils;
+import org.solmix.commons.util.StringUtils;
 import org.solmix.datax.jdbc.SQLRuntimeException;
 import org.solmix.datax.jdbc.helper.DataSourceHelper;
 import org.solmix.datax.jdbc.helper.JdbcHelper;
+
+
+
 
 /**
  * 
@@ -47,16 +59,25 @@ public class JdbcSupport
 
     private static final Logger LOG = LoggerFactory.getLogger(JdbcSupport.class);
 
+	private static final String RETURN_RESULT_SET_PREFIX = "#result-set-";
+
+	private static final String RETURN_UPDATE_COUNT_PREFIX = "#update-count-";
+
     private DataSource dataSource;
     
     private boolean ignoreWarnings = true;
 
-   
     private int fetchSize = 0;
 
     private int maxRows = 0;
     
     private int queryTimeout = 0;
+
+	private boolean resultsMapCaseInsensitive = false;
+
+	private boolean skipResultsProcessing = false;
+	
+	private boolean skipUndeclaredResults = false;
 
     public JdbcSupport()
     {
@@ -132,6 +153,294 @@ public class JdbcSupport
             }
         });
     }
+    
+    public int update(String sql, Object... args) throws JdbcException {
+		return update(sql, newArgPreparedStatementSetter(args));
+	}
+    
+    public int update(String sql, Object[] args, int[] argTypes) throws JdbcException {
+		return update(sql, newArgTypePreparedStatementSetter(args, argTypes));
+	}
+    public int update(String sql, PreparedStatementSetter pss) throws JdbcException {
+		return update(new SimplePreparedStatementCreator(sql), pss);
+	}
+    public int update(PreparedStatementCreator psc) throws JdbcException {
+		return update(psc, (PreparedStatementSetter) null);
+	}
+	protected PreparedStatementSetter newArgTypePreparedStatementSetter(Object[] args, int[] argTypes) {
+		return new ArgumentTypePreparedStatementSetter(args, argTypes);
+	}
+	
+	protected int update(final PreparedStatementCreator psc, final PreparedStatementSetter pss)
+			throws JdbcException {
+
+		LOG.debug("Executing prepared SQL update");
+		return execute(psc, new PreparedStatementCallback<Integer>() {
+			@Override
+			public Integer doInPreparedStatement(PreparedStatement ps) throws SQLException {
+				try {
+					if (pss != null) {
+						pss.setValues(ps);
+					}
+					int rows = ps.executeUpdate();
+					if (LOG.isDebugEnabled()) {
+						LOG.debug("SQL update affected " + rows + " rows");
+					}
+					return rows;
+				}
+				finally {
+					if (pss instanceof ParameterDisposer) {
+						((ParameterDisposer) pss).cleanupParameters();
+					}
+				}
+			}
+		});
+	}
+
+    
+    public int[] batchUpdate(final String[] sql) throws JdbcException {
+
+    	if (ObjectUtils.isEmptyObject(sql)) {
+			throw new IllegalArgumentException("SQL array must not be empty");
+		}
+
+			LOG.debug("Executing SQL batch update of {} statements",  sql.length);
+
+		class BatchUpdateStatementCallback implements StatementCallback<int[]>, SqlProvider {
+
+			private String currSql;
+
+			@Override
+			public int[] doInStatement(Statement stmt) throws SQLException, JdbcException {
+
+				int[] rowsAffected = new int[sql.length];
+
+				if (JdbcHelper.supportsBatchUpdates(stmt.getConnection())) {
+					for (String sqlStmt : sql) {
+						this.currSql = appendSql(this.currSql, sqlStmt);
+						stmt.addBatch(sqlStmt);
+					}
+					try {
+						rowsAffected = stmt.executeBatch();
+					}
+					catch (BatchUpdateException ex) {
+						String batchExceptionSql = null;
+						for (int i = 0; i < ex.getUpdateCounts().length; i++) {
+							if (ex.getUpdateCounts()[i] == Statement.EXECUTE_FAILED) {
+								batchExceptionSql = appendSql(batchExceptionSql, sql[i]);
+							}
+						}
+						if (StringUtils.hasLength(batchExceptionSql)) {
+							this.currSql = batchExceptionSql;
+						}
+						throw ex;
+					}
+				}
+				else {
+					for (int i = 0; i < sql.length; i++) {
+						this.currSql = sql[i];
+						if (!stmt.execute(sql[i])) {
+							rowsAffected[i] = stmt.getUpdateCount();
+						}
+						else {
+							throw new JdbcException("Invalid batch SQL statement: " + sql[i]);
+						}
+					}
+				}
+				return rowsAffected;
+			}
+
+			private String appendSql(String sql, String statement) {
+				return (StringUtils.isEmpty(sql) ? statement : sql + "; " + statement);
+			}
+
+			@Override
+			public String getSql() {
+				return this.currSql;
+			}
+		}
+		return execute(new BatchUpdateStatementCallback());
+	}
+    public Map<String, Object> call(CallableStatementCreator csc, List<SqlParameter> declaredParameters)
+			throws JdbcException {
+
+		final List<SqlParameter> updateCountParameters = new ArrayList<SqlParameter>();
+		final List<SqlParameter> resultSetParameters = new ArrayList<SqlParameter>();
+		final List<SqlParameter> callParameters = new ArrayList<SqlParameter>();
+		for (SqlParameter parameter : declaredParameters) {
+			if (parameter.isResultsParameter()) {
+				if (parameter instanceof SqlReturnResultSet) {
+					resultSetParameters.add(parameter);
+				}
+				else {
+					updateCountParameters.add(parameter);
+				}
+			}
+			else {
+				callParameters.add(parameter);
+			}
+		}
+		return execute(csc, new CallableStatementCallback<Map<String, Object>>() {
+			@Override
+			public Map<String, Object> doInCallableStatement(CallableStatement cs) throws SQLException {
+				boolean retVal = cs.execute();
+				int updateCount = cs.getUpdateCount();
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("CallableStatement.execute() returned '" + retVal + "'");
+					LOG.debug("CallableStatement.getUpdateCount() returned " + updateCount);
+				}
+				Map<String, Object> returnedResults = createResultsMap();
+				if (retVal || updateCount != -1) {
+					returnedResults.putAll(extractReturnedResults(cs, updateCountParameters, resultSetParameters, updateCount));
+				}
+				returnedResults.putAll(extractOutputParameters(cs, callParameters));
+				return returnedResults;
+			}
+		});
+	}
+    protected Map<String, Object> extractOutputParameters(CallableStatement cs, List<SqlParameter> parameters)
+			throws SQLException {
+
+		Map<String, Object> returnedResults = new HashMap<String, Object>();
+		int sqlColIndex = 1;
+		for (SqlParameter param : parameters) {
+			if (param instanceof SqlOutParameter) {
+				SqlOutParameter outParam = (SqlOutParameter) param;
+				if (outParam.isReturnTypeSupported()) {
+					Object out = outParam.getSqlReturnType().getTypeValue(
+							cs, sqlColIndex, outParam.getSqlType(), outParam.getTypeName());
+					returnedResults.put(outParam.getName(), out);
+				}
+				else {
+					Object out = cs.getObject(sqlColIndex);
+					if (out instanceof ResultSet) {
+						if (outParam.isResultSetSupported()) {
+							returnedResults.putAll(processResultSet((ResultSet) out, outParam));
+						}
+						else {
+							String rsName = outParam.getName();
+							SqlReturnResultSet rsParam = new SqlReturnResultSet(rsName, new ColumnMapRowMapper());
+							returnedResults.putAll(processResultSet((ResultSet) out, rsParam));
+							if (LOG.isDebugEnabled()) {
+								LOG.debug("Added default SqlReturnResultSet parameter named '" + rsName + "'");
+							}
+						}
+					}
+					else {
+						returnedResults.put(outParam.getName(), out);
+					}
+				}
+			}
+			if (!(param.isResultsParameter())) {
+				sqlColIndex++;
+			}
+		}
+		return returnedResults;
+	}
+    
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	protected Map<String, Object> processResultSet(ResultSet rs, ResultSetSupportingSqlParameter param) throws SQLException {
+		if (rs == null) {
+			return Collections.emptyMap();
+		}
+		Map<String, Object> returnedResults = new HashMap<String, Object>();
+		try {
+			ResultSet rsToUse = rs;
+			if (param.getRowMapper() != null) {
+				RowMapper rowMapper = param.getRowMapper();
+				Object result = (new RowMapperResultSetExtractor(rowMapper)).extractData(rsToUse);
+				returnedResults.put(param.getName(), result);
+			}
+			else if (param.getRowCallbackHandler() != null) {
+				RowCallbackHandler rch = param.getRowCallbackHandler();
+				(new RowCallbackHandlerResultSetExtractor(rch)).extractData(rsToUse);
+				returnedResults.put(param.getName(), "ResultSet returned from stored procedure was processed");
+			}
+			else if (param.getResultSetExtractor() != null) {
+				Object result = param.getResultSetExtractor().extractData(rsToUse);
+				returnedResults.put(param.getName(), result);
+			}
+		}
+		finally {
+			JdbcHelper.closeResultSet(rs);
+		}
+		return returnedResults;
+	}
+    protected Map<String, Object> extractReturnedResults(CallableStatement cs,
+			List<SqlParameter> updateCountParameters, List<SqlParameter> resultSetParameters, int updateCount)
+			throws SQLException {
+
+		Map<String, Object> returnedResults = new HashMap<String, Object>();
+		int rsIndex = 0;
+		int updateIndex = 0;
+		boolean moreResults;
+		if (!this.skipResultsProcessing) {
+			do {
+				if (updateCount == -1) {
+					if (resultSetParameters != null && resultSetParameters.size() > rsIndex) {
+						SqlReturnResultSet declaredRsParam = (SqlReturnResultSet) resultSetParameters.get(rsIndex);
+						returnedResults.putAll(processResultSet(cs.getResultSet(), declaredRsParam));
+						rsIndex++;
+					}
+					else {
+						if (!this.skipUndeclaredResults) {
+							String rsName = RETURN_RESULT_SET_PREFIX + (rsIndex + 1);
+							SqlReturnResultSet undeclaredRsParam = new SqlReturnResultSet(rsName, new ColumnMapRowMapper());
+							if (LOG.isDebugEnabled()) {
+								LOG.debug("Added default SqlReturnResultSet parameter named '" + rsName + "'");
+							}
+							returnedResults.putAll(processResultSet(cs.getResultSet(), undeclaredRsParam));
+							rsIndex++;
+						}
+					}
+				}
+				else {
+					if (updateCountParameters != null && updateCountParameters.size() > updateIndex) {
+						SqlReturnUpdateCount ucParam = (SqlReturnUpdateCount) updateCountParameters.get(updateIndex);
+						String declaredUcName = ucParam.getName();
+						returnedResults.put(declaredUcName, updateCount);
+						updateIndex++;
+					}
+					else {
+						if (!this.skipUndeclaredResults) {
+							String undeclaredName = RETURN_UPDATE_COUNT_PREFIX + (updateIndex + 1);
+							if (LOG.isDebugEnabled()) {
+								LOG.debug("Added default SqlReturnUpdateCount parameter named '" + undeclaredName + "'");
+							}
+							returnedResults.put(undeclaredName, updateCount);
+							updateIndex++;
+						}
+					}
+				}
+				moreResults = cs.getMoreResults();
+				updateCount = cs.getUpdateCount();
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("CallableStatement.getUpdateCount() returned " + updateCount);
+				}
+			}
+			while (moreResults || updateCount != -1);
+		}
+		return returnedResults;
+	}
+    protected Map<String, Object> createResultsMap() {
+		if (isResultsMapCaseInsensitive()) {
+			return new LinkedCaseInsensitiveMap<Object>();
+		}
+		else {
+			return new LinkedHashMap<String, Object>();
+		}
+	}
+    public void setResultsMapCaseInsensitive(boolean resultsMapCaseInsensitive) {
+		this.resultsMapCaseInsensitive = resultsMapCaseInsensitive;
+	}
+
+	/**
+	 * Return whether execution of a CallableStatement will return the results in a Map
+	 * that uses case insensitive names for the parameters.
+	 */
+	public boolean isResultsMapCaseInsensitive() {
+		return this.resultsMapCaseInsensitive;
+	}
 
     public void execute(final String sql) {
         if (LOG.isDebugEnabled()) {
@@ -151,7 +460,7 @@ public class JdbcSupport
         return execute(new SimpleCallableStatementCreator(callString), action);
     }
 
-    public <T> T execute(CallableStatementCreator csc, CallableStatementCallback<T> action) throws SQLException {
+    public <T> T execute(CallableStatementCreator csc, CallableStatementCallback<T> action) throws JdbcException {
 
         Assert.isNotNull(csc, "CallableStatementCreator must not be null");
         Assert.isNotNull(action, "Callback object must not be null");
@@ -178,7 +487,7 @@ public class JdbcSupport
             cs = null;
             DataSourceHelper.releaseConnection(con, getDataSource());
             con = null;
-            throw ex;
+            throw new JdbcException(ex);
         } finally {
            
             JdbcHelper.closeStatement(cs);
@@ -224,7 +533,7 @@ public class JdbcSupport
                 return null;
           }
     }
-    public <T> T execute(PreparedStatementCreator psc, PreparedStatementCallback<T> action) throws SQLException {
+    public <T> T execute(PreparedStatementCreator psc, PreparedStatementCallback<T> action) throws JdbcException {
 
         Assert.isNotNull(psc, "PreparedStatementCreator must not be null");
         Assert.isNotNull(action, "Callback object must not be null");
@@ -253,7 +562,7 @@ public class JdbcSupport
             ps = null;
             DataSourceHelper.releaseConnection(con, getDataSource());
             con = null;
-            throw ex;
+            throw new JdbcException(ex);
         } finally {
            
             JdbcHelper.closeStatement(ps);
@@ -284,23 +593,134 @@ public class JdbcSupport
 
     }
 
-    public void query(String sql, Object[] args, RowCallbackHandler rch) throws SQLException {
+    public void query(String sql, Object[] args, RowCallbackHandler rch) throws JdbcException {
         query(sql, newArgPreparedStatementSetter(args), rch);
     }
+    public <T> List<T> query(String sql, Object[] args, RowMapper<T> rowMapper) throws JdbcException {
+		return query(sql, args, new RowMapperResultSetExtractor<T>(rowMapper));
+	}
+    public <T> T query(String sql, Object[] args, ResultSetExtractor<T> rse) throws JdbcException {
+		return query(sql, newArgPreparedStatementSetter(args), rse);
+	}
     protected PreparedStatementSetter newArgPreparedStatementSetter(Object[] args) {
         return new ArgumentPreparedStatementSetter(args);
   }
 
-    public void query(String sql, PreparedStatementSetter pss, RowCallbackHandler rch) throws SQLException {
+    public void query(String sql, PreparedStatementSetter pss, RowCallbackHandler rch) throws JdbcException {
         query(sql, pss, new RowCallbackHandlerResultSetExtractor(rch));
     }
 
-    public <T> T query(String sql, PreparedStatementSetter pss, ResultSetExtractor<T> rse) throws SQLException {
+    public <T> T query(String sql, PreparedStatementSetter pss, ResultSetExtractor<T> rse) throws JdbcException {
         return query(new SimplePreparedStatementCreator(sql), pss, rse);
     }
 
+    public <T> List<T> queryForList(String sql, Class<T> elementType) throws JdbcException {
+		return query(sql, getSingleColumnRowMapper(elementType));
+	}
+	public <T> List<T> queryForList(String sql, Class<T> elementType, Object... args) throws JdbcException {
+		return query(sql, args, getSingleColumnRowMapper(elementType));
+	}
+	public <T> List<T> queryForList(String sql, Object[] args, Class<T> elementType) throws JdbcException {
+		return query(sql, args, getSingleColumnRowMapper(elementType));
+	}
+	public List<Map<String, Object>> queryForList(String sql, Object[] args, int[] argTypes) throws JdbcException {
+		return query(sql, args, argTypes, getColumnMapRowMapper());
+	}
+	public <T> List<T> query(String sql, Object[] args, int[] argTypes, RowMapper<T> rowMapper) throws JdbcException {
+		return query(sql, args, argTypes, new RowMapperResultSetExtractor<T>(rowMapper));
+	}
+	public void query(String sql, Object[] args, int[] argTypes, RowCallbackHandler rch) throws JdbcException {
+		query(sql, newArgTypePreparedStatementSetter(args, argTypes), rch);
+	}
+	public <T> T query(String sql, Object[] args, int[] argTypes, ResultSetExtractor<T> rse) throws JdbcException {
+		return query(sql, newArgTypePreparedStatementSetter(args, argTypes), rse);
+	}
 
-    public <T> T query(PreparedStatementCreator psc, final PreparedStatementSetter pss, final ResultSetExtractor<T> rse) throws SQLException {
+    public List<Map<String, Object>> queryForList(String sql) throws JdbcException {
+		return query(sql, getColumnMapRowMapper());
+	}
+    public Map<String, Object> queryForMap(String sql) throws JdbcException {
+		return queryForObject(sql, getColumnMapRowMapper());
+	}
+    public Map<String, Object> queryForMap(String sql, Object... args) throws JdbcException {
+		return queryForObject(sql, args, getColumnMapRowMapper());
+	}
+    public Map<String, Object> queryForMap(String sql, Object[] args, int[] argTypes) throws JdbcException {
+		return queryForObject(sql, args, argTypes, getColumnMapRowMapper());
+	}
+    public <T> T queryForObject(String sql, RowMapper<T> rowMapper) throws JdbcException {
+		List<T> results = query(sql, rowMapper);
+		return JdbcHelper.requiredSingleResult(results);
+	}
+    
+    public <T> T queryForObject(String sql, Class<T> requiredType) throws JdbcException {
+		return queryForObject(sql, getSingleColumnRowMapper(requiredType));
+	}
+    public <T> T queryForObject(String sql, Class<T> requiredType, Object... args) throws JdbcException {
+		return queryForObject(sql, args, getSingleColumnRowMapper(requiredType));
+	}
+    public <T> T queryForObject(String sql, Object[] args, int[] argTypes, Class<T> requiredType)
+			throws JdbcException {
+
+		return queryForObject(sql, args, argTypes, getSingleColumnRowMapper(requiredType));
+	}
+    public <T> T queryForObject(String sql, Object[] args, int[] argTypes, RowMapper<T> rowMapper)
+			throws JdbcException {
+
+		List<T> results = query(sql, args, argTypes, new RowMapperResultSetExtractor<T>(rowMapper, 1));
+		return JdbcHelper.requiredSingleResult(results);
+	}
+    
+    public <T> T queryForObject(String sql, Object[] args, Class<T> requiredType) throws JdbcException {
+		return queryForObject(sql, args, getSingleColumnRowMapper(requiredType));
+	}
+    public <T> T queryForObject(String sql, Object[] args, RowMapper<T> rowMapper) throws JdbcException {
+		List<T> results = query(sql, args, new RowMapperResultSetExtractor<T>(rowMapper, 1));
+		return JdbcHelper.requiredSingleResult(results);
+	}
+    
+    public SqlRowSet queryForRowSet(String sql) throws JdbcException {
+		return query(sql, new SqlRowSetResultSetExtractor());
+	}
+    
+    public <T> List<T> query(String sql, RowMapper<T> rowMapper) throws JdbcException {
+		return query(sql, new RowMapperResultSetExtractor<T>(rowMapper));
+	}
+    
+    public <T> T query(final String sql, final ResultSetExtractor<T> rse) throws JdbcException {
+		Assert.isNotNull(sql, "SQL must not be null");
+		Assert.isNotNull(rse, "ResultSetExtractor must not be null");
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Executing SQL query [" + sql + "]");
+		}
+		class QueryStatementCallback implements StatementCallback<T>, SqlProvider {
+			@Override
+			public T doInStatement(Statement stmt) throws SQLException {
+				ResultSet rs = null;
+				try {
+					rs = stmt.executeQuery(sql);
+					ResultSet rsToUse = rs;
+					return rse.extractData(rsToUse);
+				}
+				finally {
+					JdbcHelper.closeResultSet(rs);
+				}
+			}
+			@Override
+			public String getSql() {
+				return sql;
+			}
+		}
+		return execute(new QueryStatementCallback());
+	}
+
+    protected RowMapper<Map<String, Object>> getColumnMapRowMapper() {
+		return new ColumnMapRowMapper();
+	}
+    protected <T> RowMapper<T> getSingleColumnRowMapper(Class<T> requiredType) {
+		return new SingleColumnRowMapper<T>(requiredType);
+	}
+    public <T> T query(PreparedStatementCreator psc, final PreparedStatementSetter pss, final ResultSetExtractor<T> rse) throws JdbcException {
 
         Assert.isNotNull(rse, "ResultSetExtractor must not be null");
         LOG.debug("Executing prepared SQL query");

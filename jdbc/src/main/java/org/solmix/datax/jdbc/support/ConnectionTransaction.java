@@ -123,7 +123,7 @@ public class ConnectionTransaction implements Transaction
      */
     @Override
     public void released() {
-        throw new UnsupportedOperationException("reset");
+        throw new UnsupportedOperationException("released");
     }
 
     /**
@@ -133,7 +133,7 @@ public class ConnectionTransaction implements Transaction
      */
     @Override
     public void requested() {
-        throw new UnsupportedOperationException("reset");
+        throw new UnsupportedOperationException("requested");
     }
 
 }

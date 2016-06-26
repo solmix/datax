@@ -29,7 +29,7 @@ import java.util.Map;
 import org.solmix.commons.util.DataUtils;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.jdbc.JdbcDataService;
-import org.solmix.datax.jdbc.driver.SQLDriver;
+import org.solmix.datax.jdbc.dialect.SQLDialect;
 import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.model.OperationType;
 
@@ -95,7 +95,7 @@ public class SQLValuesClause
         StringBuffer _columnList = new StringBuffer();
         StringBuffer _valueList = new StringBuffer();
         Map sequences = dataSource.getSequences();
-        SQLDriver driver = dataSource.getDriver();
+        SQLDialect driver = dataSource.getDialect();
         // values = DataUtils.divideMap(values, new ArrayList(sequences.keySet()));
         if (values == null)
             values = new HashMap();

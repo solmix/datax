@@ -28,7 +28,7 @@ import org.solmix.datax.DSRequest;
 import org.solmix.datax.DataService;
 import org.solmix.datax.jdbc.JdbcDataService;
 import org.solmix.datax.jdbc.JdbcExtProperty;
-import org.solmix.datax.jdbc.driver.SQLDriver;
+import org.solmix.datax.jdbc.dialect.SQLDialect;
 import org.solmix.datax.model.FieldInfo;
 
 
@@ -97,7 +97,7 @@ public class SQLOrderClause
        }
        StringBuffer result = new StringBuffer();
        boolean __descending = false;
-       SQLDriver driver = dataSources.get(0).getDriver();
+       SQLDialect driver = dataSources.get(0).getDialect();
        for (String fieldName : sortBy)
        {
           boolean customCheck = false;

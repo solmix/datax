@@ -54,7 +54,7 @@ public class MysqlDialect extends SQLDialect
      * @see org.solmix.datax.jdbc.dialect.SQLDialect#getExpressionForSortBy(java.lang.String, java.util.Map)
      */
     @Override
-    protected String getExpressionForSortBy(String column, Map<String, String> valueMap) {
+    public String getExpressionForSortBy(String column, Map<String, String> valueMap) {
         return null;
     }
 

@@ -76,6 +76,28 @@ public abstract class SQLDialect
             customSql).append(") aliasForPage").toString();
     }
     
+    public String getRowCountQueryString(String selectClause,
+            String tableClause, String whereClause, String groupClause,
+            String groupWhereClause, Map<String,Object> context) {
+            String __return = "SELECT COUNT(*) FROM ";
+            if (!groupClause.equals("$defaultGroupClause"))
+                __return = (new StringBuilder()).append(__return).append("(SELECT ").append(
+                    selectClause).append(" FROM ").toString();
+            __return = (new StringBuilder()).append(__return).append(tableClause).toString();
+            if (!whereClause.equals("$defaultWhereClause")
+                || context.get("defaultWhereClause") != null)
+                __return = (new StringBuilder()).append(__return).append(" WHERE ").append(
+                    whereClause).toString();
+            if (!groupClause.equals("$defaultGroupClause")) {
+                __return = (new StringBuilder()).append(__return).append(
+                    " GROUP BY ").append(groupClause).append(") work").toString();
+                if (!groupWhereClause.equals("$defaultGroupWhereClause"))
+                    __return = (new StringBuilder()).append(__return).append(
+                        " WHERE ").append(groupWhereClause).toString();
+            }
+            return __return;
+        }
+    
     public String escapeColumnName(String columnName, boolean forceQuoteColumn) {
         if (columnName == null)
             return null;
@@ -123,7 +145,11 @@ public abstract class SQLDialect
     public boolean limitRequiresSQLOrderClause() {
         return false;
     }
-    
+    public boolean fieldAssignableInline(FieldInfo field) {
+        String fieldType = field.getType().value();
+        return (!DataTools.isBinary(field)) && !"blob".equals(fieldType)
+            && !"clob".equals(fieldType);
+    }
     public abstract String escapeValue(Object obj);
 
     public abstract String escapeValueForFilter(Object value, String filterStyle);
@@ -134,7 +160,7 @@ public abstract class SQLDialect
     
     public abstract String sqlOutTransform(String columnName, String remapName, String tableName);
     
-    protected abstract String getExpressionForSortBy(String column, Map<String, String> valueMap);
+    public abstract String getExpressionForSortBy(String column, Map<String, String> valueMap);
 
     public abstract String limitQuery(String query, long startRow, long totalRows, List<String> outputColumns, String orderClause);
 
@@ -146,4 +172,24 @@ public abstract class SQLDialect
     public int getMaximumSetSize() {
         return 0;
     }
+
+	public boolean useColumnLabelInMetadata() {
+		return false;
+	}
+
+	/**resutset.next()为空时不再读取*/
+	public boolean hasBrokenCursorAPIs() {
+		return false;
+	}
+	
+	 /**
+     * support special database,if sub driver used this method would override
+     * this.
+     * 
+     * @return
+     */
+	public boolean supportsSQLLimit() {
+		return false;
+	}
+
 }

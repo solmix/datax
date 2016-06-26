@@ -43,9 +43,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.solmix.commons.util.DataUtils;
 import org.solmix.commons.util.Reflection;
+import org.solmix.datax.DSCallException;
 import org.solmix.datax.jdbc.core.EmptyResultJdbcException;
 import org.solmix.datax.jdbc.core.IncorrectResultSizeJdbcException;
+import org.solmix.datax.jdbc.dialect.SQLDialect;
 import org.solmix.datax.jdbc.support.MetaDataAccessException;
+import org.solmix.datax.model.DataServiceInfo;
+import org.solmix.datax.model.FieldInfo;
 
 
 /**
@@ -59,17 +63,17 @@ public class JdbcHelper
 
     public static final int TYPE_UNKNOWN = Integer.MIN_VALUE;
 
-    private static final Logger logger = LoggerFactory.getLogger(JdbcHelper.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JdbcHelper.class);
 
     public static void closeConnection(Connection con) {
         if (con != null) {
             try {
                 con.close();
             } catch (SQLException ex) {
-                logger.debug("Could not close JDBC Connection", ex);
+                LOG.debug("Could not close JDBC Connection", ex);
             } catch (Throwable ex) {
                 // We don't trust the JDBC driver: It might throw RuntimeException or Error.
-                logger.debug("Unexpected exception on closing JDBC Connection", ex);
+                LOG.debug("Unexpected exception on closing JDBC Connection", ex);
             }
         }
     }
@@ -79,10 +83,10 @@ public class JdbcHelper
             try {
                 stmt.close();
             } catch (SQLException ex) {
-                logger.trace("Could not close JDBC Statement", ex);
+                LOG.trace("Could not close JDBC Statement", ex);
             } catch (Throwable ex) {
                 // We don't trust the JDBC driver: It might throw RuntimeException or Error.
-                logger.trace("Unexpected exception on closing JDBC Statement", ex);
+                LOG.trace("Unexpected exception on closing JDBC Statement", ex);
             }
         }
     }
@@ -92,10 +96,10 @@ public class JdbcHelper
             try {
                 rs.close();
             } catch (SQLException ex) {
-                logger.trace("Could not close JDBC ResultSet", ex);
+                LOG.trace("Could not close JDBC ResultSet", ex);
             } catch (Throwable ex) {
                 // We don't trust the JDBC driver: It might throw RuntimeException or Error.
-                logger.trace("Unexpected exception on closing JDBC ResultSet", ex);
+                LOG.trace("Unexpected exception on closing JDBC ResultSet", ex);
             }
         }
     }
@@ -234,16 +238,16 @@ public class JdbcHelper
             DatabaseMetaData dbmd = con.getMetaData();
             if (dbmd != null) {
                 if (dbmd.supportsBatchUpdates()) {
-                    logger.debug("JDBC driver supports batch updates");
+                    LOG.debug("JDBC driver supports batch updates");
                     return true;
                 } else {
-                    logger.debug("JDBC driver does not support batch updates");
+                    LOG.debug("JDBC driver does not support batch updates");
                 }
             }
         } catch (SQLException ex) {
-            logger.debug("JDBC driver 'supportsBatchUpdates' method threw exception", ex);
+            LOG.debug("JDBC driver 'supportsBatchUpdates' method threw exception", ex);
         } catch (AbstractMethodError err) {
-            logger.debug("JDBC driver does not support JDBC 2.0 'supportsBatchUpdates' method", err);
+            LOG.debug("JDBC driver does not support JDBC 2.0 'supportsBatchUpdates' method", err);
         }
         return false;
     }
@@ -339,7 +343,7 @@ public class JdbcHelper
                 isBeforeFirst = resultSet.isBeforeFirst();
                 isAfterLast = resultSet.isAfterLast();
             } catch (SQLException ignored) {
-            	logger.debug("isBeforeFirst()/isAfterLast() throwing exceptions .", ignored);
+            	LOG.debug("isBeforeFirst()/isAfterLast() throwing exceptions .", ignored);
             }
             if ((isBeforeFirst || isAfterLast || resultSet.getRow() == 0) && !resultSet.next())
                 return __return;
@@ -443,7 +447,7 @@ public class JdbcHelper
                 _return.add(obj);
             }
         } catch (Exception e) {
-        	logger.error("can not transform data to bean object", e);
+        	LOG.error("can not transform data to bean object", e);
         }
         return _return;
 
@@ -491,4 +495,86 @@ public class JdbcHelper
         }
         return __return;
     }
+
+	public static List<Object> toListOfMapsOrBeans(ResultSet rs,SQLDialect dialect,DataServiceInfo dataServiceInfo)throws SQLException, DSCallException {
+		
+		return toListOfMapsOrBeans(rs, dialect, -1L, dialect.hasBrokenCursorAPIs(), dataServiceInfo);
+	}
+	
+	public static List<Object> toListOfMapsOrBeans(ResultSet resultSet,SQLDialect dialect,long rowNum,boolean hasBrokenCursorAPIs,DataServiceInfo dataServiceInfo)throws SQLException, DSCallException {
+		List<Object> __return = new ArrayList<Object>();
+        Map<String, String> _caseInsensitiveMap = new HashMap<String, String>();
+        ResultSetMetaData _rsmd;
+        boolean _useColumnLabel = false;
+        String _beanClassName = null;
+  
+        if (hasBrokenCursorAPIs) {
+            if (!resultSet.next())
+                return __return;
+        } else {
+            boolean isBeforeFirst = false;
+            boolean isAfterLast = false;
+            try {
+                isBeforeFirst = resultSet.isBeforeFirst();
+                isAfterLast = resultSet.isAfterLast();
+            } catch (SQLException ignored) {
+                LOG.debug("isBeforeFirst()/isAfterLast() throwing exceptions .", ignored);
+            }
+            if ((isBeforeFirst || isAfterLast || resultSet.getRow() == 0) && !resultSet.next())
+                return __return;
+        }
+        _rsmd = resultSet.getMetaData();
+        Object bean= dataServiceInfo.getProperty("bean");
+        if(bean!=null){
+        	_beanClassName=bean.toString();
+        }
+        _useColumnLabel= dialect.useColumnLabelInMetadata();
+        int count = _rsmd.getColumnCount();
+        for (int i = 1; i <= count; i++) {
+            String fieldName = null;
+            String columnName;
+            if (_useColumnLabel)
+                columnName = _rsmd.getColumnLabel(i);
+            else
+                columnName = _rsmd.getColumnName(i);
+            
+            List<FieldInfo> names = dataServiceInfo.getFields();
+            for(FieldInfo name:names){
+            	if(name.getName().equalsIgnoreCase(columnName)){
+            		  fieldName = name.getName();
+                      break;
+            	}
+            }
+            if (fieldName != null)
+                _caseInsensitiveMap.put(columnName, fieldName);
+            else
+                _caseInsensitiveMap.put(columnName, columnName);
+        }
+        
+        long i = 0;
+        do {
+            if (i >= rowNum && rowNum != -1L)
+                break;
+            Map<String,?> map = toAttributeMap(resultSet,  _rsmd, _useColumnLabel, _caseInsensitiveMap, null);
+            if (DataUtils.isNullOrEmpty(_beanClassName))
+                __return.add(map);
+            else {
+                try {
+                    Object beanInstannce = Reflection.newInstance(_beanClassName);
+                    DataUtils.setProperties(map, beanInstannce);
+                    __return.add(beanInstannce);
+                } catch (Exception e) {
+                    throw new DSCallException("", e);
+                }
+            }
+            /**
+             * java.sql.ResultSet.next() move cursor to new row set.
+             */
+            if (!resultSet.next())
+                break;
+            i++;
+
+        } while (true);
+		return __return;
+	}
 }

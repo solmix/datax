@@ -56,7 +56,7 @@ public class H2DBDialect extends SQLDialect
      * @see org.solmix.datax.jdbc.dialect.SQLDialect#getExpressionForSortBy(java.lang.String, java.util.Map)
      */
     @Override
-    protected String getExpressionForSortBy(String column, Map<String, String> valueMap) {
+    public String getExpressionForSortBy(String column, Map<String, String> valueMap) {
         if (valueMap == null || valueMap.size() == 0)
             return column;
         else

@@ -49,7 +49,7 @@ public class HSQLDialect extends SQLDialect
     }
     
     @Override
-    protected String getExpressionForSortBy(String column, Map<String, String> valueMap) {
+    public String getExpressionForSortBy(String column, Map<String, String> valueMap) {
         if (valueMap == null || valueMap.size() == 0)
             return column;
         else

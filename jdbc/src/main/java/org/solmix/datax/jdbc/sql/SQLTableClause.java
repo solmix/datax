@@ -71,7 +71,7 @@ public class SQLTableClause
             JdbcDataService ds = i.next();
             Object shema = ds.getDataServiceInfo().getProperty("sqlSchema");
             if (shema != null) {
-                _buf.append(shema).append(ds.getDriver().getQualifiedSchemaSeparator());
+                _buf.append(shema).append(ds.getDialect().getQualifiedSchemaSeparator());
             }
             _buf.append(ds.getTable().getName());
             if (DataUtils.isNotNullAndEmpty(relatedTables))

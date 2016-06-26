@@ -52,6 +52,14 @@ public class PagedBean implements Pageable
         this.endRow = endRow;
         this.batchSize = batchSize;
     }
+    
+    public PagedBean(Integer startRow, Integer endRow, Integer batchSize,Integer total)
+    {
+        this.startRow = startRow;
+        this.endRow = endRow;
+        this.batchSize = batchSize;
+        this.totalRow=total;
+    }
 
     @Override
     public Integer getEndRow() {

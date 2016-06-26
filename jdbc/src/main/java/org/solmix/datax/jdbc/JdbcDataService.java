@@ -18,23 +18,38 @@
  */
 package org.solmix.datax.jdbc;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.solmix.commons.collections.DataTypeMap;
+import org.solmix.commons.timer.StopWatch;
 import org.solmix.commons.util.DataUtils;
+import org.solmix.commons.util.StringUtils;
 import org.solmix.datax.DSCallException;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
+import org.solmix.datax.DSResponse.Status;
+import org.solmix.datax.attachment.Pageable;
+import org.solmix.datax.attachment.PagedBean;
+import org.solmix.datax.attachment.SortBy;
 import org.solmix.datax.call.DSCall;
 import org.solmix.datax.call.DSCallCompleteCallback;
+import org.solmix.datax.jdbc.dialect.OracleDialect;
 import org.solmix.datax.jdbc.dialect.SQLDialect;
-import org.solmix.datax.jdbc.driver.SQLDriver;
-import org.solmix.datax.jdbc.mode.JdbcDataServiceInfo;
+import org.solmix.datax.jdbc.helper.JdbcHelper;
 import org.solmix.datax.jdbc.sql.SQLGenerationException;
 import org.solmix.datax.jdbc.sql.SQLOrderClause;
 import org.solmix.datax.jdbc.sql.SQLSelectClause;
@@ -42,13 +57,21 @@ import org.solmix.datax.jdbc.sql.SQLTable;
 import org.solmix.datax.jdbc.sql.SQLTableClause;
 import org.solmix.datax.jdbc.sql.SQLValuesClause;
 import org.solmix.datax.jdbc.sql.SQLWhereClause;
+import org.solmix.datax.jdbc.support.ConnectionTransaction;
+import org.solmix.datax.jdbc.support.ConnectionWrapperedTransaction;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.model.OperationInfo;
 import org.solmix.datax.model.OperationType;
+import org.solmix.datax.router.DataServiceRouter;
+import org.solmix.datax.router.RequestToken;
+import org.solmix.datax.script.VelocityExpression;
 import org.solmix.datax.support.BaseDataService;
+import org.solmix.datax.support.DSResponseImpl;
 import org.solmix.datax.util.DataTools;
 import org.solmix.runtime.Container;
+import org.solmix.runtime.transaction.Transaction;
+import org.solmix.runtime.transaction.TransactionService;
 
 
 /**
@@ -63,8 +86,13 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
 
     protected volatile SQLTable table;
     
-    protected volatile SQLDriver driver;
+    protected volatile SQLDialect dialect;
     
+    private DataSourceService dataSourceService;
+    
+    private DataSource dataSource;
+    
+    private DataServiceRouter<RequestToken> dataServiceRouter;
     
     public JdbcDataService(DataServiceInfo info, Container container, DataTypeMap prop)
     {
@@ -72,33 +100,430 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
     }
     
     @Override
-    public JdbcDataServiceInfo getDataServiceInfo(){
-        return null;
-    }
-    
-    @Override
     protected DSResponse executeDefault(DSRequest req,OperationType type)throws DSCallException {
-        if(LOG.isDebugEnabled()){
-            StringBuilder info = new StringBuilder();
-            info.append("Performing ")
-            .append(type)
-            .append(" operation with \n")
-            .append(" values:").append(req.getRawValues());
-            LOG.debug(info.toString());
-        }
-        OperationInfo oi=  req.getOperationInfo();
-      
-        Object tmp=oi.getProperty(JdbcExtProperty.QUALIFY_COLUMN_NAMES);
-        boolean qualifyColumnNames=DataUtils.asBoolean(tmp);
-        /*****************************************************************************
-         * Prepare for generate sql statement.
-         ******************************************************************************/
-        Map<String, Object> context = getClausesContext(req, qualifyColumnNames,oi);
-        
-        return null;
+    	DSResponse response;
+    	if(isJdbcOperation(type)){
+    		response=executeJdbc(req,type);
+    	}else{
+    		response = super.executeDefault(req, type);
+    	}
+    	return response;
+       
     }
 
-    private Map<String, Object> getClausesContext(DSRequest req, boolean qualifyColumnNames, OperationInfo oi) {
+    private DSResponse executeJdbc(DSRequest req, OperationType type) throws DSCallException {
+    	 if (isPartitionEnable()) {
+             return executePartition(req,type);
+         } else {
+             DataSource dataSource = getDataSource();
+            return executeWithDataSource(dataSource,req,type);
+         }
+	}
+
+
+	private DSResponse executePartition(DSRequest req, OperationType type) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private DSResponse executeWithDataSource(DataSource dataSource,DSRequest req, OperationType type)throws DSCallException
+	{
+		OperationInfo oi=req.getOperationInfo();
+		
+		/**生成sql语句的时候字段是否带表名*/
+		Object tmp=oi.getProperty(JdbcExtProperty.QUALIFY_COLUMN_NAMES);
+		 if (tmp == null) {
+			 tmp = autoQualifyColumnNames(req.getDataService().getDataServiceInfo());
+	        }
+        boolean qualifyColumnNames=DataUtils.asBoolean(tmp);
+		List<String> _customCriteriaFields = null,
+					 _customValueFields = null,
+					 _excludeCriteriaFields = null;
+		/**自定义查询字段*/
+		String customcf  = (String)oi.getProperty(JdbcExtProperty.CUSTOM_CRITERIA_FIELDS_NODE);
+		if(customcf!=null){
+			_customCriteriaFields = Arrays.asList(StringUtils.split(customcf, ","));
+		}
+		
+		/**自定义值字段*/
+		customcf  = (String)oi.getProperty(JdbcExtProperty.CUSTOM_VALUE_FIELDS_NODE);
+		if(customcf!=null){
+			_customValueFields = Arrays.asList(StringUtils.split(customcf, ","));
+		}
+		
+		/**自定义排除字段*/
+		customcf  = (String)oi.getProperty(JdbcExtProperty.EXCLUDE_CRITERIA_FIELDS_NODE);
+		if(customcf!=null){
+			_excludeCriteriaFields = Arrays.asList(StringUtils.split(customcf, ","));
+		}
+		
+		/**自定义字段*/
+		if(_customCriteriaFields==null){
+			customcf  = (String)oi.getProperty(JdbcExtProperty.CUSTOM_FIELDS_NODE);
+			if(customcf!=null){
+				_customCriteriaFields = Arrays.asList(StringUtils.split(customcf, ","));
+			}
+		}
+		
+        Map<String, Object> context = getClausesContext(req, 
+        		qualifyColumnNames,
+        		oi,
+        		_customCriteriaFields,
+        		_customValueFields,
+        		_excludeCriteriaFields);
+        
+        String sql  = oi.getExtension(JdbcExtProperty.SQL_NODE);
+        //如果自定义了语句，就使用自定义的
+        boolean usedCustomSQL=StringUtils.isEmpty(sql);
+        if(DataTools.isModificationOperation(type)
+        		&&usedCustomSQL
+        		&&context.get(JdbcExtProperty.DEFAULT_VALUES_CLAUSE)==null){
+        	String __info;
+            if (req.getRawValues() == null)
+                __info = "Insert, update or replace operation requires non-empty values; check submitted values parameter";
+            else
+                __info = "Auto generate  Insert, update or replace sql  requires non-empty  ValuesClause; check submitted values in DataSource fields";
+            LOG.warn(__info);
+            throw new DSCallException(__info);
+        }
+        VelocityExpression ve = new VelocityExpression(getContainer());
+        Map<String, Object> internal =ve.prepareContext(req, req.getRequestContext());
+        if(internal!=null){
+        	context.putAll(internal);
+        }
+        String statement = generateSQLStatement(req,oi,ve, context,sql);
+        
+        DSResponse res = new DSResponseImpl(req,Status.STATUS_SUCCESS);
+        //查询
+        if(DataTools.isFetch(oi.getType())){
+        	boolean __canPage = DataTools.isPaged(req);
+        	//FIXME 可能需要更多的条件控制是否分页
+        	if(__canPage){
+        		StopWatch timer = new StopWatch();
+        		res = executeWindowedSelect(req, ve, context, statement,usedCustomSQL);
+        		LOG.debug("SQL QueryTime:{}",timer);
+        	}else{
+        		executeQuery(req,statement, res);
+        	}
+        }else{
+        	
+        }
+		return res;
+	}
+	
+	private void executeQuery(DSRequest req,String statement, DSResponse res ) throws DSCallException {
+		 queryWindowSelect(req, statement, null,res);
+	}
+
+	private DSResponse executeWindowedSelect(DSRequest req,VelocityExpression ve,
+			Map<String, Object> context, String query, boolean usedCustomSQL) throws DSCallException {
+        DSResponse res = new DSResponseImpl(req,Status.STATUS_SUCCESS);
+        Pageable page= req.getAttachment(Pageable.class);
+		if (usedCustomSQL) {
+			String preparedCountQuery = dialect.getRowCountQueryString(query);
+			LOG.debug("Executing row count query", preparedCountQuery);
+	        String countQuery = ve.evaluateAsString(preparedCountQuery, context);
+	        LOG.debug("After Velocity query String", countQuery);
+	        StopWatch timer = new StopWatch();
+	        Object objCount = executeScalar(countQuery, req);
+	        Integer count = new Integer(objCount == null ? "0" : objCount.toString());
+	        LOG.debug("SQL window query,Query total rows: {},used :{}",count, timer);
+	        if(count==0){
+	        	res.addAttachment(Pageable.class, new PagedBean(0, 0, page.getBatchSize(),0));
+	        	res.setRawData(Collections.emptyList());
+	        	return res;
+	        }
+	        query = dialect.limitQuery(query, page.getStartRow(), page.getBatchSize(), null);
+	        queryWindowSelect(req, query, page,res);
+		}else{
+			OperationInfo oi=req.getOperationInfo();
+			 String selectClause  =getQueryClause(oi,JdbcExtProperty.SELECT_CLAUSE_NODE,JdbcExtProperty.DEFAULT_SELECT_CLAUSE);
+			 String valuesClause  =getQueryClause(oi,JdbcExtProperty.VALUES_CLAUSE_NODE,JdbcExtProperty.DEFAULT_VALUES_CLAUSE);
+			 String tableClause  =getQueryClause(oi,JdbcExtProperty.TABLE_CLAUSE_NODE,JdbcExtProperty.DEFAULT_TABLE_CLAUSE);
+			 String whereClause  =getQueryClause(oi,JdbcExtProperty.WHERE_CLAUSE_NODE,JdbcExtProperty.DEFAULT_WHERE_CLAUSE);
+			 String orderClause  =getQueryClause(oi,JdbcExtProperty.ORDER_CLAUSE_NODE,JdbcExtProperty.DEFAULT_ORDER_CLAUSE);
+			 String groupClause  =getQueryClause(oi,JdbcExtProperty.GROUP_CLAUSE_NODE,JdbcExtProperty.DEFAULT_GROUP_CLAUSE);
+			 String groupWhereClause  =getQueryClause(oi,JdbcExtProperty.GROUPWHERE_CLAUSE_NODE,JdbcExtProperty.DEFAULT_GROUPWHERE_CLAUSE);
+			 //查总数
+			 String preparedCountQuery = dialect.getRowCountQueryString(selectClause, tableClause, whereClause, groupClause, groupWhereClause, context);
+	         LOG.debug("Executing row count query{}", preparedCountQuery);
+	         String countQuery = ve.evaluateAsString(preparedCountQuery, context);
+	         Object objCount = executeScalar(countQuery, req);
+	         Integer count = new Integer(objCount == null ? "0" : objCount.toString());
+	         if(count==0){
+		        	res.addAttachment(Pageable.class, new PagedBean(0, 0, page.getBatchSize(),0));
+		        	res.setRawData(Collections.emptyList());
+		        	return res;
+		        }
+	         if(dialect.supportsSQLLimit()){
+	        	List<String> outputs= JdbcExtProperty.getExtensionFields(oi, "outputs");
+	        	 if(dialect.limitRequiresSQLOrderClause()){
+	        		  if (orderClause == null || orderClause.equals("")) {
+	                        List<String> pkList = JdbcExtProperty.getPrimaryKeys(getDataServiceInfo());
+	                        if (dialect instanceof OracleDialect)
+	                            orderClause = "rownum";
+	                        else if (!pkList.isEmpty()) {
+	                            orderClause = pkList.get(0);
+	                            LOG.debug((new StringBuilder()).append("Using PK as default sorter: ").append(orderClause).toString());
+	                        } else {
+	                            Iterator<String> i = outputs.iterator();
+	                            if (i.hasNext())
+	                                orderClause = i.next();
+	                            LOG.debug((new StringBuilder()).append("Using first field as default sorter: ").append(orderClause).toString());
+	                        }
+	                    }
+		        	 query = dialect.limitQuery(countQuery, page.getStartRow(), page.getBatchSize(), outputs,orderClause);
+
+		         }else{
+		        	 query = dialect.limitQuery(countQuery, page.getStartRow(), page.getBatchSize(), outputs);
+		         }
+	         }
+		        queryWindowSelect(req, query, page,res);
+
+		}
+		return res;
+	}
+	private List<Object> querySelect(String query, DSRequest req) throws DSCallException{
+		boolean usedTransaction = usedTransaction(req);
+		Connection __currentConn = null;
+        Statement s = null;
+        ResultSet rs = null;
+        try{
+        	try{
+        		__currentConn=getConnection(req);
+	        	s = createFetchStatement(__currentConn);
+	            rs = s.executeQuery(query);
+        	} catch (SQLException e) {
+        		//如果不使用事物机制，不影响别的语句执行，为了容错，可以再数据源中重新取一个connection执行查询
+        		if(!usedTransaction){
+        			try {
+						__currentConn=dataSource.getConnection();
+						if(s!=null){
+							s.close();
+						}
+						s = createFetchStatement(__currentConn);
+						rs = s.executeQuery(query);
+					} catch (SQLException e1) {
+						throw new DSCallException();
+					}
+        		}
+        	}
+        	
+        	List<Object> rows = null;
+            try {
+                rows = JdbcHelper.toListOfMapsOrBeans(rs,dialect,req.getDataService().getDataServiceInfo());
+            } catch (SQLException e) {
+                throw new DSCallException("transform resultset to java bean error", e);
+            }
+            return rows;
+        } finally {
+            try {
+                s.close();
+                rs.close();
+            } catch (Exception ignored) {
+            }
+            if (!usedTransaction && __currentConn != null) {
+            	JdbcHelper.closeConnection(__currentConn);
+            }
+        }
+	}
+	private void queryWindowSelect(DSRequest req, String query,Pageable page, DSResponse res) throws DSCallException {
+		if (LOG.isDebugEnabled()){
+			LOG.debug(
+	                (new StringBuilder()).append("SQL windowed select rows ").append(page.getStartRow()).append("->").append(
+	                		page.getEndRow()).append(", result size ").append(page.getBatchSize()).append(". Query:")
+	                		.append(query).toString());
+		} 
+		boolean usedTransaction = usedTransaction(req);
+		Connection __currentConn = null;
+        Statement s = null;
+        ResultSet rs = null;
+        try{
+        	try{
+        		__currentConn=getConnection(req);
+	        	s = createFetchStatement(__currentConn);
+	            rs = s.executeQuery(query);
+        	} catch (SQLException e) {
+        		//如果不使用事物机制，不影响别的语句执行，为了容错，可以再数据源中重新取一个connection执行查询
+        		if(!usedTransaction){
+        			try {
+						__currentConn=dataSource.getConnection();
+						if(s!=null){
+							s.close();
+						}
+						s = createFetchStatement(__currentConn);
+						rs = s.executeQuery(query);
+					} catch (SQLException e1) {
+						throw new DSCallException();
+					}
+        		}
+        	}
+        	
+        	List<Object> rows = null;
+            try {
+                rows = JdbcHelper.toListOfMapsOrBeans(rs,dialect,req.getDataService().getDataServiceInfo());
+            } catch (SQLException e) {
+                throw new DSCallException("transform resultset to java bean error", e);
+            }
+            res.setRawData(rows);
+            //分页查询
+            if(page!=null){
+            	PagedBean rpage = new PagedBean();
+                rpage.setEndRow(page.getStartRow()+rows.size());
+                rpage.setStartRow(page.getStartRow());
+                if (rows.size() < page.getBatchSize())
+                	rpage.setTotalRow(page.getEndRow());
+                res.addAttachment(Pageable.class, rpage);
+            }
+        } finally {
+            try {
+                s.close();
+                rs.close();
+            } catch (Exception ignored) {
+            }
+            if (!usedTransaction && __currentConn != null) {
+            	JdbcHelper.closeConnection(__currentConn);
+            }
+        }
+	}
+	
+	private Statement createFetchStatement(Connection conn) throws SQLException {
+		return conn.createStatement();
+	}
+
+	/**是否可使用事物机制*/
+	private boolean usedTransaction(DSRequest req){
+		return req.getDSCall() != null && this.canJoinTransaction(req);
+	}
+	/**获取链接*/
+	private Connection getConnection(DSRequest req) throws SQLException{
+		Connection __currentConn = null;
+		if (usedTransaction(req)) {
+            DSCall dsc = req.getDSCall();
+            TransactionService ts = dsc.getTransactionService();
+            Transaction transaction = ts.getResource(dataSource);
+            req.setPartsOfTransaction(true);
+            if (transaction != null) {
+                if (transaction instanceof ConnectionWrapperedTransaction) {
+                    Object wrap = ((ConnectionWrapperedTransaction<?>) transaction).getWrappedTransactionObject();
+                    if (wrap instanceof Connection) {
+                    	__currentConn = (Connection) wrap;
+                    }
+                } else  if (transaction instanceof ConnectionTransaction) {
+                    Connection conn = (Connection) transaction.getTransactionObject();
+                    if (conn != null) {
+                    	__currentConn =conn;
+                    }
+                }  
+                // dsc中不存在该DataSource的事物对象
+            } else {
+                if (this.canStartTransaction(req, false)) {
+                	__currentConn = dataSource.getConnection();
+                    if (__currentConn != null) {
+                        ts.bindResource(dataSource, new ConnectionTransaction(__currentConn));
+                    }
+                }
+            }
+    	}else{
+    		__currentConn = dataSource.getConnection();
+    	}
+		return  __currentConn;
+	}
+
+	private Object executeScalar(String countQuery, DSRequest req) throws DSCallException {
+		List<Object> list = querySelect(countQuery, req);
+		if (list == null || list.size() == 0) {
+            return null;
+        } else {
+            Map map = (Map) list.get(0);
+            return map.get(DataUtils.getSingle(map));
+        }
+	}
+
+	/**基于模板生成sql语句*/
+	private String generateSQLStatement(DSRequest req,OperationInfo oi,VelocityExpression ve,Map<String, Object> context,String customSql) {
+		if(!StringUtils.isEmpty(customSql)){
+			return ve.evaluateAsString(customSql, context);
+		}
+		 String selectClause  =getQueryClause(oi,JdbcExtProperty.SELECT_CLAUSE_NODE,JdbcExtProperty.DEFAULT_SELECT_CLAUSE);
+		 String valuesClause  =getQueryClause(oi,JdbcExtProperty.VALUES_CLAUSE_NODE,JdbcExtProperty.DEFAULT_VALUES_CLAUSE);
+		 String tableClause  =getQueryClause(oi,JdbcExtProperty.TABLE_CLAUSE_NODE,JdbcExtProperty.DEFAULT_TABLE_CLAUSE);
+		 String whereClause  =getQueryClause(oi,JdbcExtProperty.WHERE_CLAUSE_NODE,JdbcExtProperty.DEFAULT_WHERE_CLAUSE);
+		 String orderClause  =getQueryClause(oi,JdbcExtProperty.ORDER_CLAUSE_NODE,JdbcExtProperty.DEFAULT_ORDER_CLAUSE);
+		 String groupClause  =getQueryClause(oi,JdbcExtProperty.GROUP_CLAUSE_NODE,JdbcExtProperty.DEFAULT_GROUP_CLAUSE);
+		 String groupWhereClause  =getQueryClause(oi,JdbcExtProperty.GROUPWHERE_CLAUSE_NODE,JdbcExtProperty.DEFAULT_GROUPWHERE_CLAUSE);
+		 String statement;
+		 if(DataTools.isFetch(oi.getType())){
+			 statement = (new StringBuilder()).append("SELECT ").append(selectClause).append(" FROM ").append(tableClause).toString();
+	            if (!"$defaultWhereClause".equals(whereClause) || context.get("defaultWhereClause") != null)
+	                statement = (new StringBuilder()).append(statement).append(" WHERE ").append(whereClause).toString();
+	            if (!"$defaultGroupClause".equals(groupClause))
+	                statement = (new StringBuilder()).append(statement).append(" GROUP BY ").append(groupClause).toString();
+	            if (!"$defaultGroupWhereClause".equals(groupWhereClause))
+	                statement = (new StringBuilder()).append("SELECT * FROM (").append(statement).append(") work WHERE ").append(groupWhereClause).toString();
+	            if (req.getAttachment(SortBy.class) != null) {
+	            	SortBy o = req.getAttachment(SortBy.class);
+	                StringBuilder s = (new StringBuilder()).append(statement);
+	                List<String> bys = o.sortby();
+	                if(bys!=null&&bys.size()>0){
+	                	s.append(" ORDER BY ");
+                        for (int i = 0; i < bys.size(); i++) {
+                            s.append( bys.get(i).toString());
+                            if (i < bys.size())
+                                s.append(", ");
+                        }
+	                }
+	                statement = s.toString();
+	            } else if (!"$defaultOrderClause".equals(orderClause))
+	                statement = (new StringBuilder()).append(statement).append(" ORDER BY ").append(orderClause).toString();
+	            LOG.debug("derived query: {}",statement);
+		 }else if(DataTools.isAdd(oi.getType())){
+			 statement = (new StringBuilder()).append("INSERT INTO ").append(tableClause).append(" ").append(valuesClause).toString();
+		 }else if(DataTools.isUpdate(oi.getType())){
+			 statement = (new StringBuilder()).append("UPDATE ").append(tableClause).append(" SET ").append(valuesClause).append(" WHERE ").append(
+		                whereClause).toString();
+		 }else if(DataTools.isRemove(oi.getType())){
+			 statement = (new StringBuilder()).append("DELETE FROM ").append(tableClause).append(" WHERE ").append(whereClause).toString();		
+		 }else{
+			 throw new java.lang.UnsupportedOperationException("unsupported operation :"+oi.getType()+"for jdbcdataservice");
+		 }
+		return ve.evaluateAsString(statement, context);
+	}
+	
+	private String getQueryClause(OperationInfo oi,String key,String defaultValue){
+		String ext = StringUtils.trimToNull(oi.getExtension(key));
+		if(ext==null){
+			return "$"+defaultValue;
+		}else{
+			return ext;
+		}
+	}
+
+
+	/**检测别命名*/
+	private Boolean autoQualifyColumnNames(DataServiceInfo di) {
+		List<FieldInfo> fields =di.getFields();
+		if(DataUtils.isNotNullAndEmpty(fields)){
+			for(FieldInfo field:fields){
+				if(DataUtils.isNotNullAndEmpty(field.getForeignKey())){
+					return Boolean.TRUE;
+				}
+			}
+		}
+		return Boolean.FALSE;
+	}
+
+	private boolean isJdbcOperation(OperationType type) {
+		return DataTools.isAdd(type)||DataTools.isFetch(type)||DataTools.isRemove(type)||DataTools.isUpdate(type);
+	}
+
+	private Map<String, Object> getClausesContext(
+								DSRequest req, 
+								boolean qualifyColumnNames, 
+								OperationInfo oi,
+								List<String> _customCriteriaFields,
+								List<String> _customValueFields ,
+								List<String> _excludeCriteriaFields) {
         Map<String, Object> context = new HashMap<String, Object>();
         
         OperationType type =oi.getType();
@@ -118,44 +543,44 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
                 Object fieldName = null;
                 switch (type) {
                     case FETCH:
-                        fieldName = field.getProperty("customSelectExpression");
+                        fieldName = field.getProperty(JdbcExtProperty.CUSTOM_SELECT_EXPRESSION);
                         break;
                     case UPDATE:
-                        fieldName = field.getProperty("customUpdateExpression");
+                        fieldName = field.getProperty(JdbcExtProperty.CUSTOM_UPDATE_EXPRESSION);
                         break;
                     default:
                         break;
                 }
                 if (fieldName == null)
                     fieldName = field.getName();
-                if (field.getProperty("tableName") != null)
-                    selfTableName = field.getProperty("tableName");
+                if (field.getProperty(JdbcExtProperty.TABLE_NAME) != null)
+                    selfTableName = field.getProperty(JdbcExtProperty.TABLE_NAME);
                 relateCriterias.add(new StringBuilder().append(selfTableName).append(".").append(fieldName).append(" = ").append(foreign).toString());
             }
         }
         
         SQLTableClause tableClause = new SQLTableClause(this);
         tableClause.setRelatedTables(relateTables);
-        context.put("defaultTableClause", tableClause.getSQLString());
+        context.put(JdbcExtProperty.DEFAULT_TABLE_CLAUSE, tableClause.getSQLString());
         
         if (type == OperationType.FETCH || type == OperationType.CUSTOM) {
             SQLSelectClause selectClause = new SQLSelectClause(req, this, qualifyColumnNames);
             List<String> customValue=getExtensionFields(oi,JdbcExtProperty.CUSTOM_VALUE_FIELDS_NODE);
             selectClause.setCustomValueFields(customValue);
-            context.put("defaultSelectClause", selectClause.getSQLString());
+            context.put(JdbcExtProperty.DEFAULT_SELECT_CLAUSE, selectClause.getSQLString());
             SQLOrderClause orderClause = new SQLOrderClause(req, this, qualifyColumnNames);
             orderClause.setCustomValueFields(customValue);
             if (orderClause.size() > 0)
-                context.put("defaultOrderClause", orderClause.getSQLString());
+                context.put(JdbcExtProperty.DEFAULT_ORDER_CLAUSE, orderClause.getSQLString());
         }
         
         if (DataTools.isAdd(type) || DataTools.isUpdate(type)) {
             SQLValuesClause valuesClause = new SQLValuesClause(req,this);
             if (valuesClause.size() > 0)
                 if (DataTools.isUpdate(type)) {
-                    context.put("defaultValuesClause", valuesClause.getSQLStringForUpdate());
+                    context.put(JdbcExtProperty.DEFAULT_VALUES_CLAUSE, valuesClause.getSQLStringForUpdate());
                 } else {
-                    context.put("defaultValuesClause", valuesClause.getSQLStringForInsert());
+                    context.put(JdbcExtProperty.DEFAULT_VALUES_CLAUSE, valuesClause.getSQLStringForInsert());
                 }
             context.put("batchUpdateReturnValue", valuesClause.getReturnValues());
         }
@@ -165,12 +590,12 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
             if (req.getAttribute("textMatchStyle")!=null)
                 textMatchStyle = req.getAttribute("textMatchStyle").toString();
             SQLWhereClause whereClause = new SQLWhereClause(qualifyColumnNames, req, this, false, textMatchStyle);
-            whereClause.setCustomCriteriaFields(getExtensionFields(oi, JdbcExtProperty.CUSTOM_CRITERIA_FIELDS_NODE));
-            whereClause.setExcludeCriteriaFields(getExtensionFields(oi, JdbcExtProperty.EXCLUDE_CRITERIA_FIELDS_NODE));
+            whereClause.setCustomCriteriaFields(_customCriteriaFields);
+            whereClause.setExcludeCriteriaFields(_excludeCriteriaFields);
             whereClause.setRelatedCriterias(relateCriterias);
             if (DataTools.isRemove(type) && whereClause.isEmpty())
                 throw new SQLGenerationException("empty where clause on delete operation - would  destroy table - ignoring.");
-            context.put("defaultWhereClause", whereClause.getSQLString());
+            context.put(JdbcExtProperty.DEFAULT_WHERE_CLAUSE, whereClause.getSQLString());
         }
         return context;
     }
@@ -190,7 +615,8 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
      */
     @Override
     public void onSuccess(DSCall call) {
-        // TODO Auto-generated method stub
+    	if(call.getTransactionService()!=null)
+    		call.getTransactionService().commit();
         
     }
 
@@ -201,16 +627,10 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
      */
     @Override
     public void onFailure(DSCall call, boolean transactionFailure) throws DSCallException {
-        // TODO Auto-generated method stub
-        
+    	if(call.getTransactionService()!=null)
+    		call.getTransactionService().rollback();
     }
 
-    /**
-     * @return
-     */
-    public SQLDriver getDriver() {
-        return driver;
-    }
 
     /**
      * @param dataSources
@@ -306,8 +726,27 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
      * @return
      */
     public SQLDialect getDialect() {
-        // TODO Auto-generated method stub
-        return null;
+        return this.dialect;
     }
+
+    public void setDataSourceService(DataSourceService dataSourceService) {
+        this.dataSourceService = dataSourceService;
+    }
+
+    public void setDataServiceRouter(DataServiceRouter<RequestToken> dataServiceRouter) {
+        this.dataServiceRouter = dataServiceRouter;
+    }
+
+    protected boolean isPartitionEnable() {
+        return dataServiceRouter != null && dataSourceService != null;
+    }
+
+	public DataSource getDataSource() {
+		return dataSource;
+	}
+
+	public void setDataSource(DataSource dataSource) {
+		this.dataSource = dataSource;
+	}
 
 }

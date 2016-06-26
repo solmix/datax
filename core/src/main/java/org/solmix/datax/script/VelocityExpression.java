@@ -112,6 +112,8 @@ public class VelocityExpression
         return evaluateValue(expression, prepareContext(request, requestContext));
     }
 
+    
+    /**根据DSrequest初始化context*/
     public Map<String, Object> prepareContext(DSRequest request, RequestContext requestContext) {
 
         Map<String, Object> vc = new HashMap<String, Object>();
@@ -138,5 +140,10 @@ public class VelocityExpression
 
         return vc;
     }
+
+	public String evaluateAsString(String template, Map<String, Object> context) {
+		 Object obj = evaluateValue(template,context);
+	        return obj != null ? obj.toString() : null;
+	}
 
 }

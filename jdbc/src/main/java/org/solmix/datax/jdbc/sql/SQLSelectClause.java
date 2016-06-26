@@ -26,9 +26,9 @@ import java.util.Map;
 import org.solmix.commons.util.DataUtils;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DataService;
-import org.solmix.datax.jdbc.JdbcExtProperty;
 import org.solmix.datax.jdbc.JdbcDataService;
-import org.solmix.datax.jdbc.driver.SQLDriver;
+import org.solmix.datax.jdbc.JdbcExtProperty;
+import org.solmix.datax.jdbc.dialect.SQLDialect;
 import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.model.OperationInfo;
 
@@ -104,10 +104,10 @@ public class SQLSelectClause
     }
 
     public String getSQLString() {
-        return getSQLString((dataSources.get(0)).getDriver());
+        return getSQLString((dataSources.get(0)).getDialect());
     }
 
-    public String getSQLString(SQLDriver driver) {
+    public String getSQLString(SQLDialect driver) {
 
         if (remapTable == null || remapTable.size() == 0) {
             return "*";
@@ -164,7 +164,7 @@ public class SQLSelectClause
         return __result.toString();
     }
 
-    private String aggregationSubSelect(SQLDriver driver, String columnName, String rsName, String tableName, FieldInfo field) {
+    private String aggregationSubSelect(SQLDialect driver, String columnName, String rsName, String tableName, FieldInfo field) {
          Object relatedTable = field.getProperty("relatedTable");
          Object relatedColumn = field.getProperty("relatedColumn");
          Object localField = field.getProperty("localField");
@@ -175,18 +175,18 @@ public class SQLSelectClause
          subselect = (new StringBuilder()).append(subselect).append(") FROM ").toString();
          subselect = (new StringBuilder()).append(subselect).append(field.getProperty("relatedTable")).toString();
          subselect = (new StringBuilder()).append(subselect).append(" WHERE ").toString();
-         subselect = (new StringBuilder()).append(subselect).append(driver.sqlOutTransform(localField, localField,
+         subselect = (new StringBuilder()).append(subselect).append(driver.sqlOutTransform((String)localField, (String)localField,
          tableName)).toString();
          subselect = (new StringBuilder()).append(subselect).append(" = ").toString();
-         subselect = (new StringBuilder()).append(subselect).append(driver.sqlOutTransform(relatedColumn,
-         relatedColumn,
-         relatedTable)).toString();
+         subselect = (new StringBuilder()).append(subselect).append(driver.sqlOutTransform((String)relatedColumn,
+        		 (String)relatedColumn,
+        		 (String)relatedTable)).toString();
          subselect = (new StringBuilder()).append(subselect).append(") AS ").toString();
          subselect = (new StringBuilder()).append(subselect).append(field.getName()).toString();
          return subselect;
     }
 
-    private String customSQLExpression(SQLDriver driver, String columnName, String rsName, String tableName, FieldInfo field, boolean qualifyColumnNames) {
+    private String customSQLExpression(SQLDialect driver, String columnName, String rsName, String tableName, FieldInfo field, boolean qualifyColumnNames) {
         String custom = field.getProperty("customSelectExpression").toString();
         if (DataUtils.isNullOrEmpty(custom) && custom.substring(0, 1).equals("$")) {
             if (custom.substring(0, custom.indexOf(":")).equalsIgnoreCase("$value"))

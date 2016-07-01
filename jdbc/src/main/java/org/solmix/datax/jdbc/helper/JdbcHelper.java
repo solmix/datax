@@ -33,9 +33,11 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 import javax.sql.DataSource;
 
@@ -366,6 +368,60 @@ public class JdbcHelper
         return __return;
 
     }
+    public static TreeSet<Map<String, ?>> toSetOfMaps(ResultSet resultSet,final String comparatorKey) throws SQLException {
+    	return toSetOfMaps(resultSet, -1L,false,comparatorKey);
+    }
+    
+    public static TreeSet<Map<String, ?>> toSetOfMaps(ResultSet resultSet, long numRows, boolean hasBrokenCursorAPIs,final String comparatorKey) throws SQLException {
+        TreeSet<Map<String, ?>> __return = new TreeSet<Map<String, ?>>(new Comparator<Map<String, ?>>(){
+
+			@Override
+			public int compare(Map<String, ?> o1, Map<String, ?> o2) {
+				String column1= (String)o1.get(comparatorKey);
+				String column2= (String)o2.get(comparatorKey);
+				if(column1==null){
+					throw new IllegalArgumentException("Column name is null");
+				}
+				return column1.compareTo(column2);
+			}
+			
+		});
+        /**
+         * get bean class name from datasource.
+         */
+        // If ResultSet is null.
+        if (hasBrokenCursorAPIs) {
+            if (!resultSet.next())
+                return __return;
+        } else {
+            boolean isBeforeFirst = false;
+            boolean isAfterLast = false;
+            try {
+                isBeforeFirst = resultSet.isBeforeFirst();
+                isAfterLast = resultSet.isAfterLast();
+            } catch (SQLException ignored) {
+            	LOG.debug("isBeforeFirst()/isAfterLast() throwing exceptions .", ignored);
+            }
+            if ((isBeforeFirst || isAfterLast || resultSet.getRow() == 0) && !resultSet.next())
+                return __return;
+        }
+        long i = 0;
+        do {
+            if (i >= numRows && numRows != -1L)
+                break;
+            Map<String, ?> map = toAttributeMap(resultSet);
+            __return.add(map);
+            /**
+             * java.sql.ResultSet.next() move cursor to new row set.
+             */
+            if (!resultSet.next())
+                break;
+            i++;
+
+        } while (true);
+        return __return;
+
+    }
 
     public static Map<String, List<Object>> toMapOfLists(ResultSet rs) throws SQLException {
         Map<String, List<Object>> result = new HashMap<String, List<Object>>(128);
@@ -452,17 +508,19 @@ public class JdbcHelper
         return _return;
 
     }
-
+    /**将数据库查询集合转换为Map*/
     public static Map<String, ?> toAttributeMap(ResultSet resultSet) throws SQLException {
         return toAttributeMap(resultSet, null, true, null, null);
     }
 
     /**
-     * @param resultSet
-     * @param rsmd
+     * 将数据库查询集合转换为Map
+     * 
+     * @param resultSet 数据查询集合
+     * @param rsmd 数据集描述
      * @param useColumnLabel
-     * @param caseInsensitiveMap
-     * @param outputs
+     * @param caseInsensitiveMap 字段映射
+     * @param outputs	输出字段
      * @return
      * @throws SQLException
      */
@@ -495,9 +553,30 @@ public class JdbcHelper
         }
         return __return;
     }
+    
+	public static List<Object> toObjectList(ResultSet resultSet) throws SQLException {
+		ResultSetMetaData rsmd = resultSet.getMetaData();
+		int count = rsmd.getColumnCount();
+		List<Object> result = new ArrayList<Object>();
+		for (int colCursor = 1; colCursor <= count; colCursor++) {
+			Object obj = resultSet.getObject(colCursor);
+			result.add(obj);
+		}
+		return result;
+	}
+	
+	public static Object[] toObjectArray(ResultSet resultSet) throws SQLException {
+		ResultSetMetaData rsmd = resultSet.getMetaData();
+		int count = rsmd.getColumnCount();
+		Object[] result = new Object[count];
+		for (int colCursor = 1; colCursor <= count; colCursor++) {
+			Object obj = resultSet.getObject(colCursor);
+			result[colCursor-1]=obj;
+		}
+		return result;
+	}
 
 	public static List<Object> toListOfMapsOrBeans(ResultSet rs,SQLDialect dialect,DataServiceInfo dataServiceInfo)throws SQLException, DSCallException {
-		
 		return toListOfMapsOrBeans(rs, dialect, -1L, dialect.hasBrokenCursorAPIs(), dataServiceInfo);
 	}
 	

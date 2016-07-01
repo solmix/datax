@@ -28,6 +28,7 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -44,6 +45,9 @@ import org.solmix.commons.util.StringUtils;
 import org.solmix.datax.jdbc.SQLRuntimeException;
 import org.solmix.datax.jdbc.helper.DataSourceHelper;
 import org.solmix.datax.jdbc.helper.JdbcHelper;
+
+
+
 
 
 
@@ -261,6 +265,150 @@ public class JdbcSupport
 		}
 		return execute(new BatchUpdateStatementCallback());
 	}
+    
+    public int[] batchUpdate(String sql, final BatchPreparedStatementSetter pss) throws JdbcException {
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Executing SQL batch update [" + sql + "]");
+		}
+
+		return execute(sql, new PreparedStatementCallback<int[]>() {
+			@Override
+			public int[] doInPreparedStatement(PreparedStatement ps) throws SQLException {
+				try {
+					int batchSize = pss.getBatchSize();
+					InterruptibleBatchPreparedStatementSetter ipss =
+							(pss instanceof InterruptibleBatchPreparedStatementSetter ?
+							(InterruptibleBatchPreparedStatementSetter) pss : null);
+					if (JdbcHelper.supportsBatchUpdates(ps.getConnection())) {
+						for (int i = 0; i < batchSize; i++) {
+							pss.setValues(ps, i);
+							if (ipss != null && ipss.isBatchExhausted(i)) {
+								break;
+							}
+							ps.addBatch();
+						}
+						return ps.executeBatch();
+					}
+					else {
+						List<Integer> rowsAffected = new ArrayList<Integer>();
+						for (int i = 0; i < batchSize; i++) {
+							pss.setValues(ps, i);
+							if (ipss != null && ipss.isBatchExhausted(i)) {
+								break;
+							}
+							rowsAffected.add(ps.executeUpdate());
+						}
+						int[] rowsAffectedArray = new int[rowsAffected.size()];
+						for (int i = 0; i < rowsAffectedArray.length; i++) {
+							rowsAffectedArray[i] = rowsAffected.get(i);
+						}
+						return rowsAffectedArray;
+					}
+				}
+				finally {
+					if (pss instanceof ParameterDisposer) {
+						((ParameterDisposer) pss).cleanupParameters();
+					}
+				}
+			}
+		});
+	}
+    
+	public int[] batchUpdate(String sql, List<Object[]> batchArgs, int[] argTypes) throws JdbcException {
+		return executeBatchUpdate(sql, batchArgs, argTypes);
+	}
+	public  int[] executeBatchUpdate(String sql, final List<Object[]> batchValues, final int[] columnTypes) {
+		return batchUpdate(
+				sql,
+				new BatchPreparedStatementSetter() {
+
+					@Override
+					public void setValues(PreparedStatement ps, int i) throws SQLException {
+						Object[] values = batchValues.get(i);
+						setStatementParameters(values, ps, columnTypes);
+					}
+
+					@Override
+					public int getBatchSize() {
+						return batchValues.size();
+					}
+				});
+	}
+
+	protected static void setStatementParameters(Object[] values, PreparedStatement ps, int[] columnTypes) throws SQLException {
+		int colIndex = 0;
+		for (Object value : values) {
+			colIndex++;
+			if (value instanceof SqlParameterValue) {
+				SqlParameterValue paramValue = (SqlParameterValue) value;
+				StatementCreatorUtils.setParameterValue(ps, colIndex, paramValue, paramValue.getValue());
+			}
+			else {
+				int colType;
+				if (columnTypes == null || columnTypes.length < colIndex) {
+					colType = SqlTypeValue.TYPE_UNKNOWN;
+				}
+				else {
+					colType = columnTypes[colIndex - 1];
+				}
+				StatementCreatorUtils.setParameterValue(ps, colIndex, colType, value);
+			}
+		}
+	}
+    public int[] batchUpdate(String sql, List<Object[]> batchArgs) throws JdbcException {
+		return batchUpdate(sql, batchArgs, new int[0]);
+	}
+    
+    public <T> int[][] batchUpdate(String sql, final Collection<T> batchArgs, final int batchSize,
+			final ParameterizedPreparedStatementSetter<T> pss) throws JdbcException {
+
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Executing SQL batch update [{}] with a batch size of {}", sql, batchSize);
+		}
+		return execute(sql, new PreparedStatementCallback<int[][]>() {
+			@Override
+			public int[][] doInPreparedStatement(PreparedStatement ps) throws SQLException {
+				List<int[]> rowsAffected = new ArrayList<int[]>();
+				try {
+					boolean batchSupported = true;
+					if (!JdbcHelper.supportsBatchUpdates(ps.getConnection())) {
+						batchSupported = false;
+						LOG.warn("JDBC Driver does not support Batch updates; resorting to single statement execution");
+					}
+					int n = 0;
+					for (T obj : batchArgs) {
+						pss.setValues(ps, obj);
+						n++;
+						if (batchSupported) {
+							ps.addBatch();
+							if (n % batchSize == 0 || n == batchArgs.size()) {
+								if (LOG.isDebugEnabled()) {
+									int batchIdx = (n % batchSize == 0) ? n / batchSize : (n / batchSize) + 1;
+									int items = n - ((n % batchSize == 0) ? n / batchSize - 1 : (n / batchSize)) * batchSize;
+									LOG.debug("Sending SQL batch update #" + batchIdx + " with " + items + " items");
+								}
+								rowsAffected.add(ps.executeBatch());
+							}
+						}
+						else {
+							int i = ps.executeUpdate();
+							rowsAffected.add(new int[] {i});
+						}
+					}
+					int[][] result = new int[rowsAffected.size()][];
+					for (int i = 0; i < result.length; i++) {
+						result[i] = rowsAffected.get(i);
+					}
+					return result;
+				} finally {
+					if (pss instanceof ParameterDisposer) {
+						((ParameterDisposer) pss).cleanupParameters();
+					}
+				}
+			}
+		});
+	}
+    
     public Map<String, Object> call(CallableStatementCreator csc, List<SqlParameter> declaredParameters)
 			throws JdbcException {
 
@@ -456,9 +604,13 @@ public class JdbcSupport
         });
     }
 
-    public <T> T execute(String callString, CallableStatementCallback<T> action) throws SQLException {
+    public <T> T execute(String callString, CallableStatementCallback<T> action) throws JdbcException {
         return execute(new SimpleCallableStatementCreator(callString), action);
     }
+    public <T> T execute(String sql, PreparedStatementCallback<T> action) throws JdbcException {
+		return execute(new SimplePreparedStatementCreator(sql), action);
+	}
+
 
     public <T> T execute(CallableStatementCreator csc, CallableStatementCallback<T> action) throws JdbcException {
 
@@ -651,6 +803,18 @@ public class JdbcSupport
     public <T> T queryForObject(String sql, RowMapper<T> rowMapper) throws JdbcException {
 		List<T> results = query(sql, rowMapper);
 		return JdbcHelper.requiredSingleResult(results);
+	}
+    
+    public <T> List<T> query(String sql, RowMapper<T> rowMapper, Object... args) throws JdbcException {
+		return query(sql, args, new RowMapperResultSetExtractor<T>(rowMapper));
+	}
+    
+    public void query(String sql, RowCallbackHandler rch, Object... args) throws JdbcException {
+		query(sql, newArgPreparedStatementSetter(args), rch);
+	}
+    
+	public void query(String sql, RowCallbackHandler rch) throws JdbcException {
+		query(sql, new RowCallbackHandlerResultSetExtractor(rch));
 	}
     
     public <T> T queryForObject(String sql, Class<T> requiredType) throws JdbcException {

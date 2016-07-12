@@ -49,13 +49,15 @@ public class DataServiceResolver implements ResourceResolver
     @SuppressWarnings("unchecked")
     @Override
     public <T> T resolve(String resourceName, Class<T> resourceType) {
-        
-        if(DataServiceInfo.class.isAssignableFrom(resourceType)){
+    	if(resourceType.isInterface()
+    			&&resourceType.isAnnotationPresent(org.solmix.datax.annotation.DataService.class)){
+            return dataServiceManager.getService(resourceType);
+    	}else if(DataxSession.class==resourceType){
+            return (T) new DataxSessionImpl(dataServiceManager);
+    	} else if(DataServiceInfo.class.isAssignableFrom(resourceType)){
             return (T) dataServiceManager.getRepositoryService().getDataService(resourceName);
         }else if(DataService.class.isAssignableFrom(resourceType)){
             return  (T)dataServiceManager.getDataService(resourceName);
-        }else if(DataxSession.class==resourceType){
-            return (T) new DataxSessionImpl(dataServiceManager);
         }
         return null;
     }

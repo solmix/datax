@@ -22,6 +22,7 @@ package org.solmix.datax;
 import java.util.List;
 import java.util.Map;
 
+import org.solmix.commons.collections.DataTypeMap;
 import org.solmix.datax.application.Application;
 import org.solmix.datax.call.DSCall;
 import org.solmix.datax.model.OperationInfo;
@@ -124,6 +125,8 @@ public interface DSRequest
     Application getApplication();
 
     Map<String, Object> getValues();
+    
+    DataTypeMap getTypeValues();
 
     List<?> getValueSets();
 

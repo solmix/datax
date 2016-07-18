@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.solmix.commons.collections.DataTypeMap;
 import org.solmix.commons.util.DataUtils;
 import org.solmix.datax.DSCallException;
 import org.solmix.datax.DSRequest;
@@ -576,5 +577,10 @@ public class DSRequestImpl  implements DSRequest,Cloneable
         }
         return null;
     }
+
+	@Override
+	public DataTypeMap getTypeValues() {
+		return new DataTypeMap(getValues());
+	}
 
 }

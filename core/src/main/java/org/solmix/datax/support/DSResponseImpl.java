@@ -234,7 +234,9 @@ public class DSResponseImpl implements DSResponse
         if(Object.class == type){
             if(Collection.class.isAssignableFrom(rawData.getClass())){
                 Collection<Object> coll = (Collection<Object>)rawData;
-                if(coll.size()==1){
+                if(coll.size()==0){
+                	return null;
+                }else if(coll.size()==1){
                     return getResultInternal(type,coll.iterator().next());
                 }else{
                     throw new IllegalArgumentException("To Many result");

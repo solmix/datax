@@ -18,6 +18,7 @@
  */
 package org.solmix.datax.support;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -112,16 +113,16 @@ public class DataServiceProxy<T> implements InvocationHandler
            //多个输入参数转化为一个
            else{
                Map<String,Object> merged= new LinkedHashMap<String, Object>();
-              Class<?>[] parameterTypes= method.getParameterTypes();
-              for(int i=0;i<parameterTypes.length;i++){
-                  Class<?> parameterType=parameterTypes[i];
-                  if(!parameterType.isAnnotationPresent(Argument.class)){
-                      throw new IllegalArgumentException("Method have multi argument should annotate @Argument");
-                  }else{
-                      Argument arg=  parameterType.getAnnotation(Argument.class);
-                      merged.put(arg.key(), args[i]);
-                  }
-              }
+               Annotation[][] annos= method.getParameterAnnotations();
+               for(int i=0;i<annos.length;i++){
+            	   Annotation[] parameterAnnons=annos[i];
+            	   Argument arg = findArgument(parameterAnnons);
+            	   if(arg==null){
+                       throw new IllegalArgumentException("Method have multi argument should annotate @Argument");
+            	   }else{
+            		   merged.put(arg.key(), args[i]);
+            	   }
+               }
               request.setRawValues(merged);
            }
        }
@@ -144,6 +145,16 @@ public class DataServiceProxy<T> implements InvocationHandler
        }*/else{
            return response.getSingleResult(returnType);
        }
+    }
+    
+    private Argument findArgument(Annotation[] annos){
+    	 for(int i=0;i<annos.length;i++){
+    		 Annotation  an=annos[i];
+    		 if(an instanceof Argument){
+    			 return (Argument)an;
+    		 }
+    	 }
+    	 return null;
     }
 
 }

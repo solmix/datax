@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.solmix.commons.util.ArrayUtils;
+import org.solmix.commons.util.DataUtils;
 import org.solmix.commons.util.Reflection;
 import org.solmix.commons.util.StringUtils;
 import org.solmix.datax.DSRequest;
@@ -106,6 +107,8 @@ public class DataServiceProxy<T> implements InvocationHandler
        DSRequest request=session.getDataServiceManager().createDSRequest();
        request.setOperationId(operationId);
        if(!ArrayUtils.isEmptyArray(args)){
+    	   Operation operation=  method.getAnnotation(Operation.class);
+    	   Class<?> argType=operation.argType();
            //method只有一个输入参数
            if(args.length==1){
                request.setRawValues(args[0]);
@@ -123,7 +126,14 @@ public class DataServiceProxy<T> implements InvocationHandler
             		   merged.put(arg.key(), args[i]);
             	   }
                }
-              request.setRawValues(merged);
+              if(argType==void.class){
+            	  request.setRawValues(merged);
+              }else{
+            	Object instance=  Reflection.newInstance(argType);
+            	DataUtils.setProperties(merged, instance);
+            	request.setRawValues(instance);
+              }
+              
            }
        }
       Class<?> returnType= method.getReturnType();

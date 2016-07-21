@@ -108,7 +108,10 @@ public class DataServiceProxy<T> implements InvocationHandler
        request.setOperationId(operationId);
        if(!ArrayUtils.isEmptyArray(args)){
     	   Operation operation=  method.getAnnotation(Operation.class);
-    	   Class<?> argType=operation.argType();
+    	   Class<?> argType=null;
+    	   if(operation!=null){
+    		   argType=operation.argType();
+    	   }
            //method只有一个输入参数
            if(args.length==1){
                request.setRawValues(args[0]);
@@ -126,7 +129,7 @@ public class DataServiceProxy<T> implements InvocationHandler
             		   merged.put(arg.key(), args[i]);
             	   }
                }
-              if(argType==void.class){
+              if(argType==null||argType==void.class){
             	  request.setRawValues(merged);
               }else{
             	Object instance=  Reflection.newInstance(argType);

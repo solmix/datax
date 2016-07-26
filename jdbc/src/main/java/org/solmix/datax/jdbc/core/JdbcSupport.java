@@ -775,6 +775,10 @@ public class JdbcSupport
 	public <T> List<T> queryForList(String sql, Object[] args, Class<T> elementType) throws JdbcException {
 		return query(sql, args, getSingleColumnRowMapper(elementType));
 	}
+	public List<Map<String, Object>> queryForList(String sql, Object... args) throws JdbcException {
+		return query(sql, args, getColumnMapRowMapper());
+	}
+
 	public List<Map<String, Object>> queryForList(String sql, Object[] args, int[] argTypes) throws JdbcException {
 		return query(sql, args, argTypes, getColumnMapRowMapper());
 	}

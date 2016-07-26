@@ -11,13 +11,13 @@
   		<groupId>org.solmix.datax</groupId>
   		<artifactId>datax-core</artifactId>
   	</dependency>
- <!-- 
-  	<dependency>
+  
+  	<!-- <dependency>
   		<groupId>org.springframework</groupId>
   		<artifactId>spring-jdbc</artifactId>
   		<version>4.0.6.RELEASE</version>
   		<scope>provided</scope>
-  	</dependency>  --> 
+  	</dependency>   -->
   	<dependency>
 			<groupId>com.mchange</groupId>
 			<artifactId>c3p0</artifactId>

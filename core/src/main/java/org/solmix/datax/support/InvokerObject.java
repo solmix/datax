@@ -494,8 +494,6 @@ public class InvokerObject
                 default:
                     break;
         }
-            
-            
         return serviceInstance;
     }
     

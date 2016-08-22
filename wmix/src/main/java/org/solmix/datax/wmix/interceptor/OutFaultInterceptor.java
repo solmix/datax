@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.solmix.commons.util.StringUtils;
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.DSResponse.Status;
 import org.solmix.datax.DataServiceManager;
@@ -37,6 +38,7 @@ import org.solmix.exchange.data.ObjectWriter;
 import org.solmix.exchange.interceptor.Fault;
 import org.solmix.exchange.interceptor.phase.Phase;
 import org.solmix.exchange.interceptor.phase.PhaseInterceptorSupport;
+import org.solmix.runtime.exception.InvokerException;
 import org.solmix.wmix.exchange.WmixMessage;
 
 /**
@@ -78,8 +80,9 @@ public class OutFaultInterceptor extends PhaseInterceptorSupport<Message>
         DSResponse res = dataServiceManager.createDsResponse(null);
         Message fault = exchange.getOutFault();
         Exception e = fault.getContent(Exception.class);
+        String mssage = handleException(e);
         res.setStatus(Status.STATUS_FAILURE);
-        res.setRawData(e.getMessage());
+        res.setRawData(mssage);
         try {
             ObjectWriter<OutputStream> writer = dataProcessor.createWriter(OutputStream.class);
             writer.write(new ResultObject(res), out);
@@ -90,5 +93,18 @@ public class OutFaultInterceptor extends PhaseInterceptorSupport<Message>
         }
 
     }
+
+	private String handleException(Exception e) {
+		if(e!=null){
+			if(e instanceof Fault){
+				if(e.getCause() instanceof InvokerException){
+					return StringUtils.toString(e.getCause().getCause());
+				}else{
+					return StringUtils.toString(e.getCause());
+				}
+			}
+		}
+		return StringUtils.toString(e);
+	}
 
 }

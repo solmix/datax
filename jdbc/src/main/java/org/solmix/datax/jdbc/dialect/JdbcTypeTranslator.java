@@ -44,7 +44,9 @@ public class JdbcTypeTranslator {
         typeToName.put(Types.TIMESTAMP, "TIMESTAMP"); 
         typeToName.put(Types.TINYINT, "TINYINT"); 
         typeToName.put(Types.VARBINARY, "VARBINARY"); 
-        typeToName.put(Types.VARCHAR, "VARCHAR"); 
+        typeToName.put(Types.VARCHAR, "VARCHAR");
+        typeToName.put(Types.VARCHAR, "VARCHAR2"); 
+        typeToName.put(Types.DECIMAL, "NUMBER"); 
 
         nameToType = new HashMap<String, Integer>();
         nameToType.put("ARRAY", Types.ARRAY); 
@@ -81,6 +83,8 @@ public class JdbcTypeTranslator {
         nameToType.put("TINYINT", Types.TINYINT); 
         nameToType.put("VARBINARY", Types.VARBINARY); 
         nameToType.put("VARCHAR", Types.VARCHAR); 
+        nameToType.put("VARCHAR2", Types.VARCHAR); 
+        nameToType.put("NUMBER", Types.DECIMAL); 
     }
 
     /**

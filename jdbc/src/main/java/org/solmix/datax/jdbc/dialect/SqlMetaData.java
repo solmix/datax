@@ -26,7 +26,7 @@ import org.solmix.datax.jdbc.sql.SQLGenerationException;
 public class SqlMetaData {
 	
 	private static final String TABLE="TABLE",VIEW="VIEW";
-	private static final String COLUMN_NAME="COLUMN_NAME",COLUMN_TYPE_NAME="TYPE_NAME",TABLE_NAME="TABLE_NAME";
+	private static final String COLUMN_NAME="COLUMN_NAME",COLUMN_TYPE_NAME="TYPE_NAME",TABLE_NAME="TABLE_NAME",DATA_TYPE="DATA_TYPE";
 
 	public String database;
 
@@ -194,7 +194,7 @@ public class SqlMetaData {
 	 * @return
 	 * @throws SQLException
 	 */
-	public DeleteScript generateDelete(String catalog, String schemaName, String table,String[] conditionKeys) throws SQLException{
+	public DeleteScript generateDelete(String catalog, String schemaName, String table,String[] conditionKeys,String conditionExp) throws SQLException{
 		ResultSet rs=getMetaData().getColumns(catalog, schemaName, table, null);
 		TreeSet<Map<String, ?>>  results = JdbcHelper.toSetOfMaps(rs,COLUMN_NAME);
 		LinkedHashMap<String,Map<String, ?>> columnMap= new LinkedHashMap<String, Map<String,?>>();
@@ -217,10 +217,12 @@ public class SqlMetaData {
 		tableClause.append(table);
 		
 		DeleteScript script= new DeleteScript();
+		if(DataUtils.isNotNullAndEmpty(conditionKeys)||StringUtils.isNotEmpty(conditionExp)){
+			whereClause.append(" where ");
+		}
 		if(DataUtils.isNotNullAndEmpty(conditionKeys)){
 			int[] jdbcTypes = new int[conditionKeys.length];
 			String[] jdbcTypeNames = new String[conditionKeys.length];
-			whereClause.append(" where ");
 			for(int i=0;i<conditionKeys.length;i++){
 				String condition = conditionKeys[i];
 				Map<String,?> col = columnMap.get(condition);
@@ -229,7 +231,7 @@ public class SqlMetaData {
 				}
 				String type = (String)col.get(COLUMN_TYPE_NAME);
 				jdbcTypeNames[i]=type;
-				jdbcTypes[i]=JdbcTypeTranslator.getJdbcType(type);
+				jdbcTypes[i]=getDataType(col, type);
 				whereClause.append(condition).append(" = ? ");
 				if(i<conditionKeys.length-1){
 					whereClause.append(" and ");
@@ -238,7 +240,12 @@ public class SqlMetaData {
 			script.setJdbcTypeNames(jdbcTypeNames);
 			script.setJdbcTypes(jdbcTypes);
 		}
-		
+		if(StringUtils.isNotEmpty(conditionExp)){
+			if(whereClause.length()>=10){
+				whereClause.append(" and ");
+			}
+			whereClause.append(conditionExp);
+		}
 		String sql= new StringBuffer()
 		.append(tableClause)
 		.append(whereClause)
@@ -259,7 +266,7 @@ public class SqlMetaData {
 	public SelectScript generateSelect(String catalog, 
 									   String schemaName, 
 									   String table,
-									   String[] conditionKeys) throws SQLException{
+									   String[] conditionKeys,String conditionExp) throws SQLException{
 		ResultSet rs=getMetaData().getColumns(catalog, schemaName, table, null);
 		TreeSet<Map<String, ?>>  results = JdbcHelper.toSetOfMaps(rs,COLUMN_NAME);
 		LinkedHashMap<String,Map<String, ?>> columnMap= new LinkedHashMap<String, Map<String,?>>();
@@ -299,10 +306,12 @@ public class SqlMetaData {
 		tableClause.append(table);
 		
 		SelectScript script= new SelectScript();
+		if(DataUtils.isNotNullAndEmpty(conditionKeys)||StringUtils.isNotEmpty(conditionExp)){
+			whereClause.append(" where ");
+		}
 		if(DataUtils.isNotNullAndEmpty(conditionKeys)){
 			int[] jdbcTypes = new int[conditionKeys.length];
 			String[] jdbcTypeNames = new String[conditionKeys.length];
-			whereClause.append(" where ");
 			for(int i=0;i<conditionKeys.length;i++){
 				String condition = conditionKeys[i];
 				Map<String,?> col = columnMap.get(condition);
@@ -311,7 +320,7 @@ public class SqlMetaData {
 				}
 				String type = (String)col.get(COLUMN_TYPE_NAME);
 				jdbcTypeNames[i]=type;
-				jdbcTypes[i]=JdbcTypeTranslator.getJdbcType(type);
+				jdbcTypes[i]=getDataType(col, type);
 				whereClause.append(condition).append(" = ? ");
 				if(i<conditionKeys.length-1){
 					whereClause.append(" and ");
@@ -320,7 +329,12 @@ public class SqlMetaData {
 			script.setJdbcTypeNames(jdbcTypeNames);
 			script.setJdbcTypes(jdbcTypes);
 		}
-		
+		if(StringUtils.isNotEmpty(conditionExp)){
+			if(whereClause.length()>=10){
+				whereClause.append(" and ");
+			}
+			whereClause.append(conditionExp);
+		}
 		String sql= new StringBuffer()
 						.append(selectClause)
 						.append(tableClause)
@@ -347,7 +361,7 @@ public class SqlMetaData {
 									   String schemaName,
 									   String table,
 									   String[] valueKeys,
-									   String[] conditionKeys) throws SQLException {
+									   String[] conditionKeys,String conditionExp) throws SQLException {
 		ResultSet rs = getMetaData().getColumns(catalog, schemaName, table,
 				null);
 		TreeSet<Map<String, ?>> results = JdbcHelper.toSetOfMaps(rs,COLUMN_NAME);
@@ -382,7 +396,7 @@ public class SqlMetaData {
 				}
 				String type = (String)col.get(COLUMN_TYPE_NAME);
 				jdbcTypeNames[i]=type;
-				jdbcTypes[i]=JdbcTypeTranslator.getJdbcType(type);
+				jdbcTypes[i]=getDataType(col, type);
 				valueClause.append(value).append(" = ? ");
 				if(i<valueKeys.length){
 					valueClause.append(" and ");
@@ -391,8 +405,10 @@ public class SqlMetaData {
 		}else{
 			throw new SQLGenerationException("update with no field");
 		}
-		if(DataUtils.isNotNullAndEmpty(conditionKeys)){
+		if(DataUtils.isNotNullAndEmpty(conditionKeys)||StringUtils.isNotEmpty(conditionExp)){
 			whereClause.append(" where ");
+		}
+		if(DataUtils.isNotNullAndEmpty(conditionKeys)){
 			for(int j=0;j<conditionKeys.length;j++){
 				String condition = conditionKeys[j];
 				Map<String,?> col = columnMap.get(condition);
@@ -401,7 +417,7 @@ public class SqlMetaData {
 				}
 				String type = (String)col.get(COLUMN_TYPE_NAME);
 				jdbcTypeNames[i+j]=type;
-				jdbcTypes[i+j]=JdbcTypeTranslator.getJdbcType(type);
+				jdbcTypes[i+j]=getDataType(col, type);
 				whereClause.append(condition).append(" = ? ");
 				if(j<conditionKeys.length-1){
 					whereClause.append(" and ");
@@ -409,7 +425,12 @@ public class SqlMetaData {
 			}
 			
 		}
-
+		if(StringUtils.isNotEmpty(conditionExp)){
+			if(whereClause.length()>=10){
+				whereClause.append(" and ");
+			}
+			whereClause.append(conditionExp);
+		}
 		UpdateScript script= new UpdateScript();
 		String sql = new StringBuffer()
 				.append(updateClause)
@@ -471,7 +492,7 @@ public class SqlMetaData {
 				}
 				String type = (String)col.get(COLUMN_TYPE_NAME);
 				jdbcTypeNames[i] = type;
-				jdbcTypes[i] = JdbcTypeTranslator.getJdbcType(type);
+				jdbcTypes[i]=getDataType(col, type);
 				insertClause.append(seq);
 				valueClause.append("?");
 				columns.add(seq);
@@ -495,7 +516,7 @@ public class SqlMetaData {
 				Map<String, ?> col = columnMap.get(key);
 				String type = (String) col.get(COLUMN_TYPE_NAME);
 				jdbcTypeNames[kcount] = type;
-				jdbcTypes[kcount] = JdbcTypeTranslator.getJdbcType(type);
+				jdbcTypes[kcount] =getDataType(col, type);
 				kcount++;
 				insertClause.append(key);
 				valueClause.append("?");
@@ -517,4 +538,12 @@ public class SqlMetaData {
 		return script;
 	}
 
+	private int getDataType(Map<String,?> col,String typeName){
+		Object type = col.get(DATA_TYPE);
+		if(type!=null){
+			return Integer.valueOf(type.toString());
+		}else{
+			return JdbcTypeTranslator.getJdbcType(typeName);
+		}
+	}
 }

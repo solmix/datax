@@ -22,11 +22,14 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.solmix.commons.pager.PageControl;
+import org.solmix.commons.pager.PageList;
 import org.solmix.commons.util.ArrayUtils;
 import org.solmix.commons.util.DataUtils;
 import org.solmix.commons.util.Reflection;
@@ -107,37 +110,42 @@ public class DataServiceProxy<T> implements InvocationHandler
        DSRequest request=session.getDataServiceManager().createDSRequest();
        request.setOperationId(operationId);
        if(!ArrayUtils.isEmptyArray(args)){
+    	   int pindex=-1;
+    	   for(int j=0;j<=args.length;j++){
+    		   if(args[j]instanceof PageControl){
+    			   pindex=j;
+    			   break;
+    		   }
+    	   }
     	   Operation operation=  method.getAnnotation(Operation.class);
     	   Class<?> argType=null;
     	   if(operation!=null){
     		   argType=operation.argType();
     	   }
-           //method只有一个输入参数
-           if(args.length==1){
-               request.setRawValues(args[0]);
-           }
-           //多个输入参数转化为一个
-           else{
-               Map<String,Object> merged= new LinkedHashMap<String, Object>();
-               Annotation[][] annos= method.getParameterAnnotations();
-               for(int i=0;i<annos.length;i++){
-            	   Annotation[] parameterAnnons=annos[i];
-            	   Argument arg = findArgument(parameterAnnons);
-            	   if(arg==null){
-                       throw new IllegalArgumentException("Method have multi argument should annotate @Argument");
-            	   }else{
-            		   merged.put(arg.key(), args[i]);
-            	   }
-               }
-              if(argType==null||argType==void.class){
-            	  request.setRawValues(merged);
-              }else{
-            	Object instance=  Reflection.newInstance(argType);
-            	DataUtils.setProperties(merged, instance);
-            	request.setRawValues(instance);
-              }
-              
-           }
+    	   if(pindex==-1){
+	           if(args.length==1){
+	        	 //method只有一个输入参数
+	        	   request.setRawValues(args[0]);
+	           }else{
+	        	 //多个输入参数转化为一个
+	        	   parseMultiArgs(method,args,pindex,argType,request);
+	              
+	           }
+	       }else{
+	    	   if(args.length==1){
+	    		   request.addAttachment(PageControl.class, (PageControl)args[0]);
+	    	   }else if(args.length==2){
+	    		   for(int i=0;i<=2;i++){
+	    			   if(i==pindex){
+	    				   request.addAttachment(PageControl.class, (PageControl)args[i]);
+	    			   }else{
+	    				   request.setRawValues(args[i]);
+	    			   }
+	    		   }
+	    	   }else{
+	    		   parseMultiArgs(method,args,pindex,argType,request);
+	    	   }
+	       }
        }
       Class<?> returnType= method.getReturnType();
       DSResponse response =session.execute(request);
@@ -151,14 +159,80 @@ public class DataServiceProxy<T> implements InvocationHandler
               Array.set(array, i, list.get(i));
           }
           return array;
-       }/*else if(List.class.isAssignableFrom(returnType)){
-            boolean b=returnType.getTypeParameters()[0] instanceof ParameterizedType;
-           List<?> list= response.getResultList(returnType);
-           return list;
-       }*/else{
+       }else if(PageList.class.isAssignableFrom(returnType)){
+           List<?> list= response.getSingleResult(List.class);
+           int total=0;
+           PageControl pc = response.getAttachment(PageControl.class);
+           if(pc!=null){
+        	   total=pc.getTotalSize();
+           }else if(list!=null){
+        	   total=list.size();
+           }
+           @SuppressWarnings({ "rawtypes", "unchecked" })
+           PageList page  = new PageList(list,total);
+           return page;
+       }else{
            return response.getSingleResult(returnType);
        }
     }
+
+	private void parseMultiArgs(Method method, 
+								Object[] args, 
+								int pindex,
+								Class<?> argType, 
+								DSRequest request) throws Exception {
+		Map<String, Object> merged = new LinkedHashMap<String, Object>();
+		Annotation[][] annos = method.getParameterAnnotations();
+		if (pindex == -1) {
+			for (int i = 0; i < annos.length; i++) {
+				Annotation[] parameterAnnons = annos[i];
+				Argument arg = findArgument(parameterAnnons);
+				if (arg == null) {
+					throw new IllegalArgumentException(
+							"Method have multi argument should annotate @Argument");
+				} else {
+					merged.put(arg.key(), args[i]);
+				}
+			}
+		} else {
+			for (int i = 0; i < annos.length; i++) {
+				if (i == pindex) {
+					request.addAttachment(PageControl.class,
+							(PageControl) args[i]);
+				} else {
+					Annotation[] parameterAnnons = annos[i];
+					Argument arg = findArgument(parameterAnnons);
+					if (arg == null) {
+						throw new IllegalArgumentException(
+								"Method have multi argument should annotate @Argument");
+					} else {
+						merged.put(arg.key(), args[i]);
+					}
+				}
+
+			}
+		}
+		for (int i = 0; i < annos.length; i++) {
+			if (pindex != -1 && pindex != i) {
+
+			}
+			Annotation[] parameterAnnons = annos[i];
+			Argument arg = findArgument(parameterAnnons);
+			if (arg == null) {
+				throw new IllegalArgumentException(
+						"Method have multi argument should annotate @Argument");
+			} else {
+				merged.put(arg.key(), args[i]);
+			}
+		}
+		if (argType == null || argType == void.class) {
+			request.setRawValues(merged);
+		} else {
+			Object instance = Reflection.newInstance(argType);
+			DataUtils.setProperties(merged, instance);
+			request.setRawValues(instance);
+		}
+	}
     
     private Argument findArgument(Annotation[] annos){
     	 for(int i=0;i<annos.length;i++){

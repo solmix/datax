@@ -47,6 +47,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.TransactionIsolationLevel;
 import org.apache.ibatis.transaction.TransactionFactory;
 import org.solmix.commons.collections.DataTypeMap;
+import org.solmix.commons.pager.PageControl;
 import org.solmix.commons.util.NamedThreadFactory;
 import org.solmix.commons.util.StringUtils;
 import org.solmix.datax.DSCallException;
@@ -54,7 +55,6 @@ import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.DSResponse.Status;
 import org.solmix.datax.DataService;
-import org.solmix.datax.attachment.Pageable;
 import org.solmix.datax.call.DSCall;
 import org.solmix.datax.jdbc.ConcurrencyRequestException;
 import org.solmix.datax.jdbc.DataSourceInfo;
@@ -214,7 +214,7 @@ public class MybatisDataService extends BaseDataService implements DataService
         DSResponse res = new DSResponseImpl(req,Status.STATUS_SUCCESS);
         String mybatisStatement = getMybatisStatement(req);
         
-        Pageable pageable= req.getAttachment(Pageable.class);
+        PageControl pageable= req.getAttachment(PageControl.class);
         boolean paged = false;
         if(DataTools.isPaged(pageable)){
             paged=true;
@@ -231,7 +231,7 @@ public class MybatisDataService extends BaseDataService implements DataService
                 }
             }
             parameter = new PagedParameter(req, res,
-                req.getRawValues(), defaultDialect, session,req.getAttachment(Pageable.class));
+                req.getRawValues(), defaultDialect, session,req.getAttachment(PageControl.class));
         } else {
             parameter = req.getRawValues();
         }
@@ -253,11 +253,8 @@ public class MybatisDataService extends BaseDataService implements DataService
         }
         res.setRawData(results);
         if(paged){
-            Pageable page=  req.getAttachment(Pageable.class);
-            int start = page.getStartRow();
-            int end =start+results.size();
-            page.setEndRow(end);
-            res.addAttachment(Pageable.class, page);
+        	PageControl page=  req.getAttachment(PageControl.class);
+            res.addAttachment(PageControl.class, page);
         }
         return res;
     }

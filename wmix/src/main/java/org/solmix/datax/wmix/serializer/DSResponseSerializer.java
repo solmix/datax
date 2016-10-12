@@ -22,10 +22,10 @@ package org.solmix.datax.wmix.serializer;
 import java.io.IOException;
 import java.util.List;
 
+import org.solmix.commons.pager.PageControl;
 import org.solmix.datax.DATAX;
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.DSResponse.Status;
-import org.solmix.datax.attachment.Pageable;
 import org.solmix.datax.wmix.Constants;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -84,14 +84,14 @@ public class DSResponseSerializer extends JsonSerializer<ResultObject>
                 jgen.writeNumberField(AFFECTED_ROWS, response.getAffectedRows());
             }
             Object invalidate = response.getAttribute(Constants.INVALIDATE_CACHE);
-            Pageable page = response.getAttachment(Pageable.class);
+            PageControl page = response.getAttachment(PageControl.class);
             if (invalidate != null) {
                 jgen.writeBooleanField(INVALIDATE_CACHE, Boolean.valueOf(invalidate.toString()));
             }
             if (page != null) {
-                jgen.writeNumberField(START_ROW, page.getStartRow());
-                jgen.writeNumberField(END_ROW, page.getEndRow());
-                jgen.writeNumberField(TOTAL_ROWS, page.getTotalRow());
+                jgen.writeNumberField(START_ROW, page.getPageFirstIndex());
+                jgen.writeNumberField(END_ROW, page.getPageFirstIndex()+page.getPageSize());
+                jgen.writeNumberField(TOTAL_ROWS, page.getTotalSize());
             }
             Object o = response.getRawData();
             if (o != null) {

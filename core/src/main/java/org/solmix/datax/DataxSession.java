@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.solmix.commons.annotation.NotThreadSafe;
-import org.solmix.datax.attachment.Pageable;
+import org.solmix.commons.pager.PageControl;
 import org.solmix.datax.model.TransactionPolicy;
 import org.solmix.runtime.transaction.TransactionException;
 
@@ -49,13 +49,13 @@ public interface DataxSession
     
     <E> List<E> fetchList(String operationId, Object parameter,Class<E> resultType);
 
-    <E> List<E> fetchList(String operationId, Object parameter,Pageable page,Class<E> resultType);
+    <E> List<E> fetchList(String operationId, Object parameter,PageControl page,Class<E> resultType);
     
    <T> T fetch(String operationId,ResponseHandler<T> handler);
    
    <T> T fetch(String operationId, Object parameter,ResponseHandler<T> handler);
 
-   <T> T fetch(String operationId, Object parameter,Pageable page,ResponseHandler<T> handler);
+   <T> T fetch(String operationId, Object parameter,PageControl page,ResponseHandler<T> handler);
    
    int add(String operationId, Object parameter);
    
@@ -67,7 +67,7 @@ public interface DataxSession
    
    int remove(String operationId, Object parameter);
    
-   <T>  T custom(String operationId, Object parameter, Pageable page, ResponseHandler<T> handler);
+   <T>  T custom(String operationId, Object parameter, PageControl page, ResponseHandler<T> handler);
    
    <T>  T custom(String operationId, Object parameter, ResponseHandler<T> handler);
 
@@ -109,7 +109,7 @@ public interface DataxSession
 
     DSRequest createDSRequest(String operationId);
 
-    DSRequest createDSRequest(String operationId, Object parameters, Pageable page);
+    DSRequest createDSRequest(String operationId, Object parameters, PageControl page);
 
 
   

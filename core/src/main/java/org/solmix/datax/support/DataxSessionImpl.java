@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.solmix.commons.pager.PageControl;
 import org.solmix.commons.util.Assert;
 import org.solmix.datax.DSCallException;
 import org.solmix.datax.DSRequest;
@@ -34,7 +35,6 @@ import org.solmix.datax.DataxRuntimeException;
 import org.solmix.datax.DataxSession;
 import org.solmix.datax.OperationNoFoundException;
 import org.solmix.datax.ResponseHandler;
-import org.solmix.datax.attachment.Pageable;
 import org.solmix.datax.call.DSCall;
 import org.solmix.datax.call.DSCallUtils;
 import org.solmix.datax.call.TransactionFailedException;
@@ -88,7 +88,7 @@ public class DataxSessionImpl implements DataxSession
     }
 
     @Override
-    public <E> List<E> fetchList(String operationId, Object parameter, Pageable page,Class<E> resultType) {
+    public <E> List<E> fetchList(String operationId, Object parameter, PageControl page,Class<E> resultType) {
         DSRequest req = createDSRequest(operationId,parameter,page);
         DSResponse response = execute(req,OperationType.FETCH);
         return  response.getResultList(resultType);
@@ -105,7 +105,7 @@ public class DataxSessionImpl implements DataxSession
     }
 
     @Override
-    public <T> T fetch(String operationId, Object parameter, Pageable page, ResponseHandler<T> handler) {
+    public <T> T fetch(String operationId, Object parameter, PageControl page, ResponseHandler<T> handler) {
         DSRequest req = createDSRequest(operationId,parameter,page);
         DSResponse response = execute(req,OperationType.FETCH);
         return  handler.handle(req,response);
@@ -165,7 +165,7 @@ public class DataxSessionImpl implements DataxSession
     }
 
     @Override
-    public <T> T custom(String operationId, Object parameter, Pageable page, ResponseHandler<T> handler) {
+    public <T> T custom(String operationId, Object parameter, PageControl page, ResponseHandler<T> handler) {
         DSRequest req = createDSRequest(operationId,parameter,page);
         DSResponse response = execute(req,OperationType.CUSTOM);
         return  handler.handle(req,response);
@@ -259,14 +259,14 @@ public class DataxSessionImpl implements DataxSession
         return createDSRequest(operationId,null,null);
     }
     @Override
-    public DSRequest createDSRequest(String operationId, Object parameters, Pageable page) {
+    public DSRequest createDSRequest(String operationId, Object parameters, PageControl page) {
         DSRequest request = dataServiceManager.createDSRequest();
         request.setOperationId(operationId);
         if (parameters != null) {
             request.setRawValues(parameters);
         }
         if (page != null) {
-            request.addAttachment(Pageable.class, page);
+            request.addAttachment(PageControl.class, page);
         }
         return request;
     }

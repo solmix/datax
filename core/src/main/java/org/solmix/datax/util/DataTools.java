@@ -18,8 +18,8 @@
  */
 package org.solmix.datax.util;
 
+import org.solmix.commons.pager.PageControl;
 import org.solmix.datax.DSRequest;
-import org.solmix.datax.attachment.Pageable;
 import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.model.FieldType;
 import org.solmix.datax.model.OperationType;
@@ -132,7 +132,7 @@ public class DataTools
         if(req==null){
             return false;
         }
-        Pageable page=   req.getAttachment(Pageable.class);
+        PageControl page=   req.getAttachment(PageControl.class);
         if(page!=null){
             return isPaged(page);
         }
@@ -140,16 +140,12 @@ public class DataTools
         return false;
     }
     
-    public static boolean isPaged(Pageable page){
+    public static boolean isPaged(PageControl page){
         if(page==null){
             return false;
         }
-        if (page.getStartRow() != null 
-            && page.getStartRow() >= 0 
-            && page.getEndRow() != null 
-            && page.getEndRow() > 0 
-            && page.getBatchSize() != null 
-            && page.getBatchSize() > 0){
+        if (page.getPageSize()>= 0 
+            && page.getPageNum() > 0 ){
             return true;
         }
            

@@ -35,6 +35,7 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.solmix.commons.collections.DataTypeMap;
+import org.solmix.commons.pager.PageControl;
 import org.solmix.commons.timer.StopWatch;
 import org.solmix.commons.util.DataUtils;
 import org.solmix.commons.util.StringUtils;
@@ -42,8 +43,6 @@ import org.solmix.datax.DSCallException;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.DSResponse.Status;
-import org.solmix.datax.attachment.Pageable;
-import org.solmix.datax.attachment.PagedBean;
 import org.solmix.datax.attachment.SortBy;
 import org.solmix.datax.call.DSCall;
 import org.solmix.datax.call.DSCallCompleteCallback;
@@ -212,13 +211,13 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
 	}
 	
 	private void executeQuery(DSRequest req,String statement, DSResponse res ) throws DSCallException {
-		 queryWindowSelect(req, statement, null,res);
+		 pagedQuerySelect(req, statement, null,res);
 	}
 
 	private DSResponse executeWindowedSelect(DSRequest req,VelocityExpression ve,
 			Map<String, Object> context, String query, boolean usedCustomSQL) throws DSCallException {
         DSResponse res = new DSResponseImpl(req,Status.STATUS_SUCCESS);
-        Pageable page= req.getAttachment(Pageable.class);
+        PageControl page= req.getAttachment(PageControl.class);
 		if (usedCustomSQL) {
 			String preparedCountQuery = dialect.getRowCountQueryString(query);
 			LOG.debug("Executing row count query", preparedCountQuery);
@@ -229,12 +228,12 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
 	        Integer count = new Integer(objCount == null ? "0" : objCount.toString());
 	        LOG.debug("SQL window query,Query total rows: {},used :{}",count, timer);
 	        if(count==0){
-	        	res.addAttachment(Pageable.class, new PagedBean(0, 0, page.getBatchSize(),0));
+	        	res.addAttachment(PageControl.class, new PageControl(0, 0));
 	        	res.setRawData(Collections.emptyList());
 	        	return res;
 	        }
-	        query = dialect.limitQuery(query, page.getStartRow(), page.getBatchSize(), null);
-	        queryWindowSelect(req, query, page,res);
+	        query = dialect.limitQuery(query, page.getPageFirstIndex(), page.getPageSize(), null);
+	        pagedQuerySelect(req, query, page,res);
 		}else{
 			OperationInfo oi=req.getOperationInfo();
 			 String selectClause  =getQueryClause(oi,JdbcExtProperty.SELECT_CLAUSE_NODE,JdbcExtProperty.DEFAULT_SELECT_CLAUSE);
@@ -251,7 +250,7 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
 	         Object objCount = executeScalar(countQuery, req);
 	         Integer count = new Integer(objCount == null ? "0" : objCount.toString());
 	         if(count==0){
-		        	res.addAttachment(Pageable.class, new PagedBean(0, 0, page.getBatchSize(),0));
+		        	res.addAttachment(PageControl.class, new PageControl(0, 0));
 		        	res.setRawData(Collections.emptyList());
 		        	return res;
 		        }
@@ -272,13 +271,13 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
 	                            LOG.debug((new StringBuilder()).append("Using first field as default sorter: ").append(orderClause).toString());
 	                        }
 	                    }
-		        	 query = dialect.limitQuery(countQuery, page.getStartRow(), page.getBatchSize(), outputs,orderClause);
+		        	 query = dialect.limitQuery(countQuery, page.getPageFirstIndex(), page.getPageSize(), outputs,orderClause);
 
 		         }else{
-		        	 query = dialect.limitQuery(countQuery, page.getStartRow(), page.getBatchSize(), outputs);
+		        	 query = dialect.limitQuery(countQuery, page.getPageFirstIndex(), page.getPageSize(), outputs);
 		         }
 	         }
-		        queryWindowSelect(req, query, page,res);
+		        pagedQuerySelect(req, query, page,res);
 
 		}
 		return res;
@@ -327,11 +326,10 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
             }
         }
 	}
-	private void queryWindowSelect(DSRequest req, String query,Pageable page, DSResponse res) throws DSCallException {
+	private void pagedQuerySelect(DSRequest req, String query,PageControl page, DSResponse res) throws DSCallException {
 		if (LOG.isDebugEnabled()){
-			LOG.debug(
-	                (new StringBuilder()).append("SQL windowed select rows ").append(page.getStartRow()).append("->").append(
-	                		page.getEndRow()).append(", result size ").append(page.getBatchSize()).append(". Query:")
+			LOG.debug( (new StringBuilder()).append("SQL paged select rows ,page number").append(page.getPageNum())
+	                .append(", page size ").append(page.getPageSize()).append(". Query:")
 	                		.append(query).toString());
 		} 
 		boolean usedTransaction = usedTransaction(req);
@@ -368,12 +366,8 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
             res.setRawData(rows);
             //分页查询
             if(page!=null){
-            	PagedBean rpage = new PagedBean();
-                rpage.setEndRow(page.getStartRow()+rows.size());
-                rpage.setStartRow(page.getStartRow());
-                if (rows.size() < page.getBatchSize())
-                	rpage.setTotalRow(page.getEndRow());
-                res.addAttachment(Pageable.class, rpage);
+            	page.setTotalSize(rows.size());
+                res.addAttachment(PageControl.class, page);
             }
         } finally {
             try {

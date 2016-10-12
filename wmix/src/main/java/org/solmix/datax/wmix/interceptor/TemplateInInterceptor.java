@@ -10,6 +10,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.solmix.commons.collections.DataTypeMap;
+import org.solmix.commons.pager.PageControl;
 import org.solmix.commons.util.Assert;
 import org.solmix.commons.util.DataUtils;
 import org.solmix.commons.util.ServletUtils;
@@ -18,8 +19,6 @@ import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.RequestContext;
 import org.solmix.datax.attachment.OldValues;
 import org.solmix.datax.attachment.OldValuesBean;
-import org.solmix.datax.attachment.Pageable;
-import org.solmix.datax.attachment.PagedBean;
 import org.solmix.datax.export.ExportConfig;
 import org.solmix.datax.wmix.Constants;
 import org.solmix.datax.wmix.type.DSProtocol;
@@ -86,10 +85,8 @@ public class TemplateInInterceptor extends AbstractInInterceptor
             if ("_appID".equals(key)) {
                 dsr.setApplicationId(parameterParser.getString(key));
             } else if ("_startRow".equals(key)) {
-                PagedBean page = new PagedBean();
-                page.setStartRow(parameterParser.getInt("_startRow"));
-                page.setEndRow(parameterParser.getInt("_endRow"));
-                dsr.addAttachment(Pageable.class, page);
+            	PageControl page = PageControl.fromRows(parameterParser.getInt("_startRow"), parameterParser.getInt("_endRow"));
+                dsr.addAttachment(PageControl.class, page);
             } else if ("_exportResults".equals(key)) {
                 if (parameterParser.getBoolean("_exportResults")) {
                     ExportConfig export = new ExportConfig();
@@ -164,10 +161,8 @@ public class TemplateInInterceptor extends AbstractInInterceptor
         Object start = operation.get("startRow");
         Object end = operation.get("endRow");
         if (start != null && end != null) {
-            PagedBean page = new PagedBean();
-            page.setStartRow(Integer.valueOf(start.toString()));
-            page.setEndRow(Integer.valueOf(end.toString()));
-            request.addAttachment(Pageable.class, page);
+        	PageControl page = PageControl.fromRows(Integer.valueOf(start.toString()), Integer.valueOf(end.toString()));
+            request.addAttachment(PageControl.class, page);
         }
         Object oldValues = operation.get("oldValues");
         if (oldValues != null) {

@@ -20,9 +20,9 @@
 package org.solmix.datax.mybatis.page;
 
 import org.apache.ibatis.session.SqlSession;
+import org.solmix.commons.pager.PageControl;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
-import org.solmix.datax.attachment.Pageable;
 import org.solmix.datax.jdbc.dialect.SQLDialect;
 
 /**
@@ -45,10 +45,10 @@ public class PagedParameter
     
      final SqlSession sqlSession;
     
-     final Pageable page;
+     final PageControl page;
 
     public PagedParameter(DSRequest req, DSResponse res, Object values,
-        SQLDialect defaultDialect,SqlSession session, Pageable page)
+        SQLDialect defaultDialect,SqlSession session, PageControl page)
     {
         this.request = req;
         this.response = res;

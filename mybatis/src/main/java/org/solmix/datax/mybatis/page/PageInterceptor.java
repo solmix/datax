@@ -68,7 +68,7 @@ public class PageInterceptor implements Interceptor
             BoundSql boundSql = statement.getBoundSql(p.getValues());
             String originalSql = boundSql.getSql().trim();
             SQLDialect sqlDriver = p.getSqlDialect();
-            Integer total = p.page.getTotalRow();
+            Integer total = p.page.getTotalSize();
             if (total == null || total <= 0) {
                 String countSql = sqlDriver.getRowCountQueryString(originalSql);
                 Connection connection = p.sqlSession.getConnection();
@@ -89,15 +89,10 @@ public class PageInterceptor implements Interceptor
                 rs.close();
                 countStmt.close();
             }
-            p.page.setTotalRow(total);
+            p.page.setTotalSize(total);
 
-            int end = p.page.getEndRow();
-            int start = p.page.getStartRow();
-            int batch = p.page.getBatchSize();
-            if (end != -1 && end - start > batch) {
-                batch = end - start;
-                p.page.setBatchSize(batch);
-            }
+            int start =p.page.getPageFirstIndex();
+            int batch = p.page.getPageSize();
             String limitQuery = sqlDriver.limitQuery(originalSql, start, batch, null);
             BoundSql newBoundSql = copyFromBoundSql(statement, boundSql, limitQuery.toString(), p.values);
             MappedStatement newMs = copyFromMappedStatement(statement, new BoundSqlSqlSource(newBoundSql));

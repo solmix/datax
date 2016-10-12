@@ -24,6 +24,7 @@
 						<value id="11" name="text" />
 					</valueMap>
 				</field>
+				<field name="field2"/>
 			</fields>
 			<operations>
 				<fetch autoJoinTransactions="true" serviceMethod="getMenu" usedValidatedValues="true" oneway="true">

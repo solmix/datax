@@ -146,7 +146,7 @@ public class DefaultDataServiceManagerTest
         System.out.println("memery used:" + (last.getUsedMemory() - old.getUsedMemory()));
         DataServiceInfo dsi = dsm.getRepositoryService().getDataService("load.ds");
         assertEquals("服务描述", dsi.getDescription());
-        assertEquals(1, dsi.getFields().size());
+        assertEquals(2, dsi.getFields().size());
         assertEquals(BaseDataServiceFactory.BASE, dsi.getServerType());
         assertEquals("load.ds", dsi.getId());
         Assert.assertTrue(!dsi.isRest());

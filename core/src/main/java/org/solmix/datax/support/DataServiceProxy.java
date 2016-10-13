@@ -22,7 +22,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -111,7 +110,7 @@ public class DataServiceProxy<T> implements InvocationHandler
        request.setOperationId(operationId);
        if(!ArrayUtils.isEmptyArray(args)){
     	   int pindex=-1;
-    	   for(int j=0;j<=args.length;j++){
+    	   for(int j=0;j<args.length;j++){
     		   if(args[j]instanceof PageControl){
     			   pindex=j;
     			   break;
@@ -135,7 +134,7 @@ public class DataServiceProxy<T> implements InvocationHandler
 	    	   if(args.length==1){
 	    		   request.addAttachment(PageControl.class, (PageControl)args[0]);
 	    	   }else if(args.length==2){
-	    		   for(int i=0;i<=2;i++){
+	    		   for(int i=0;i<2;i++){
 	    			   if(i==pindex){
 	    				   request.addAttachment(PageControl.class, (PageControl)args[i]);
 	    			   }else{

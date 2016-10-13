@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.solmix.commons.collections.DataTypeMap;
 import org.solmix.commons.pager.PageControl;
+import org.solmix.commons.pager.SortAttr;
 import org.solmix.commons.timer.StopWatch;
 import org.solmix.commons.util.DataUtils;
 import org.solmix.commons.util.StringUtils;
@@ -43,7 +44,6 @@ import org.solmix.datax.DSCallException;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.DSResponse.Status;
-import org.solmix.datax.attachment.SortBy;
 import org.solmix.datax.call.DSCall;
 import org.solmix.datax.call.DSCallCompleteCallback;
 import org.solmix.datax.jdbc.dialect.OracleDialect;
@@ -455,15 +455,15 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
 	                statement = (new StringBuilder()).append(statement).append(" GROUP BY ").append(groupClause).toString();
 	            if (!"$defaultGroupWhereClause".equals(groupWhereClause))
 	                statement = (new StringBuilder()).append("SELECT * FROM (").append(statement).append(") work WHERE ").append(groupWhereClause).toString();
-	            if (req.getAttachment(SortBy.class) != null) {
-	            	SortBy o = req.getAttachment(SortBy.class);
+	            if (req.getAttachment(PageControl.class) != null) {
+	            	PageControl o = req.getAttachment(PageControl.class);
 	                StringBuilder s = (new StringBuilder()).append(statement);
-	                List<String> bys = o.sortby();
-	                if(bys!=null&&bys.size()>0){
+	                SortAttr[] bys = o.getSortAttribute();
+	                if(bys!=null&&bys.length>0){
 	                	s.append(" ORDER BY ");
-                        for (int i = 0; i < bys.size(); i++) {
-                            s.append( bys.get(i).toString());
-                            if (i < bys.size())
+                        for (int i = 0; i < bys.length; i++) {
+                            s.append( bys[i].toString());
+                            if (i < bys.length)
                                 s.append(", ");
                         }
 	                }

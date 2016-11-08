@@ -211,19 +211,6 @@ public class DataServiceProxy<T> implements InvocationHandler
 
 			}
 		}
-		for (int i = 0; i < annos.length; i++) {
-			if (pindex != -1 && pindex != i) {
-
-			}
-			Annotation[] parameterAnnons = annos[i];
-			Argument arg = findArgument(parameterAnnons);
-			if (arg == null) {
-				throw new IllegalArgumentException(
-						"Method have multi argument should annotate @Argument");
-			} else {
-				merged.put(arg.key(), args[i]);
-			}
-		}
 		if (argType == null || argType == void.class) {
 			request.setRawValues(merged);
 		} else {

@@ -73,7 +73,27 @@ public class OracleDialect extends SQLDialect
 
     @Override
     public String limitQuery(String query, long startRow, long totalRows, List<String> outputColumns, String orderClause) {
-         throw new UnsupportedOperationException();
+    	 StringBuilder out = new StringBuilder();
+         if (DataUtils.isNotNullAndEmpty(outputColumns)) {
+             for (int i = 0; i < outputColumns.size(); i++) {
+                   out.append( outputColumns.get(i));
+                 if (i < outputColumns.size() - 1)
+                   out.append(", ");
+             }
+
+         }
+         StringBuilder qsb = new StringBuilder();
+        qsb.append("SELECT ")
+        		 .append(out.length()==0 ? "*" : out.toString())
+        		 .append(" FROM (SELECT  a.*, rownum myrownum FROM ")
+        		 .append("(").append(query).append(") a");
+         if(orderClause!=null){
+        	 qsb.append(" order by ").append(orderClause);
+         }
+        qsb.append(orderClause!=null)
+        		 .append(" where rownum <=").append(startRow + totalRows).append(")").append(
+             " WHERE myrownum > ").append(startRow).toString();
+         return query=qsb.toString();
     }
 
     @Override

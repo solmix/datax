@@ -60,12 +60,18 @@ public class MysqlDialect extends SQLDialect
 
     @Override
     public String limitQuery(String query, long startRow, long totalRows, List<String> outputColumns, String orderClause) {
-         throw new UnsupportedOperationException();
+    	StringBuilder sb= new StringBuilder();
+    	sb.append(query);
+    	if(orderClause!=null){
+    		sb.append(" order by ").append(orderClause);
+    	}
+    	return sb.append(" limit ").append(
+                startRow).append(", ").append(totalRows).toString();
     }
 
     @Override
     public String limitQuery(String query, long startRow, long totalRows, List<String> outputColumns) {
-        return (new StringBuilder()).append(query).append(" limit ").append(
+        return new StringBuilder().append(query).append(" limit ").append(
             startRow).append(", ").append(totalRows).toString();
     }
     @Override

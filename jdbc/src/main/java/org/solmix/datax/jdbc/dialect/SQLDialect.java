@@ -191,5 +191,21 @@ public abstract class SQLDialect
 	public boolean supportsSQLLimit() {
 		return false;
 	}
-
+	
+	public boolean supportsAsyncCommit(){
+		return false;
+	}
+	public boolean supportsMultiInsertStmt(){
+		return false;
+	}
+	public String getSetAsyncCommitStmt(boolean on){
+		return null;
+	}
+	public boolean supportsDuplicateInsertStmt(){
+		return false;
+	}
+	
+	public boolean supportsPLSQL(){
+		return false;
+	}
 }

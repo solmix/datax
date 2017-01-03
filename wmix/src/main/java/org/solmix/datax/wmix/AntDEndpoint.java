@@ -1,22 +1,3 @@
-/*
- * Copyright 2015 The Solmix Project
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.gnu.org/licenses/ 
- * or see the FSF site: http://www.fsf.org. 
- */
-
 package org.solmix.datax.wmix;
 
 import java.util.Map;
@@ -25,6 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.solmix.commons.util.Assert;
 import org.solmix.datax.DataServiceManager;
+import org.solmix.datax.wmix.interceptor.AntDInInterceptor;
+import org.solmix.datax.wmix.interceptor.AntDOutInterceptor;
 import org.solmix.datax.wmix.interceptor.OutFaultInterceptor;
 import org.solmix.datax.wmix.interceptor.SgtInInterceptor;
 import org.solmix.datax.wmix.interceptor.SgtOutInterceptor;
@@ -41,18 +24,12 @@ import org.solmix.wmix.exchange.AbstractWmixEndpoint;
 import org.solmix.wmix.exchange.WmixMessage;
 import org.solmix.wmix.mapper.MapperService;
 
-/**
- * 提供基于RestFul的数据输出
- * @author solmix.f@gmail.com
- * @version $Id$ 2015年8月13日
- */
+public class AntDEndpoint extends AbstractWmixEndpoint implements Endpoint{
 
-public class DataxEndpoint extends AbstractWmixEndpoint implements Endpoint
-{
+	private static final long serialVersionUID = 7096409697024891764L;
 
-    private static final Logger LOG = LoggerFactory.getLogger(DataxEndpoint.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AntDEndpoint.class);
 
-    private static final long serialVersionUID = 7621213021932655937L;
 
     private DataxServiceFactory serviceFactory;
     
@@ -60,7 +37,7 @@ public class DataxEndpoint extends AbstractWmixEndpoint implements Endpoint
     
     private DataServiceManager dataServiceManager;
     
-    public DataxEndpoint(){
+    public AntDEndpoint(){
         serviceFactory= new DataxServiceFactory();
     }
     @Override
@@ -78,11 +55,11 @@ public class DataxEndpoint extends AbstractWmixEndpoint implements Endpoint
         getOutFaultInterceptors().add(new OutFaultInterceptor());
     }
     protected void prepareOutInterceptors(){
-        getOutInterceptors().add(new SgtOutInterceptor());
+        getOutInterceptors().add(new AntDOutInterceptor());
     }
     
     protected void prepareInInterceptors(){
-    	SgtInInterceptor in = new SgtInInterceptor();
+    	AntDInInterceptor in = new AntDInInterceptor();
     	MapperService mapperService=container.getExtension(MapperService.class);
     	in.setMapperService(mapperService);
         getInInterceptors().add(in);
@@ -118,5 +95,4 @@ public class DataxEndpoint extends AbstractWmixEndpoint implements Endpoint
         
         return serviceFactory.create();
     }
-    
 }

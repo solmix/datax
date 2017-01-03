@@ -44,13 +44,13 @@ import org.solmix.wmix.mapper.MapperService;
 import org.solmix.wmix.parser.ParameterParser;
 
 /**
- * For SmartClient JS Binding interceptor.
+ * 针对ant design的请求
  * 
  * @author solmix.f@gmail.com
  * @version $Id$ 2015年8月16日
  */
 
-public class SgtInInterceptor extends AbstractInInterceptor
+public class AntDInInterceptor extends AbstractInInterceptor
 {
 
     private DSCallFactory dscFactory = new DefaultDSCallFactory();
@@ -96,10 +96,10 @@ public class SgtInInterceptor extends AbstractInInterceptor
         request.setRawValues(operation.get("values"));
         request.setApplicationId(operation.getString("appID"));
 
-        Object start = operation.get("startRow");
-        Object end = operation.get("endRow");
-        if (start != null && end != null) {
-        	PageControl pc = PageControl.fromRows(Integer.valueOf(start.toString()), Integer.valueOf(end.toString()));
+        Integer pageSize = operation.getInteger("pageSize");
+        Integer page = operation.getInteger("page");
+        if (pageSize != null &&page != null) {
+        	PageControl pc = new PageControl(page, pageSize);
             request.addAttachment(PageControl.class, pc);
         }
         Object oldValues = operation.get("oldValues");
@@ -158,8 +158,8 @@ public class SgtInInterceptor extends AbstractInInterceptor
         for(String key:parameterParser.keySet()){
             if("_appID".equals(key)){
                 dsr.setApplicationId(parameterParser.getString(key));
-            }else if("_startRow".equals(key)){
-            	PageControl page = PageControl.fromRows(parameterParser.getInt("_startRow"), parameterParser.getInt("_endRow"));
+            }else if("_pageSize".equals(key)){
+            	PageControl page = new PageControl(parameterParser.getInt("_page"), parameterParser.getInt("_pageSize")) ;
                 dsr.addAttachment(PageControl.class, page);
             }else if("_exportResults".equals(key)){
                 if(parameterParser.getBoolean("_exportResults")){

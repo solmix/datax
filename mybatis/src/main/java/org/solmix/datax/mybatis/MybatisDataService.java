@@ -231,7 +231,7 @@ public class MybatisDataService extends BaseDataService implements DataService
                 }
             }
             parameter = new PagedParameter(req, res,
-                req.getRawValues(), defaultDialect, session,req.getAttachment(PageControl.class));
+                req.getRawValues(), defaultDialect, session,pageable);
         } else {
             parameter = req.getRawValues();
         }

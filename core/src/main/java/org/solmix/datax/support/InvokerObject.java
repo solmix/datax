@@ -370,8 +370,6 @@ public class InvokerObject
                 return request.getDataService();
             } else if(Logger.class.isAssignableFrom(targetType)){
                 return LOG;
-            } else if(DSCall.class.isAssignableFrom(targetType)){
-                return request.getDSCall();
             }else if(RequestContext.class.isAssignableFrom(targetType)){
                 return requestContext;
             }else if(Container.class.isAssignableFrom(targetType)){

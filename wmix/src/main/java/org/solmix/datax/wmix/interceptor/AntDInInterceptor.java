@@ -53,6 +53,8 @@ import org.solmix.wmix.parser.ParameterParser;
 public class AntDInInterceptor extends AbstractInInterceptor
 {
 
+	public static final String ACTION="action",VALUES="values",APP_ID="appID",
+			PAGE_SIZE="pageSize",PAGE="page",OLD_VALUES="oldValues",EXPORT_RESULTS="exportResults";
     private DSCallFactory dscFactory = new DefaultDSCallFactory();
     
     private MapperService mapperService;
@@ -89,24 +91,26 @@ public class AntDInInterceptor extends AbstractInInterceptor
 
     private void prepareRequest(DSRequest request, DataTypeMap operation, boolean joinTransaction) {
         request.setCanJoinTransaction(joinTransaction);
-        String action = operation.getString("action");
+        String action = operation.getString(ACTION);
         Assert.assertNotNull(action, "operation action must be not null");
+        if(mapperService!=null){
+        	action = mapperService.map(ACTION,action);
+        }
         request.setOperationId(action);
+        request.setRawValues(operation.get(VALUES));
+        request.setApplicationId(operation.getString(APP_ID));
 
-        request.setRawValues(operation.get("values"));
-        request.setApplicationId(operation.getString("appID"));
-
-        Integer pageSize = operation.getInteger("pageSize");
-        Integer page = operation.getInteger("page");
+        Integer pageSize = operation.getInteger(PAGE_SIZE);
+        Integer page = operation.getInteger(PAGE);
         if (pageSize != null &&page != null) {
         	PageControl pc = new PageControl(page, pageSize);
             request.addAttachment(PageControl.class, pc);
         }
-        Object oldValues = operation.get("oldValues");
+        Object oldValues = operation.get(OLD_VALUES);
         if (oldValues != null) {
             request.addAttachment(OldValues.class, new OldValuesBean(oldValues));
         }
-        Object exportResults = operation.get("exportResults");
+        Object exportResults = operation.get(EXPORT_RESULTS);
         if (DataUtils.asBoolean(exportResults)) {
             prepareExport(request, operation);
         }

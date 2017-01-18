@@ -34,5 +34,5 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 public @interface DataService {
 
-    String id() default "";
+    String value() default "";
 }

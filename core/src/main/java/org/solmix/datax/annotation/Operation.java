@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 public @interface Operation {
 
-    String id() default "";
+    String value() default "";
     
     Class<?> argType() default void.class;
 

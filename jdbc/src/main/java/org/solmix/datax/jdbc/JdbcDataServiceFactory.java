@@ -32,7 +32,7 @@ import org.solmix.runtime.Extension;
  * @author solmix.f@gmail.com
  * @version $Id$ 2015年8月5日
  */
-@Extension(name = JdbcDataServiceFactory.JDBC)
+@Extension( JdbcDataServiceFactory.JDBC)
 @ThreadSafe
 public class JdbcDataServiceFactory extends BaseDataServiceFactory
 {

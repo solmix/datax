@@ -43,7 +43,7 @@ import org.solmix.runtime.Extension;
  * @author solmix.f@gmail.com
  * @version $Id$ 2015年7月18日
  */
-@Extension(name=ApplicationManager.BUILT_IN_APPLICATION)
+@Extension(ApplicationManager.BUILT_IN_APPLICATION)
 public class BuiltInApplication implements Application
 {
 

@@ -39,7 +39,7 @@ import org.solmix.runtime.event.EventService;
  * @author solmix.f@gmail.com
  * @version $Id$ 2015年7月2日
  */
-@Extension(name = BaseDataServiceFactory.BASE)
+@Extension( BaseDataServiceFactory.BASE)
 @ThreadSafe
 public class BaseDataServiceFactory implements DataServiceFactory,ContainerAware
 {

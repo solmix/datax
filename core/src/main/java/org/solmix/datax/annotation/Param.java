@@ -39,7 +39,7 @@ public @interface Param {
      * 服务名
      * @return
      */
-    String name() default "";
+    String value() default "";
     
    /* *//**
      * 指明该参数是请求数据还是服务资源。

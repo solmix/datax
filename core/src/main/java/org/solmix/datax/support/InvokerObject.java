@@ -360,7 +360,7 @@ public class InvokerObject
   
     private Object lookupResource(Class<?> targetType, Param param) {
         Object founded=null;
-        if (param == null || ObjectUtils.EMPTY_STRING.equals(param.name())) {
+        if (param == null || ObjectUtils.EMPTY_STRING.equals(param.value())) {
 
             if(DSCall.class.isAssignableFrom(targetType)){
                 return request.getDSCall();
@@ -386,7 +386,7 @@ public class InvokerObject
         }else{
             ConfiguredBeanProvider provider = container.getExtension(ConfiguredBeanProvider.class);
             if(provider!=null){
-                founded= provider.getBeanOfType(param.name(), targetType);
+                founded= provider.getBeanOfType(param.value(), targetType);
             }
         }
         return founded;

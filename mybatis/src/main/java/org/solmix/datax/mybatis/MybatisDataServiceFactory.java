@@ -37,7 +37,7 @@ import org.solmix.runtime.Extension;
  * @author solmix.f@gmail.com
  * @version $Id$ 2015年8月9日
  */
-@Extension(name = MybatisDataServiceFactory.MYBATIS)
+@Extension( MybatisDataServiceFactory.MYBATIS)
 @ThreadSafe
 public class MybatisDataServiceFactory extends BaseDataServiceFactory
 {

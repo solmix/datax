@@ -63,7 +63,7 @@ public class DataServiceProxy<T> implements InvocationHandler
    
     private void prepareDataService() {
         org.solmix.datax.annotation.DataService ds = interfaceClass.getAnnotation(org.solmix.datax.annotation.DataService.class);
-        String id =StringUtils.trimToNull(ds.id());
+        String id =StringUtils.trimToNull(ds.value());
         if(id==null){
             id=interfaceClass.getName();
         }
@@ -74,7 +74,7 @@ public class DataServiceProxy<T> implements InvocationHandler
            if(operation==null){
                operationId=new StringBuilder().append(id).append(".").append(method.getName()).toString();
            }else{
-               String configedid=operation.id();
+               String configedid=operation.value();
                configedid= StringUtils.trimToNull(configedid);
                if(configedid==null){
                    operationId=new StringBuilder().append(id).append(".").append(method.getName()).toString();
@@ -190,7 +190,7 @@ public class DataServiceProxy<T> implements InvocationHandler
 					throw new IllegalArgumentException(
 							"Method have multi argument should annotate @Argument");
 				} else {
-					merged.put(arg.key(), args[i]);
+					merged.put(arg.value(), args[i]);
 				}
 			}
 		} else {
@@ -205,7 +205,7 @@ public class DataServiceProxy<T> implements InvocationHandler
 						throw new IllegalArgumentException(
 								"Method have multi argument should annotate @Argument");
 					} else {
-						merged.put(arg.key(), args[i]);
+						merged.put(arg.value(), args[i]);
 					}
 				}
 

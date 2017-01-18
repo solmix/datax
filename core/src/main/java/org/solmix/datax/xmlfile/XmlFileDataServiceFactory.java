@@ -32,7 +32,7 @@ import org.solmix.runtime.Extension;
  * @author solmix.f@gmail.com
  * @version $Id$  2015年8月4日
  */
-@Extension(name = XmlFileDataServiceFactory.XMLFILE)
+@Extension( XmlFileDataServiceFactory.XMLFILE)
 @ThreadSafe
 public class XmlFileDataServiceFactory extends BaseDataServiceFactory
 {

@@ -76,7 +76,7 @@ import org.solmix.datax.support.DSResponseImpl;
 import org.solmix.datax.util.DataTools;
 import org.solmix.runtime.Container;
 import org.solmix.runtime.transaction.Transaction;
-import org.solmix.runtime.transaction.TransactionService;
+import org.solmix.runtime.transaction.TransactionObject;
 
 
 /**
@@ -120,7 +120,7 @@ public class MybatisDataService extends BaseDataService implements DataService
         if (req.getDSCall() != null && this.canJoinTransaction(req)) {
             usedTransaction = true;
             DSCall dsc = req.getDSCall();
-            TransactionService ts = dsc.getTransactionService();
+            TransactionObject ts = dsc.getTransactionService();
             Transaction transaction = ts.getResource(dataSource);
             req.setPartsOfTransaction(true);
             // dsc中已经存在该DataSource的事物对象
@@ -413,7 +413,7 @@ public class MybatisDataService extends BaseDataService implements DataService
             SqlSession session=null;
             if(usedTransaction){
                 DSCall dsc = req.getDSCall();
-                TransactionService ts = dsc.getTransactionService();
+                TransactionObject ts = dsc.getTransactionService();
                 Transaction transaction = ts.getResource(dataSource);
                 req.setPartsOfTransaction(true);
                 // dsc中已经存在该DataSource的事物对象

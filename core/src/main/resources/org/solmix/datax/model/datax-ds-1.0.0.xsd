@@ -327,10 +327,13 @@
 
 	<simpleType name="transactionPolicy">
 		<restriction base="string">
-			<enumeration value="from_first_change"></enumeration>
-			<enumeration value="any_change"></enumeration>
-			<enumeration value="all"></enumeration>
-			<enumeration value="none"></enumeration>
+			<enumeration value="REQUIRED"></enumeration>
+			<enumeration value="MANDATORY"></enumeration>
+			<enumeration value="SUPPORTS"></enumeration>
+			<enumeration value="NOT_SUPPORTED"></enumeration>
+			<enumeration value="NEVER"></enumeration>
+			<enumeration value="EMBED"></enumeration>
+			<enumeration value="NEW"></enumeration>
 		</restriction>
 	</simpleType>
 

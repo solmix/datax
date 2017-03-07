@@ -27,7 +27,6 @@ import org.solmix.datax.FreeResourcesHandler;
 import org.solmix.datax.model.MergedType;
 import org.solmix.datax.model.TransactionPolicy;
 import org.solmix.runtime.transaction.TransactionException;
-import org.solmix.runtime.transaction.TransactionService;
 
 
 /**
@@ -144,7 +143,7 @@ public interface DSCall extends FreeResourcesHandler
     /**
      * @return
      */
-    TransactionService getTransactionService();
+//    TransactionObject getTransactionService();
 
     /**
      * 结束一次调用请求

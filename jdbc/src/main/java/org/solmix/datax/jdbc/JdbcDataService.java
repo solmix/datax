@@ -70,7 +70,7 @@ import org.solmix.datax.support.DSResponseImpl;
 import org.solmix.datax.util.DataTools;
 import org.solmix.runtime.Container;
 import org.solmix.runtime.transaction.Transaction;
-import org.solmix.runtime.transaction.TransactionService;
+import org.solmix.runtime.transaction.TransactionObject;
 
 
 /**
@@ -394,7 +394,7 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
 		Connection __currentConn = null;
 		if (usedTransaction(req)) {
             DSCall dsc = req.getDSCall();
-            TransactionService ts = dsc.getTransactionService();
+            TransactionObject ts = dsc.getTransactionService();
             Transaction transaction = ts.getResource(dataSource);
             req.setPartsOfTransaction(true);
             if (transaction != null) {

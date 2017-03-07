@@ -44,7 +44,7 @@ import org.solmix.datax.model.TransactionPolicy;
 import org.solmix.datax.support.DSResponseImpl;
 import org.solmix.datax.util.DataTools;
 import org.solmix.runtime.transaction.TransactionException;
-import org.solmix.runtime.transaction.TransactionService;
+import org.solmix.runtime.transaction.TransactionObject;
 
 /**
  * 支持带事物机制的请求执行，但是只支持简单的事物，当出错时自动回滚，正常执行完毕时自动提交
@@ -71,7 +71,7 @@ public class DSCallImpl implements DSCall
 
     private  HashSet<DSCallCompleteCallback> callbacks = new HashSet<DSCallCompleteCallback>();
     
-    private final TransactionService transactionService;
+    private final TransactionObject transactionService;
     
     public enum STATUS
     {
@@ -82,12 +82,12 @@ public class DSCallImpl implements DSCall
 
     private boolean exceptionBroken =true  ;
 
-    public DSCallImpl(TransactionService transactionManager)
+    public DSCallImpl(TransactionObject transactionManager)
     {
         this(STATUS.INIT,transactionManager,null);
     }
     
-    public DSCallImpl(STATUS status,TransactionService transactionManager,TransactionPolicy policy)
+    public DSCallImpl(STATUS status,TransactionObject transactionManager,TransactionPolicy policy)
     {
         this.status = status;
         this.transactionPolicy=policy;
@@ -439,7 +439,7 @@ public class DSCallImpl implements DSCall
         return res;
     }
     @Override
-    public TransactionService getTransactionService() {
+    public TransactionObject getTransactionService() {
         return transactionService;
     }
     /**

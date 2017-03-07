@@ -26,6 +26,7 @@ import org.solmix.commons.xml.XMLNode;
 import org.solmix.datax.repository.builder.XmlNodeParserProvider;
 import org.solmix.datax.repository.builder.XmlParserContext;
 import org.solmix.datax.repository.builder.xml.BaseXmlNodeParser;
+import org.solmix.runtime.transaction.TransactionPolicy;
 
 /**
  * 
@@ -85,7 +86,7 @@ public class BatchOperations
             if(transPolicy!=null){
                 transactionPolicy=TransactionPolicy.fromValue(transPolicy);
             }else{
-                transactionPolicy=TransactionPolicy.ANY_CHANGE;
+                transactionPolicy=TransactionPolicy.REQUIRED;
             }
             String merged= node.getStringAttribute("merged");
             MergedType mergedType=null;

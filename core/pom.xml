@@ -42,6 +42,11 @@
 			<artifactId>commons-jexl3</artifactId>
 			<optional>true</optional>
 		</dependency>
+		<dependency>
+			<groupId>org.solmix.test</groupId>
+			<artifactId>solmix-test</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>

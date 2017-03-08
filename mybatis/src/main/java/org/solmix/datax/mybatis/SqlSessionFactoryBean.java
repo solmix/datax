@@ -44,7 +44,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.apache.ibatis.session.TransactionIsolationLevel;
-import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
+import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.type.TypeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +73,8 @@ public class SqlSessionFactoryBean implements SqlSessionFactory, ContainerAware
     private List<String> mapperLocations;
 
     private DataSource dataSource;
+    
+    private TransactionFactory transactionFactory;
 
     private Properties configurationProperties;
 
@@ -206,7 +208,10 @@ public class SqlSessionFactoryBean implements SqlSessionFactory, ContainerAware
                 ErrorContext.instance().reset();
             }
         }
-        configuration.setEnvironment(new Environment(this.environment, new JdbcTransactionFactory(), this.dataSource));
+        if (this.transactionFactory == null) {
+            this.transactionFactory = new ManagedTransactionFactory();
+          }
+        configuration.setEnvironment(new Environment(this.environment, transactionFactory, this.dataSource));
 
         if (this.databaseIdProvider != null) {
             try {

@@ -132,9 +132,6 @@ public class VelocityExpression
             vc.put(DATAX.VM_REQUESTCONTEXT, requestContext);
         }
         vc.put(DATAX.VM_DSREQUEST, request);
-        if (request.getDSCall() != null) {
-            vc.put(DATAX.VM_DSC, request.getDSCall());
-        }
         vc.put(DATAX.VM_DS, request.getDataService());
         vc.put(DATAX.VM_VALUES, request.getRawValues());
 

@@ -55,7 +55,6 @@ import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.DSResponse.Status;
 import org.solmix.datax.DataService;
-import org.solmix.datax.call.DSCall;
 import org.solmix.datax.jdbc.ConcurrencyRequestException;
 import org.solmix.datax.jdbc.DataSourceInfo;
 import org.solmix.datax.jdbc.DataSourceService;
@@ -63,8 +62,6 @@ import org.solmix.datax.jdbc.GetConnectionException;
 import org.solmix.datax.jdbc.RoutingRequest;
 import org.solmix.datax.jdbc.dialect.SQLDialect;
 import org.solmix.datax.jdbc.dialect.SQLDialectFactory;
-import org.solmix.datax.jdbc.support.ConnectionTransaction;
-import org.solmix.datax.jdbc.support.ConnectionWrapperedTransaction;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.model.OperationInfo;
 import org.solmix.datax.model.OperationType;
@@ -75,8 +72,6 @@ import org.solmix.datax.support.BaseDataService;
 import org.solmix.datax.support.DSResponseImpl;
 import org.solmix.datax.util.DataTools;
 import org.solmix.runtime.Container;
-import org.solmix.runtime.transaction.Transaction;
-import org.solmix.runtime.transaction.TransactionObject;
 
 
 /**
@@ -115,45 +110,8 @@ public class MybatisDataService extends BaseDataService implements DataService
     }
 
     protected DSResponse executeWithDataSource(DataSource dataSource, DSRequest req, OperationType type) throws DSCallException {
-        SqlSession session = null;
-        boolean usedTransaction = false;
-        if (req.getDSCall() != null && this.canJoinTransaction(req)) {
-            usedTransaction = true;
-            DSCall dsc = req.getDSCall();
-            TransactionObject ts = dsc.getTransactionService();
-            Transaction transaction = ts.getResource(dataSource);
-            req.setPartsOfTransaction(true);
-            // dsc中已经存在该DataSource的事物对象
-            if (transaction != null) {
-                if (transaction instanceof ConnectionWrapperedTransaction) {
-                    Object wrap = ((ConnectionWrapperedTransaction<?>) transaction).getWrappedTransactionObject();
-                    if (wrap instanceof SqlSession) {
-                        session = (SqlSession) wrap;
-                    }
-                } else  if (transaction instanceof ConnectionTransaction) {
-                    Connection conn = (Connection) transaction.getTransactionObject();
-                    if (conn != null) {
-                        session = sqlSessionFactory.openSession(conn);
-                    } else {
-                        session = sqlSessionFactory.openSession();
-                    }
-                    if (session != null && this.canStartTransaction(req, false)) {
-                        ts.bindResource(dataSource, new ConnectionWrapperedTransaction<SqlSession>(session, session.getConnection()));
-                    }
-                }  
-                // dsc中不存在该DataSource的事物对象
-            } else {
-                if (this.canStartTransaction(req, false)) {
-                    session = sqlSessionFactory.openSession(false);
-                    if (session != null) {
-                        ts.bindResource(dataSource, new ConnectionWrapperedTransaction<SqlSession>(session, session.getConnection()));
-                    }
-                }
-            }
-
-        } else {
-            session = sqlSessionFactory.openSession(true);
-        }
+        //通过全局事务管理提交
+    	SqlSession session =sqlSessionFactory.openSession(true);
         try {
             if (DataTools.isFetch(type)) {
                 return executeFetch(req,session,dataSource);
@@ -169,7 +127,7 @@ public class MybatisDataService extends BaseDataService implements DataService
                 return notSupported(req);
             }
         } finally {
-            if (!usedTransaction && session != null) {
+            if ( session != null) {
                 session.close();
             }
         }
@@ -279,10 +237,7 @@ public class MybatisDataService extends BaseDataService implements DataService
     protected DSResponse executeInConcurrency(SortedMap<String, DataSource> dsMap, DSRequest req, final OperationType type) {
         DSResponse res = new DSResponseImpl(req, Status.STATUS_SUCCESS);
         List<RoutingRequest> requests = new ArrayList<RoutingRequest>();
-        boolean usedTransaction = false;
-        if (req.getDSCall() != null && this.canJoinTransaction(req)) {
-            usedTransaction = true;
-        }
+       
         for (String key : dsMap.keySet()) {
             DataSourceInfo dsi = dataSourceService.getDataSourceInfo(key);
             ExecutorService es = dsi.getExecutorService();
@@ -301,7 +256,7 @@ public class MybatisDataService extends BaseDataService implements DataService
         if (CollectionUtils.isEmpty(requests)) {
             return res;
         }
-        List<SqlSessionDepository> des = makeupSessionInConcurrency(requests, usedTransaction);
+        List<SqlSessionDepository> des = makeupSessionInConcurrency(requests);
         // concurrent
         final CountDownLatch latch = new CountDownLatch(des.size());
         List<Future<Object>> futures = new ArrayList<Future<Object>>();
@@ -328,12 +283,10 @@ public class MybatisDataService extends BaseDataService implements DataService
                 throw new ConcurrencyRequestException("interrupted when processing data access request in concurrency", e);
             }
         } finally {
-            if (!usedTransaction) {
                 for (SqlSessionDepository routing : des) {
                     SqlSession session = routing.getSqlSession();
                     session.close();
                 }
-            }
         }
         prepareResult(futures, type,req,res);
 
@@ -404,54 +357,16 @@ public class MybatisDataService extends BaseDataService implements DataService
         
     }
 
-    protected List<SqlSessionDepository> makeupSessionInConcurrency(List<RoutingRequest> requests, boolean usedTransaction) {
+    protected List<SqlSessionDepository> makeupSessionInConcurrency(List<RoutingRequest> requests) {
         List<SqlSessionDepository> depos = new ArrayList<SqlSessionDepository>();
         for(RoutingRequest request:requests){
             DataSource dataSource = request.getDataSource();
             DSRequest req=request.getRequest();
             
-            SqlSession session=null;
-            if(usedTransaction){
-                DSCall dsc = req.getDSCall();
-                TransactionObject ts = dsc.getTransactionService();
-                Transaction transaction = ts.getResource(dataSource);
-                req.setPartsOfTransaction(true);
-                // dsc中已经存在该DataSource的事物对象
-                if (transaction != null) {
-                    if (transaction instanceof ConnectionTransaction) {
-                        Connection conn = (Connection) transaction.getTransactionObject();
-                        if (conn == null) {
-                            conn=getConnection( dataSource,false);
-                        } 
-                            session = sqlSessionFactory.openSession(conn);
-                        if (session != null && this.canStartTransaction(req, false)) {
-                            ts.bindResource(dataSource, new ConnectionWrapperedTransaction<SqlSession>(session, session.getConnection()));
-                        }
-                    } else if (transaction instanceof ConnectionWrapperedTransaction) {
-                        Object wrap = ((ConnectionWrapperedTransaction<?>) transaction).getWrappedTransactionObject();
-                        if (wrap instanceof SqlSession) {
-                            session = (SqlSession) wrap;
-                        }
-                    }
-                    // dsc中不存在该DataSource的事物对象
-                } else {
-                    if (this.canStartTransaction(req, false)) {
-                        Connection conn =getConnection( dataSource,false);
-                        session = sqlSessionFactory.openSession(conn);
-                        if (session != null) {
-                            ts.bindResource(dataSource, new ConnectionWrapperedTransaction<SqlSession>(session, session.getConnection()));
-                        }
-                    }
-                }
-                
-              //不使用transaction
-            }else{
                Connection conn= getConnection(dataSource,true);
-               session=sqlSessionFactory.openSession(conn);
-            }
+             SqlSession session=sqlSessionFactory.openSession(conn);
             SqlSessionDepository ss= new SqlSessionDepository();
             ss.setRequest(request);
-            ss.setUsedTransaction(usedTransaction);
             ss.setSqlSession(session);
             depos.add(ss);
         }

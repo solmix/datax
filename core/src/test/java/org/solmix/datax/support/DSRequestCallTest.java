@@ -18,11 +18,11 @@
  */
 package org.solmix.datax.support;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 
-import static org.junit.Assert.*;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -36,14 +36,15 @@ import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.DataServiceNoFoundException;
 import org.solmix.datax.OperationNoFoundException;
 import org.solmix.datax.application.ApplicationNotFoundException;
-import org.solmix.datax.call.TransactionFailedException;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.model.OperationInfo;
 import org.solmix.datax.service.MockDataService;
-import org.solmix.datax.validation.ErrorMessage;
 import org.solmix.datax.validation.ErrorReport;
 import org.solmix.runtime.Container;
 import org.solmix.runtime.ContainerFactory;
+import org.solmix.runtime.exception.InvokerException;
+import org.solmix.runtime.transaction.TransactionManager;
+import org.solmix.runtime.transaction.support.SimpleTestTransactionManager;
 
 
 /**
@@ -60,6 +61,8 @@ public class DSRequestCallTest
     @Before
     public void setup() {
         c = ContainerFactory.getDefaultContainer(true);
+        SimpleTestTransactionManager tx = new SimpleTestTransactionManager();
+        c.setExtension(tx, TransactionManager.class);
         Assert.assertNotNull(c);
     }
     @After
@@ -172,7 +175,7 @@ public class DSRequestCallTest
         System.out.println(key.getId()+"-"+key.getLocalId());
     }
     
-    @Test(expected=TransactionFailedException.class)
+    @Test(expected=InvokerException.class)
     public void testbatchFailed() throws DSCallException{
         DSRequest custom = createDSRequest("com.call.ds2.custom3");
         
@@ -220,7 +223,6 @@ public class DSRequestCallTest
        assertEquals(result.get("request"), getre);
        assertSame(result.get("dsrequest"), result.get("request"));
        assertSame(result.get("c1"), result.get("c2"));
-       assertSame(result.get("dsc"), getre.getDSCall());
        assertSame(result.get("ds"), getre.getDataService());
        assertSame(result.get("mock"), mock);
        assertEquals(result.get("dsid"), getre.getDataService().getId());

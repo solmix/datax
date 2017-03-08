@@ -18,11 +18,22 @@
  */
 package org.solmix.datax.util;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.solmix.commons.pager.PageControl;
+import org.solmix.commons.util.DataUtils;
 import org.solmix.datax.DSRequest;
+import org.solmix.datax.DSResponse;
+import org.solmix.datax.DSResponse.Status;
 import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.model.FieldType;
+import org.solmix.datax.model.MergedType;
 import org.solmix.datax.model.OperationType;
+import org.solmix.datax.support.DSResponseImpl;
 
 
 /**
@@ -150,5 +161,81 @@ public class DataTools
         }
            
         return false;
+    }
+    
+    public static DSResponse getMergedResponse(Map<DSRequest,DSResponse> responses,MergedType merged){
+    	if(merged==null){
+            merged=MergedType.SIMPLE;
+        }
+        switch (merged) {
+            case SIMPLE:
+                return simpleResponse(responses);
+            case WRAPPED:
+                return wrappedResponse(responses);
+            default:
+               throw new UnsupportedOperationException(merged.value());
+           
+        }
+    }
+    
+    private static DSResponse simpleResponse(Map<DSRequest,DSResponse> results) {
+    	List<DSRequest> canReturn = new ArrayList<DSRequest>();
+        for (DSRequest req : results.keySet()) {
+            if (DataUtils.asBoolean(req.getOperationInfo().getOneway())) {
+                continue;
+            } else {
+                canReturn.add(req);
+            }
+        }
+        Status st=Status.STATUS_SUCCESS;
+        for(DSResponse res:results.values()){
+        	if(res.getStatus()!=Status.STATUS_SUCCESS){
+        		st=Status.STATUS_TRANSACTION_FAILED;
+        	}
+        }
+        DSResponse res = null;
+        boolean onlyOneRequest = canReturn.size()==1;
+        if (onlyOneRequest) {
+            res =results.get(canReturn.get(0));
+        } else {
+            res = new DSResponseImpl(st);
+            Map<String, Object> mergedData = new LinkedHashMap<String, Object>();
+            List<Object> errors = new ArrayList<Object>();
+            for (DSRequest req : canReturn) {
+                DSResponse resp = results.get(req);
+                mergedData.put(req.getOperationId(), resp.getRawData());
+                Object[] error = resp.getErrors();
+                if (error != null && error.length > 0) {
+                    errors.addAll(Arrays.asList(error));
+                }
+                res.setRawData(mergedData);
+                if (errors.size() > 0) {
+                    res.setErrors(errors.toArray());
+                }
+            }
+        }
+        return res;
+
+    }
+    
+    private static DSResponse wrappedResponse(Map<DSRequest,DSResponse> results) {
+        List<DSResponse> array= new ArrayList<DSResponse>();
+
+        for (DSRequest req : results.keySet()) {
+            if(DataUtils.asBoolean(req.getOperationInfo().getOneway())){
+                continue;
+            }
+            DSResponse resp = results.get(req);
+            array.add(resp);
+        }
+        Status st=Status.STATUS_SUCCESS;
+        for(DSResponse res:results.values()){
+        	if(res.getStatus()!=Status.STATUS_SUCCESS){
+        		st=Status.STATUS_TRANSACTION_FAILED;
+        	}
+        }
+        DSResponse res = new DSResponseImpl(st);
+        res.setRawData(array);
+        return res;
     }
 }

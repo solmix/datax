@@ -24,24 +24,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.solmix.commons.pager.PageControl;
-import org.solmix.commons.util.Assert;
 import org.solmix.datax.DSCallException;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.DSResponse.Status;
 import org.solmix.datax.DataServiceManager;
-import org.solmix.datax.DataxException;
 import org.solmix.datax.DataxRuntimeException;
 import org.solmix.datax.DataxSession;
 import org.solmix.datax.OperationNoFoundException;
 import org.solmix.datax.ResponseHandler;
-import org.solmix.datax.call.DSCall;
-import org.solmix.datax.call.DSCallUtils;
-import org.solmix.datax.call.TransactionFailedException;
 import org.solmix.datax.model.OperationInfo;
 import org.solmix.datax.model.OperationType;
-import org.solmix.datax.model.TransactionPolicy;
-import org.solmix.runtime.transaction.TransactionException;
 
 /**
  * 
@@ -51,10 +44,6 @@ import org.solmix.runtime.transaction.TransactionException;
 
 public class DataxSessionImpl implements DataxSession
 {
-
-    private boolean isCall;
-
-    private DSCall call;
 
     private DataServiceManager dataServiceManager;
 
@@ -177,14 +166,6 @@ public class DataxSessionImpl implements DataxSession
     }
     
 
-    @Override
-    public void commit() {
-        if(call!=null){
-            call.commit();
-            isCall = false;
-        }
-
-    }
 
     @Override
     public List<DSResponse> execute(List<DSRequest> requests) {
@@ -206,18 +187,6 @@ public class DataxSessionImpl implements DataxSession
     }
 
   
-    @Override
-    public void begin(TransactionPolicy policy) throws TransactionException{
-        isCall = true;
-        DSCall origin=  DSCallUtils.getDSCall();
-        if(origin!=null){
-            throw new TransactionException("already has DSCall on this thread");
-        }
-       call= dataServiceManager.getDSCallFactory().createDSCall(policy);
-       isCall = true;
-       Assert.assertNotNull(call,"Can't create DSCall");
-       
-    }
 
     @Override
     public DSResponse execute(DSRequest req){
@@ -233,21 +202,11 @@ public class DataxSessionImpl implements DataxSession
             throw new OperationNoFoundException("Mismatching operation type,request is[" + type + "],but configured is[" + oi.getType() + "]");
         }
 
-        if (isCall && call != null) {
-            try {
-                return call.execute(req);
-            } catch (TransactionFailedException e) {
-                throw new TransactionException(e.getMessage(), e.getCause());
-            } catch (DataxException e) {
-                throw new DataxRuntimeException(e);
-            }
-        } else {
-            try {
-                return req.execute();
-            } catch (DSCallException e) {
-                throw new DataxRuntimeException(e);
-            }
-        }
+	    try {
+	        return req.execute();
+	    } catch (DSCallException e) {
+	        throw new DataxRuntimeException(e);
+	    }
     }
     
     @Override

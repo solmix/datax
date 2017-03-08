@@ -43,8 +43,6 @@ import org.solmix.datax.DataServiceNoFoundException;
 import org.solmix.datax.DataxRuntimeException;
 import org.solmix.datax.DataxSession;
 import org.solmix.datax.application.ApplicationManager;
-import org.solmix.datax.call.DSCallFactory;
-import org.solmix.datax.call.support.DefaultDSCallFactory;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.repository.DefaultRepository;
 import org.solmix.datax.repository.RepositoryService;
@@ -93,8 +91,6 @@ public class DefaultDataServiceManager implements DataServiceManager,ContainerAw
 
     private RepositoryService repositoryService;
 
-    private DSCallFactory dscFactory;
-    
     private String defaultServerType;
     
     private ApplicationManager applicationManager;
@@ -244,9 +240,7 @@ public class DefaultDataServiceManager implements DataServiceManager,ContainerAw
     private DataService instanceDataService(DataServiceInfo info){
         DataServiceFactory dsf= extensionLoader.getExtension(info.getServerType());
         DataService ds= dsf.instance(info,getProperties());
-        if(ds instanceof BaseDataService){
-            ((BaseDataService)ds).setDSCallFactory(dscFactory);
-        }
+       
         return ds;
     }
 
@@ -281,17 +275,6 @@ public class DefaultDataServiceManager implements DataServiceManager,ContainerAw
      */
     public void setDefaultServerType(String defaultServerType) {
         this.defaultServerType = defaultServerType;
-    }
-
-    
-    @Override
-    public DSCallFactory getDSCallFactory() {
-        return dscFactory;
-    }
-
-    
-    public void setDscFactory(DSCallFactory dscFactory) {
-        this.dscFactory = dscFactory;
     }
 
     @Override
@@ -336,15 +319,6 @@ public class DefaultDataServiceManager implements DataServiceManager,ContainerAw
         }
         //设置默认的manager。
         
-        if(dscFactory==null){
-            dscFactory= container.getExtension(DSCallFactory.class);
-            if(dscFactory==null){
-                DefaultDSCallFactory factory=new DefaultDSCallFactory();
-                factory.init();
-                dscFactory=factory;
-                container.setExtension(dscFactory, DSCallFactory.class);
-            }
-        }
         init = true;
     }
 

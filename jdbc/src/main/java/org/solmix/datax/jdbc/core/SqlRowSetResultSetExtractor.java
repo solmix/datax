@@ -9,7 +9,6 @@ import javax.sql.rowset.RowSetProvider;
 
 import org.solmix.commons.Version;
 import org.solmix.commons.util.ClassLoaderUtils;
-import org.solmix.commons.util.Reflection;
 
 
 public class SqlRowSetResultSetExtractor implements ResultSetExtractor<SqlRowSet> {
@@ -43,7 +42,6 @@ public class SqlRowSetResultSetExtractor implements ResultSetExtractor<SqlRowSet
 	 * @return the disconnected SqlRowSet
 	 * @throws SQLException if thrown by JDBC methods
 	 * @see #newCachedRowSet
-	 * @see org.springframework.jdbc.support.rowset.ResultSetWrappingSqlRowSet
 	 */
 	protected SqlRowSet createSqlRowSet(ResultSet rs) throws SQLException {
 		CachedRowSet rowSet = newCachedRowSet();

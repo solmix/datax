@@ -49,7 +49,7 @@
 				</fetch>
 				<fetch id="feth2" refid="#fetch" rest="false"></fetch>
 				<add>
-					<batch transactionPolicy="from_first_change" merged="wrapped">
+					<batch transactionPolicy="REQUIRED" merged="wrapped">
 						<add>
 							<batch>
 								<add></add>

@@ -34,8 +34,6 @@ import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.RequestContext;
 import org.solmix.datax.attachment.OldValues;
 import org.solmix.datax.attachment.OldValuesBean;
-import org.solmix.datax.call.DSCallFactory;
-import org.solmix.datax.call.support.DefaultDSCallFactory;
 import org.solmix.datax.export.ExportConfig;
 import org.solmix.datax.wmix.Constants;
 import org.solmix.exchange.Exchange;
@@ -55,7 +53,6 @@ public class AntDInInterceptor extends AbstractInInterceptor
 
 	public static final String ACTION="action",VALUES="values",APP_ID="appID",
 			PAGE_SIZE="pageSize",PAGE="page",OLD_VALUES="oldValues",EXPORT_RESULTS="exportResults";
-    private DSCallFactory dscFactory = new DefaultDSCallFactory();
     
     private MapperService mapperService;
 
@@ -133,14 +130,6 @@ public class AntDInInterceptor extends AbstractInInterceptor
         export.setLineBreakStyle(operation.getString("lineBreakStyle"));
 
         request.addAttachment(ExportConfig.class, export);
-    }
-
-    public DSCallFactory getDscFactory() {
-        return dscFactory;
-    }
-
-    public void setDscFactory(DSCallFactory dscFactory) {
-        this.dscFactory = dscFactory;
     }
 
     public MapperService getMapperService() {

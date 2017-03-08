@@ -76,13 +76,6 @@ public interface DataService extends FreeResourcesHandler
      */
     List<Object> validateDSRequst(DSRequest req) throws ValidationException;
 
-    /**
-     * 请求是否应该加入事物处理中。
-     * 
-     * @param req
-     * @return
-     */
-    boolean canJoinTransaction(DSRequest req);
 
     /**
      * 为Velocity提供的接口，允许Velocity将不识别的引用交给DataService做特殊处理
@@ -93,10 +86,5 @@ public interface DataService extends FreeResourcesHandler
      */
     Object escapeValue(Object data, String reference);
 
-    /**
-     * @param req
-     * @param ignoreExistingTransaction 忽略当前策略
-     * @return
-     */
-    boolean canStartTransaction(DSRequest req, boolean ignoreExistingTransaction);
+   
 }

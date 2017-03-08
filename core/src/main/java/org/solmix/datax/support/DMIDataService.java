@@ -27,7 +27,6 @@ import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.DSResponse.Status;
 import org.solmix.datax.application.Application;
-import org.solmix.datax.call.DSCall;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.model.InvokerInfo;
 import org.solmix.datax.model.OperationInfo;
@@ -48,27 +47,24 @@ public class DMIDataService
 
     protected final Container container;
 
-    protected final DSCall dsCall;
-
     protected final DSRequest dsRequest;
 
     protected final Application application;
 
-    public DMIDataService(Container container, DSRequest dsRequest, DSCall dscall, Application application)
+    public DMIDataService(Container container, DSRequest dsRequest, Application application)
     {
         this.container = container;
         this.dsRequest = dsRequest;
-        this.dsCall = dscall;
         this.application = application;
     }
 
-    public static DSResponse execute(final Container container, final DSRequest dsRequest, DSCall dscall) throws DSCallException {
-        return execute(container, dsRequest, dscall, dsRequest.getApplication());
+    public static DSResponse execute(final Container container, final DSRequest dsRequest) throws DSCallException {
+        return execute(container, dsRequest, dsRequest.getApplication());
     }
 
-    public static DSResponse execute(Container container, DSRequest dsRequest, DSCall dscall, Application application) throws DSCallException {
+    public static DSResponse execute(Container container, DSRequest dsRequest, Application application) throws DSCallException {
 
-        return new DMIDataService(container, dsRequest, dscall, application).execute();
+        return new DMIDataService(container, dsRequest, application).execute();
 
     }
 

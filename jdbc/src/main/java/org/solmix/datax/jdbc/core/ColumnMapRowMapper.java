@@ -29,7 +29,6 @@ public class ColumnMapRowMapper implements RowMapper<Map<String, Object>> {
 	 * @param columnCount the column count, to be used as initial
 	 * capacity for the Map
 	 * @return the new Map instance
-	 * @see org.springframework.util.LinkedCaseInsensitiveMap
 	 */
 	protected Map<String, Object> createColumnMap(int columnCount) {
 		return new LinkedCaseInsensitiveMap<Object>(columnCount);
@@ -53,7 +52,6 @@ public class ColumnMapRowMapper implements RowMapper<Map<String, Object>> {
 	 * @param rs is the ResultSet holding the data
 	 * @param index is the column index
 	 * @return the Object returned
-	 * @see org.springframework.jdbc.support.JdbcUtils#getResultSetValue
 	 */
 	protected Object getColumnValue(ResultSet rs, int index) throws SQLException {
 		return JdbcHelper.getResultSetValue(rs, index);

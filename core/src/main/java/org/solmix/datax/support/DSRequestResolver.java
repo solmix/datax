@@ -20,7 +20,6 @@ package org.solmix.datax.support;
 
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DataService;
-import org.solmix.datax.call.DSCall;
 import org.solmix.runtime.resource.support.ResourceResolverAdaptor;
 
 
@@ -42,8 +41,6 @@ public class DSRequestResolver extends ResourceResolverAdaptor
     public <T> T resolve(String resourceName, Class<T> resourceType) {
         if (resourceType == DSRequest.class) {
             return (T) request;
-        } else if (resourceType == DSCall.class) {
-            return (T) request.getDSCall();
         } else if (resourceName==null&&resourceType == DataService.class) {
             return (T) request.getDataService();
         }

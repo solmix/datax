@@ -21,7 +21,6 @@ package org.solmix.datax;
 
 import java.util.regex.Pattern;
 
-import org.solmix.datax.call.DSCall;
 import org.solmix.runtime.Container;
 
 /**
@@ -85,10 +84,6 @@ public final class DATAX
      */
     public static final String VM_REQUESTCONTEXT = "requestContext";
     
-    /**
-     * Velocity 中{@link DSCall} 的名称
-     */
-    public static final String VM_DSC = "dsc";
     
     /**
      * Velocity 中{@link DSRequest} 的名称

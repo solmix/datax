@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -46,11 +47,8 @@ import org.solmix.datax.DSResponse.Status;
 import org.solmix.datax.DataService;
 import org.solmix.datax.DataServiceNoFoundException;
 import org.solmix.datax.DataxException;
+import org.solmix.datax.NestedDSCallException;
 import org.solmix.datax.OperationNoFoundException;
-import org.solmix.datax.call.DSCall;
-import org.solmix.datax.call.DSCallFactory;
-import org.solmix.datax.call.DSCallTemplateContext;
-import org.solmix.datax.call.DSCallUtils;
 import org.solmix.datax.model.BatchOperations;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.model.FieldInfo;
@@ -61,7 +59,6 @@ import org.solmix.datax.model.MergedType;
 import org.solmix.datax.model.OperationInfo;
 import org.solmix.datax.model.OperationType;
 import org.solmix.datax.model.ParamInfo;
-import org.solmix.datax.model.TransactionPolicy;
 import org.solmix.datax.model.TransformerInfo;
 import org.solmix.datax.model.ValidatorInfo;
 import org.solmix.datax.script.VelocityExpression;
@@ -86,6 +83,11 @@ import org.solmix.runtime.io.CachedOutputStream;
 import org.solmix.runtime.resource.ResourceInjector;
 import org.solmix.runtime.resource.ResourceManager;
 import org.solmix.runtime.resource.support.ResourceManagerImpl;
+import org.solmix.runtime.transaction.TransactionCallback;
+import org.solmix.runtime.transaction.TransactionManager;
+import org.solmix.runtime.transaction.TransactionPolicy;
+import org.solmix.runtime.transaction.TransactionState;
+import org.solmix.runtime.transaction.TransactionSupport;
 import org.solmix.service.template.TemplateService;
 import org.w3c.dom.Element;
 
@@ -106,7 +108,7 @@ public class BaseDataService implements DataService
     private DataTypeMap properties;
     private DataServiceInfo info;
     
-    private DSCallFactory dsCallFactory;
+    private TransactionManager transactionManager;
     
     private  EventService eventService;
     
@@ -129,8 +131,16 @@ public class BaseDataService implements DataService
             LOG.trace((new StringBuilder()).append("Creating instance of DataSource '").append(info.getId()).append("'").toString());
         }
     }
-    
-    /**
+     
+    public TransactionManager getTransactionManager() {
+		return transactionManager;
+	}
+
+	public void setTransactionManager(TransactionManager transactionManager) {
+		this.transactionManager = transactionManager;
+	}
+
+	/**
      * 释放执行请求时缓存
      */
     @Override
@@ -208,7 +218,7 @@ public class BaseDataService implements DataService
         }
         // 配置了invoker优先处理
         if ((!req.isInvoked()) && oi.getInvoker() != null) {
-            response = DMIDataService.execute(container, req, req.getDSCall());
+            response = DMIDataService.execute(container, req);
             return transformResponse(response, transformers,req,oi);
         } else {
             response = executeDefault(req, type);
@@ -242,7 +252,7 @@ public class BaseDataService implements DataService
         if(selected ==null){
             throw new ForwardException("No found forwardinfo for :"+forward);
         }
-        DSCallTemplateContext context = new DSCallTemplateContext(container,req,res);
+        DSTemplateContext context = new DSTemplateContext(container,req,res);
         CachedOutputStream  outputSteam = new CachedOutputStream();
          try {
              String tempalte=selected.getPath();
@@ -446,22 +456,48 @@ public class BaseDataService implements DataService
      * @return
      * @throws DataxException 
      */
-    protected DSResponse executeBatch(DSRequest req, OperationInfo oi) throws DSCallException {
-        BatchOperations bos = oi.getBatch();
-        MergedType  merged = bos.getMergedType();
+    protected DSResponse executeBatch(final DSRequest req, OperationInfo oi) throws DSCallException{
+    	final BatchOperations bos = oi.getBatch();
+        final MergedType  merged = bos.getMergedType();
         TransactionPolicy policy = bos.getTransactionPolicy();
-        DSCall old = DSCallUtils.getDSCall();
-        try {
-            DSCall newdsc = dsCallFactory.createDSCall(policy);
-            DSCallUtils.setDSCall(newdsc);
-            for (OperationInfo op : bos.getOperations()) {
-                DSRequest request = createNewRequest(req, op);
-                newdsc.execute(request);
-            }
-            return newdsc.getMergedResponse(merged);
-        } finally {
-            DSCallUtils.setDSCall(old);
-        }
+    	TransactionSupport txSupport = new TransactionSupport(determineTransactionManager());
+    	txSupport.setTransactionPolicy(policy);
+    	DSResponse result=null;
+    	try{
+    		result= txSupport.execute(new TransactionCallback<DSResponse>() {
+
+    			@Override
+    			public DSResponse doInTransaction(TransactionState status) {
+    				List<OperationInfo> ops =bos.getOperations();
+    				if(ops==null){
+    					return newDSResponse(req,Status.STATUS_VALIDATION_ERROR,"Batch operation with no operation");
+    				}
+    				Map<DSRequest,DSResponse> responses = new LinkedHashMap<DSRequest,DSResponse>(ops.size());
+    				for(int i=0;i<ops.size();i++){
+    					try {
+    						DSRequest request = createNewRequest(req, ops.get(i));
+    						DSResponse res = request.execute();
+    						responses.put(request, res);
+    					} catch (DSCallException e) {
+    						throw new NestedDSCallException("TransactionFailed on Batch", e);
+    					}
+    				}
+    				return DataTools.getMergedResponse(responses,merged);
+    			}
+    		});
+    	}catch(NestedDSCallException e){
+    		throw (DSCallException)e.getCause();
+    	}
+    	return result;
+       
+    }
+    
+    protected TransactionManager determineTransactionManager(){
+    	TransactionManager tm  = getTransactionManager();
+    	if(tm!=null){
+    		return tm;
+    	}
+    	return container.getExtension(TransactionManager.class);
     }
   
     
@@ -565,6 +601,13 @@ public class BaseDataService implements DataService
             return null;
         }
     }
+    
+    protected DSResponse newDSResponse(DSRequest req,Status status,Object ... errors ){
+    	 DSResponse dsResponse = new DSResponseImpl(this, req);
+         dsResponse.setStatus(status);
+         dsResponse.setErrors(errors);
+         return dsResponse;
+    }
 
     /**
      * @param baseDataService
@@ -597,7 +640,6 @@ public class BaseDataService implements DataService
         ValidationContext vcontext = ValidationContext.instance();
         vcontext.setContainer(this.container);
         vcontext.setDSRequest(req);
-        vcontext.setDSCall(req.getDSCall());
         vcontext.setRequestContext(req.getRequestContext());
         vcontext.setValidationEventFactory(ValidationEventFactory.instance());
         vcontext.setValidatorService(DefaultValidatorService.getInstance());
@@ -978,7 +1020,7 @@ public class BaseDataService implements DataService
         // XXX
         return false;
     }
-    
+    /*
     @Override
     public boolean canStartTransaction(DSRequest req, boolean ignoreExistingTransaction) {
         if (req == null)
@@ -990,7 +1032,7 @@ public class BaseDataService implements DataService
         boolean isModification = DataTools.isModificationRequest(req);
         TransactionPolicy policy = req.getDSCall().getTransactionPolicy();
         if (isModification) {
-            //不管policy，修改的加入事物。
+            //不管policy，修改的加入事务。
             if(ignoreExistingTransaction){
                 return true;
             }
@@ -1023,11 +1065,11 @@ public class BaseDataService implements DataService
     }
     
 
-    /**
+    *//**
      * {@inheritDoc}
      * 
      * @see org.solmix.datax.DataService#canJoinTransaction(org.solmix.datax.DSRequest)
-     */
+     *//*
     @Override
     public boolean canJoinTransaction(DSRequest req) {
         if (req != null && req.getDSCall() != null) {
@@ -1059,11 +1101,11 @@ public class BaseDataService implements DataService
             return work.booleanValue();
     }
     
-    /**
+    *//**
      * 全局配置。
      * 
      * @return
-     */
+     *//*
     protected Boolean autoJoinAtGlobalLevel(DSRequest req){
        String autoJoin= getConfigProperties().getString("autoJoinTransactions");
        return parseAutoJoinTransactions(req,autoJoin);
@@ -1085,19 +1127,19 @@ public class BaseDataService implements DataService
         }
         return null;
     }
-    /**
+    *//**
      * DataService实现默认。
      * 
      * @return
-     */
+     *//*
     protected Boolean autoJoinAtProviderLevel(DSRequest req) {
         return false;
     }
     
-    /**
+    *//**
      * 检查DataService配置
      * @return
-     */
+     *//*
     protected Boolean autoJoinAtDataServiceLevel() {
         Object aj= info.getProperty("autoJoinTransactions");
         if(aj==null){
@@ -1107,9 +1149,9 @@ public class BaseDataService implements DataService
         }
     }
 
-    /**
+    *//**
      * 检查operation配置
-     */
+     *//*
     protected Boolean autoJoinAtOperationLevel(DSRequest req) {
         OperationInfo oi=   req.getOperationInfo();
         Object aj= oi.getProperty("autoJoinTransactions");
@@ -1118,7 +1160,7 @@ public class BaseDataService implements DataService
         }else{
             return Boolean.valueOf(aj.toString());
         }
-    }
+    }*/
     //需要根据DSrequest中配置的服务命名空间和参数规则(rule)决定使用的数据源。
   /*  protected String getTransactionObjectKey(DSRequest req){
         return null;
@@ -1137,11 +1179,8 @@ public class BaseDataService implements DataService
     
     @Override
     public Object escapeValue(Object data, String reference) {
-        // TODO Auto-generated method stub
+        // XXX 
         return null;
     }
 
-    public void setDSCallFactory(DSCallFactory factory) {
-       this.dsCallFactory=factory;
-    }
 }

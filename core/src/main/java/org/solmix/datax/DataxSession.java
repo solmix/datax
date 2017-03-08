@@ -23,8 +23,6 @@ import java.util.Map;
 
 import org.solmix.commons.annotation.NotThreadSafe;
 import org.solmix.commons.pager.PageControl;
-import org.solmix.datax.model.TransactionPolicy;
-import org.solmix.runtime.transaction.TransactionException;
 
 
 /**
@@ -74,7 +72,7 @@ public interface DataxSession
    <T>  T custom(String operationId, ResponseHandler<T> handler);
    
     /**
-     * 提供一种简单的事物实现机制：调用begin后，后续操作根据事物策略加入DSCall中，如果执行
+     * 提供一种简单的事务实现机制：调用begin后，后续操作根据事务策略加入DSCall中，如果执行
      * 过程中抛错，自动回滚。不允许嵌套调用，在没抛错或者调用end()前不能再调用begin，
      * 如果要嵌套使用参考{@link #execute(List, TransactionPolicy)}<br>
      * <code>
@@ -88,14 +86,14 @@ public interface DataxSession
      * begin()和 commit()必须成对出现
      * @throws TransactionException 如果已经存在DSCall
      */
-    void begin(TransactionPolicy  policy) throws TransactionException;
+//    void begin(TransactionPolicy  policy) throws TransactionException;
     
     /**
      * 结束本次调用。
      * 
      * begin()和 commit()必须成对出现
      */
-    void commit()throws TransactionException;
+//    void commit()throws TransactionException;
     
     List<DSResponse> execute(List<DSRequest> requests);
 

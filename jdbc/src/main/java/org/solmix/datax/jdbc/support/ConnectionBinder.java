@@ -107,7 +107,6 @@ public class ConnectionBinder extends AbstractResourceBinder {
 	 * returned once the data operation is done, to make the Connection available
 	 * for other operations within the same transaction. This is the case with
 	 * JDO 2.0 DataStoreConnections, for example.
-	 * @see org.springframework.orm.jdo.DefaultJdoDialect#getJdbcConnection
 	 */
 	@Override
 	public void released() {

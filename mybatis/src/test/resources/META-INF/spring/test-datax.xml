@@ -7,7 +7,6 @@
            http://www.springframework.org/schema/context
            http://www.springframework.org/schema/context/spring-context-3.1.xsd">
            
-    <bean class="org.solmix.datax.jdbc.core.JdbcSupportFactoryBean"></bean>
 	<bean id="sqlSessionFactory" class="org.solmix.datax.mybatis.SqlSessionFactoryBean">
 		<property name="dataSource" ref="partition1_main" />
 		<property name="configLocation"

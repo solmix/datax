@@ -32,7 +32,6 @@ import org.solmix.datax.DATAX;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DataService;
 import org.solmix.datax.RequestContext;
-import org.solmix.datax.call.DSCall;
 import org.solmix.datax.model.FieldType;
 import org.solmix.datax.model.ValidatorInfo;
 import org.solmix.runtime.Container;
@@ -62,7 +61,6 @@ public class ValidationContext
 
     private ValidationEventFactory factory;
 
-    private DSCall dsCall;
 
     private RequestContext requestContext;
     
@@ -143,14 +141,6 @@ public class ValidationContext
     public void setDSRequest(DSRequest dsRequest) {
         this.dsRequest = dsRequest;
     }
-    /**
-     * @param dsCall
-     */
-    public void setDSCall(DSCall dsCall) {
-        this.dsCall = dsCall;
-
-    }
-
     /**
      * @param currentDataSource the currentDataSource to set
      */
@@ -236,12 +226,7 @@ public class ValidationContext
     public Map<String, Object> getTemplateContext() {
         return templateContext;
     }
-    
-    public DSCall getDSCall() {
-        return dsCall;
-    }
 
-    
     public RequestContext getRequestContext() {
         return requestContext;
     }

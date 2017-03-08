@@ -24,11 +24,9 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.solmix.datax.DSRequest;
-import org.solmix.datax.DSResponse;
 import org.solmix.datax.DataService;
 import org.solmix.datax.RequestContext;
 import org.solmix.datax.annotation.Param;
-import org.solmix.datax.call.DSCall;
 import org.solmix.datax.service.MockDataService;
 import org.solmix.datax.support.DSRequestCallTest.Bean;
 import org.solmix.runtime.Container;
@@ -67,14 +65,12 @@ public class CallDataService
         @Param(expression="$container") Object c2,
         @Param(expression="$xxxx") Object mock,
         Container c1,
-        DSCall dscall,
         DataService ds,
         DSRequest dsrequest){
         Map<String,Object> res = new HashMap<String, Object>();
         res.put(name, key);
         res.put("request", request);
         res.put("dsrequest", dsrequest);
-        res.put("dsc", dscall);
         res.put("ds", ds);
         res.put("dsid", id);
         res.put("c1", c1);
@@ -103,13 +99,10 @@ public class CallDataService
         map.put("step1", "batchFetch");
         return map;
     }
-    
-    public Map<String,Object> batchAdd(DSCall dsc){
-        DSResponse last=dsc.getResponseByOperationLocalId("batchFetch");
-        Map<String,Object> map=last.getSingleResult(Map.class);
-        map.put("step2", "batchAdd");
-        return map;
+    public int batchAdd(){
+        return 1;
     }
+
     public void exception() throws Exception{
         throw new Exception();
     }

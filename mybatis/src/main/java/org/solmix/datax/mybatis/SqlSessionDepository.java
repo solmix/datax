@@ -32,7 +32,6 @@ public class SqlSessionDepository
 {
     private RoutingRequest request;
     private SqlSession sqlSession;
-    private boolean usedTransaction;
     
     public RoutingRequest getRequest() {
         return request;
@@ -49,13 +48,6 @@ public class SqlSessionDepository
     public void setSqlSession(SqlSession sqlSession) {
         this.sqlSession = sqlSession;
     }
-    
-    public boolean isUsedTransaction() {
-        return usedTransaction;
-    }
-    
-    public void setUsedTransaction(boolean usedTransaction) {
-        this.usedTransaction = usedTransaction;
-    }
+   
 
 }

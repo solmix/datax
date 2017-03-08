@@ -29,9 +29,6 @@ import org.slf4j.LoggerFactory;
 import org.solmix.commons.util.Assert;
 import org.solmix.datax.jdbc.GetConnectionException;
 import org.solmix.datax.jdbc.support.ConnectionBinder;
-import org.solmix.datax.jdbc.support.ConnectionTransaction;
-import org.solmix.datax.jdbc.support.ConnectionWrapperedTransaction;
-import org.solmix.runtime.transaction.Transaction;
 import org.solmix.runtime.transaction.TransactionInfo;
 import org.solmix.runtime.transaction.TransactionIsolation;
 import org.solmix.runtime.transaction.support.TransactionListener;
@@ -79,19 +76,18 @@ public class DataSourceHelper
 			LOG.debug("Registering transaction synchronization for JDBC Connection");
 			// Use same Connection for further JDBC actions within the transaction.
 			// Thread-bound object will get removed by synchronization at transaction completion.
-			ConnectionBinder holderToUse = conHolder;
-			if (holderToUse == null) {
-				holderToUse = new ConnectionBinder(con);
+			ConnectionBinder binderToUse = conHolder;
+			if (binderToUse == null) {
+				binderToUse = new ConnectionBinder(con);
+			}else {
+				binderToUse.setConnection(con);
 			}
-			else {
-				holderToUse.setConnection(con);
-			}
-			holderToUse.requested();
+			binderToUse.requested();
 			TxSynchronizer.registerSynchronization(
-					new ConnectionListener(holderToUse, dataSource));
-			holderToUse.setSynchronizedWithTransaction(true);
-			if (holderToUse != conHolder) {
-				TxSynchronizer.bindResource(dataSource, holderToUse);
+					new ConnectionListener(binderToUse, dataSource));
+			binderToUse.setSynchronizedWithTransaction(true);
+			if (binderToUse != conHolder) {
+				TxSynchronizer.bindResource(dataSource, binderToUse);
 			}
 		}
 
@@ -148,7 +144,7 @@ public class DataSourceHelper
         }
     }
 
-    public static Connection getConnection(Transaction trans) {
+/*    public static Connection getConnection(Transaction trans) {
         if (trans instanceof ConnectionTransaction) {
             return (Connection) trans.getTransactionObject();
 
@@ -156,7 +152,7 @@ public class DataSourceHelper
             return (Connection) trans.getTransactionObject();
         }
         return null;
-    }
+    }*/
 
     public static void releaseConnection(Connection con, DataSource dataSource) {
         HELPER.releaseConnectionInternal(con, dataSource);
@@ -323,5 +319,13 @@ public class DataSourceHelper
 		@Override
 		public void afterCommit() {
 		}
+	}
+
+	public static boolean isConnectionTransactional(Connection con, DataSource dataSource) {
+		if (dataSource == null) {
+			return false;
+		}
+		ConnectionBinder conHolder = (ConnectionBinder) TxSynchronizer.getResource(dataSource);
+		return (conHolder != null && connectionEquals(conHolder, con));
 	}
 }

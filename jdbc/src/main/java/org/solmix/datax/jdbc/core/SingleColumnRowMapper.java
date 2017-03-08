@@ -88,7 +88,6 @@ public class SingleColumnRowMapper<T> implements RowMapper<T> {
 	 * (or {@code null} if none specified)
 	 * @return the Object value
 	 * @throws SQLException in case of extraction failure
-	 * @see org.springframework.jdbc.support.JdbcHelper#getResultSetValue(java.sql.ResultSet, int, Class)
 	 * @see #getColumnValue(java.sql.ResultSet, int)
 	 */
 	protected Object getColumnValue(ResultSet rs, int index, Class<?> requiredType) throws SQLException {
@@ -113,7 +112,6 @@ public class SingleColumnRowMapper<T> implements RowMapper<T> {
 	 * @param index is the column index
 	 * @return the Object value
 	 * @throws SQLException in case of extraction failure
-	 * @see org.springframework.jdbc.support.JdbcHelper#getResultSetValue(java.sql.ResultSet, int)
 	 */
 	protected Object getColumnValue(ResultSet rs, int index) throws SQLException {
 		return JdbcHelper.getResultSetValue(rs, index);

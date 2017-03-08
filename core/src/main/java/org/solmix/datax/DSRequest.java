@@ -24,7 +24,6 @@ import java.util.Map;
 
 import org.solmix.commons.collections.DataTypeMap;
 import org.solmix.datax.application.Application;
-import org.solmix.datax.call.DSCall;
 import org.solmix.datax.model.OperationInfo;
 
 /**
@@ -39,15 +38,11 @@ public interface DSRequest
 
     DSResponse execute() throws DSCallException;
 
-    DSCall getDSCall();
-
     DataService getDataService();
 
     String getDataServiceId();
 
     void setDataService(DataService service);
-
-    void setDSCall(DSCall call);
 
     /**
      * 指明请求是否已经被验证.
@@ -141,28 +136,28 @@ public interface DSRequest
     Object getRawValues();
 
     /**
-     * 代表请求是否允许加入事物。
+     * 代表请求是否允许加入事务。
      * 
      * @return
      */
     Boolean isCanJoinTransaction();
 
     /**
-     * 设置请求是否能够加入事物。
+     * 设置请求是否能够加入事务。
      * 
      * @param canJoinTransaction
      */
     void setCanJoinTransaction(Boolean canJoinTransaction);
 
     /**
-     * 设置是否为事物中的一部分。
+     * 设置是否为事务中的一部分。
      * 
      * @param partsOfTransaction
      */
     void setPartsOfTransaction(boolean partsOfTransaction);
 
     /**
-     * 为真，代表该请求在事物中,否则未加入事物。
+     * 为真，代表该请求在事务中,否则未加入事务。
      * 
      * @return
      */

@@ -38,7 +38,6 @@ import org.solmix.datax.OperationNoFoundException;
 import org.solmix.datax.RequestContext;
 import org.solmix.datax.application.Application;
 import org.solmix.datax.application.ApplicationManager;
-import org.solmix.datax.call.DSCall;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.model.OperationInfo;
 import org.solmix.runtime.transaction.TransactionException;
@@ -77,10 +76,6 @@ public class DSRequestImpl  implements DSRequest,Cloneable
     
     boolean  invoked;
 
-    private DSCall dsc;
-    
-    private Boolean freeOnExecute ;
-    
     private Object rawValues;
 
     
@@ -112,16 +107,8 @@ public class DSRequestImpl  implements DSRequest,Cloneable
         if(response!=null){
             return prepareReturn(response);
         }
-        try {
-            response=getApplication().execute(this, requestContext);
-        } finally {
-            if (isFreeOnExecute()) {
-                this.freeResources();
-                if (dsc != null)
-                    dsc.freeResources();
-            }
-        }
-        return response;
+        
+        return getApplication().execute(this, requestContext);
     }
     /**
      * @return
@@ -148,28 +135,10 @@ public class DSRequestImpl  implements DSRequest,Cloneable
     }
     
     private DSResponse prepareReturn(DSResponse _dsResponse){
-        if (isFreeOnExecute()) {
-            freeResources();
-            if (dsc != null){
-                dsc.freeResources();
-            }
-        }
+       
         return _dsResponse;
     }
-    public boolean isFreeOnExecute() {
-        if(freeOnExecute==null){
-            if(getDSCall()!=null)
-                return false;
-            else
-                return true;
-        }else{
-            return freeOnExecute.booleanValue();
-        }
-     }
-
-     public void setFreeOnExecute(boolean freeOnExecute) {
-         this.freeOnExecute = freeOnExecute;
-     }
+   
     private DSResponse validateDSRequest()  {
         if(operationId==null){
             return createResponse(Status.STATUS_VALIDATION_ERROR, "DataService(DS) request operationid must be assigned");
@@ -185,11 +154,6 @@ public class DSRequestImpl  implements DSRequest,Cloneable
         dsResponse.setStatus(status);
         dsResponse.setErrors(errors);
         return dsResponse;
-    }
-   
-    @Override
-    public DSCall getDSCall() {
-        return dsc;
     }
    
     /**
@@ -221,17 +185,7 @@ public class DSRequestImpl  implements DSRequest,Cloneable
         
 
     }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.solmix.datax.DSRequest#setDSCall(org.solmix.datax.call.DSCall)
-     */
-    @Override
-    public void setDSCall(DSCall call) {
-        this.dsc = call;
-    }
-
+    
     /**
      * {@inheritDoc}
      * 

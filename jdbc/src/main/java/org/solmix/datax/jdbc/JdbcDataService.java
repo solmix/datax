@@ -44,10 +44,9 @@ import org.solmix.datax.DSCallException;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.DSResponse.Status;
-import org.solmix.datax.call.DSCall;
-import org.solmix.datax.call.DSCallCompleteCallback;
 import org.solmix.datax.jdbc.dialect.OracleDialect;
 import org.solmix.datax.jdbc.dialect.SQLDialect;
+import org.solmix.datax.jdbc.helper.DataSourceHelper;
 import org.solmix.datax.jdbc.helper.JdbcHelper;
 import org.solmix.datax.jdbc.sql.SQLGenerationException;
 import org.solmix.datax.jdbc.sql.SQLOrderClause;
@@ -56,8 +55,6 @@ import org.solmix.datax.jdbc.sql.SQLTable;
 import org.solmix.datax.jdbc.sql.SQLTableClause;
 import org.solmix.datax.jdbc.sql.SQLValuesClause;
 import org.solmix.datax.jdbc.sql.SQLWhereClause;
-import org.solmix.datax.jdbc.support.ConnectionTransaction;
-import org.solmix.datax.jdbc.support.ConnectionWrapperedTransaction;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.model.FieldInfo;
 import org.solmix.datax.model.OperationInfo;
@@ -69,8 +66,7 @@ import org.solmix.datax.support.BaseDataService;
 import org.solmix.datax.support.DSResponseImpl;
 import org.solmix.datax.util.DataTools;
 import org.solmix.runtime.Container;
-import org.solmix.runtime.transaction.Transaction;
-import org.solmix.runtime.transaction.TransactionObject;
+import org.solmix.runtime.transaction.support.TxSynchronizer;
 
 
 /**
@@ -79,7 +75,7 @@ import org.solmix.runtime.transaction.TransactionObject;
  * @version $Id$  2015年8月5日
  */
 
-public class JdbcDataService extends BaseDataService implements DSCallCompleteCallback
+public class JdbcDataService extends BaseDataService 
 {
     private static final Logger LOG = LoggerFactory.getLogger(JdbcDataService.class.getName());
 
@@ -283,7 +279,6 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
 		return res;
 	}
 	private List<Object> querySelect(String query, DSRequest req) throws DSCallException{
-		boolean usedTransaction = usedTransaction(req);
 		Connection __currentConn = null;
         Statement s = null;
         ResultSet rs = null;
@@ -293,8 +288,8 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
 	        	s = createFetchStatement(__currentConn);
 	            rs = s.executeQuery(query);
         	} catch (SQLException e) {
-        		//如果不使用事物机制，不影响别的语句执行，为了容错，可以再数据源中重新取一个connection执行查询
-        		if(!usedTransaction){
+        		//如果不使用事务机制，不影响别的语句执行，为了容错，可以再数据源中重新取一个connection执行查询
+        		if(!TxSynchronizer.isActualTransactionActive()){
         			try {
 						__currentConn=dataSource.getConnection();
 						if(s!=null){
@@ -321,7 +316,7 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
                 rs.close();
             } catch (Exception ignored) {
             }
-            if (!usedTransaction && __currentConn != null) {
+            if (__currentConn != null) {
             	JdbcHelper.closeConnection(__currentConn);
             }
         }
@@ -332,7 +327,6 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
 	                .append(", page size ").append(page.getPageSize()).append(". Query:")
 	                		.append(query).toString());
 		} 
-		boolean usedTransaction = usedTransaction(req);
 		Connection __currentConn = null;
         Statement s = null;
         ResultSet rs = null;
@@ -342,8 +336,8 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
 	        	s = createFetchStatement(__currentConn);
 	            rs = s.executeQuery(query);
         	} catch (SQLException e) {
-        		//如果不使用事物机制，不影响别的语句执行，为了容错，可以再数据源中重新取一个connection执行查询
-        		if(!usedTransaction){
+        		//如果不使用事务机制，不影响别的语句执行，为了容错，可以再数据源中重新取一个connection执行查询
+        		if(!TxSynchronizer.isActualTransactionActive()){
         			try {
 						__currentConn=dataSource.getConnection();
 						if(s!=null){
@@ -375,7 +369,7 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
                 rs.close();
             } catch (Exception ignored) {
             }
-            if (!usedTransaction && __currentConn != null) {
+            if ( __currentConn != null) {
             	JdbcHelper.closeConnection(__currentConn);
             }
         }
@@ -385,13 +379,10 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
 		return conn.createStatement();
 	}
 
-	/**是否可使用事物机制*/
-	private boolean usedTransaction(DSRequest req){
-		return req.getDSCall() != null && this.canJoinTransaction(req);
-	}
 	/**获取链接*/
 	private Connection getConnection(DSRequest req) throws SQLException{
-		Connection __currentConn = null;
+		return	DataSourceHelper.getConnection(dataSource);
+		/*Connection __currentConn = null;
 		if (usedTransaction(req)) {
             DSCall dsc = req.getDSCall();
             TransactionObject ts = dsc.getTransactionService();
@@ -409,7 +400,7 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
                     	__currentConn =conn;
                     }
                 }  
-                // dsc中不存在该DataSource的事物对象
+                // dsc中不存在该DataSource的事务对象
             } else {
                 if (this.canStartTransaction(req, false)) {
                 	__currentConn = dataSource.getConnection();
@@ -421,7 +412,7 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
     	}else{
     		__currentConn = dataSource.getConnection();
     	}
-		return  __currentConn;
+		return  __currentConn;*/
 	}
 
 	private Object executeScalar(String countQuery, DSRequest req) throws DSCallException {
@@ -602,28 +593,28 @@ public class JdbcDataService extends BaseDataService implements DSCallCompleteCa
         return table;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.solmix.datax.call.DSCallCompleteCallback#onSuccess(org.solmix.datax.call.DSCall)
-     */
-    @Override
-    public void onSuccess(DSCall call) {
-    	if(call.getTransactionService()!=null)
-    		call.getTransactionService().commit();
-        
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.solmix.datax.call.DSCallCompleteCallback#onFailure(org.solmix.datax.call.DSCall, boolean)
-     */
-    @Override
-    public void onFailure(DSCall call, boolean transactionFailure) throws DSCallException {
-    	if(call.getTransactionService()!=null)
-    		call.getTransactionService().rollback();
-    }
+//    /**
+//     * {@inheritDoc}
+//     * 
+//     * @see org.solmix.datax.call.DSCallCompleteCallback#onSuccess(org.solmix.datax.call.DSCall)
+//     */
+//    @Override
+//    public void onSuccess(DSCall call) {
+//    	if(call.getTransactionService()!=null)
+//    		call.getTransactionService().commit();
+//        
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     * 
+//     * @see org.solmix.datax.call.DSCallCompleteCallback#onFailure(org.solmix.datax.call.DSCall, boolean)
+//     */
+//    @Override
+//    public void onFailure(DSCall call, boolean transactionFailure) throws DSCallException {
+//    	if(call.getTransactionService()!=null)
+//    		call.getTransactionService().rollback();
+//    }
 
 
     /**

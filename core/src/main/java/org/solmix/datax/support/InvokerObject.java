@@ -47,7 +47,6 @@ import org.solmix.datax.DSRequest;
 import org.solmix.datax.DataService;
 import org.solmix.datax.RequestContext;
 import org.solmix.datax.annotation.Param;
-import org.solmix.datax.call.DSCall;
 import org.solmix.datax.model.InvokerInfo;
 import org.solmix.datax.model.LookupType;
 import org.solmix.datax.model.MethodArgInfo;
@@ -197,7 +196,10 @@ public class InvokerObject
         try {
             return method.invoke(instance, args);
         }  catch (InvocationTargetException e) {
-            throw new InvokerException(e.getMessage(), e.getCause());
+        	if(e.getCause()!=null)
+        		throw new InvokerException(e.getMessage(), e.getCause());
+        	else
+        		throw new InvokerException("Invoke Exception", e);
         }  catch (Exception e) {
             throw new InvokerException("Invoke Exception", e);
         }
@@ -362,9 +364,7 @@ public class InvokerObject
         Object founded=null;
         if (param == null || ObjectUtils.EMPTY_STRING.equals(param.value())) {
 
-            if(DSCall.class.isAssignableFrom(targetType)){
-                return request.getDSCall();
-            } else if(DSRequest.class.isAssignableFrom(targetType)){
+           if(DSRequest.class.isAssignableFrom(targetType)){
                 return request;
             } else if(DataService.class.isAssignableFrom(targetType)){
                 return request.getDataService();

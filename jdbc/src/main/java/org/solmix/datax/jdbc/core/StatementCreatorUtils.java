@@ -382,7 +382,6 @@ public abstract class StatementCreatorUtils {
 	 * execute method. This is for example important for closing LOB values.
 	 * @param paramValues parameter values supplied. May be {@code null}.
 	 * @see DisposableSqlTypeValue#cleanup()
-	 * @see org.springframework.jdbc.core.support.SqlLobValue#cleanup()
 	 */
 	public static void cleanupParameters(Object... paramValues) {
 		if (paramValues != null) {
@@ -395,7 +394,6 @@ public abstract class StatementCreatorUtils {
 	 * execute method. This is for example important for closing LOB values.
 	 * @param paramValues parameter values supplied. May be {@code null}.
 	 * @see DisposableSqlTypeValue#cleanup()
-	 * @see org.springframework.jdbc.core.support.SqlLobValue#cleanup()
 	 */
 	public static void cleanupParameters(Collection<?> paramValues) {
 		if (paramValues != null) {

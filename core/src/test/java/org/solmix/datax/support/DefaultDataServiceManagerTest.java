@@ -41,7 +41,6 @@ import org.solmix.datax.model.MergedType;
 import org.solmix.datax.model.MethodArgInfo;
 import org.solmix.datax.model.OperationInfo;
 import org.solmix.datax.model.ParamInfo;
-import org.solmix.datax.model.TransactionPolicy;
 import org.solmix.datax.model.TransformerInfo;
 import org.solmix.datax.model.ValidatorInfo;
 import org.solmix.datax.service.MockDataService;
@@ -256,7 +255,7 @@ public class DefaultDataServiceManagerTest
        assertEquals("$request", arg.getExpression());
        
        BatchOperations bi=dsi.getOperationInfo("#add").getBatch();
-       assertEquals(TransactionPolicy.FROM_FIRST_CHANGE, bi.getTransactionPolicy());
+       assertEquals(org.solmix.runtime.transaction.TransactionPolicy.REQUIRED, bi.getTransactionPolicy());
        assertEquals(MergedType.WRAPPED, bi.getMergedType());
        OperationInfo afeth= bi.getOperations().get(0);
        assertNotNull(afeth.getBatch());

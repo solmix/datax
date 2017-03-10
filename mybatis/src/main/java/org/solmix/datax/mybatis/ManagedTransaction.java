@@ -61,7 +61,7 @@ public class ManagedTransaction implements Transaction {
 	              + this.connection
 	              + "] will"
 	              + (this.isConnectionTransactional ? " " : " not ")
-	              + "be managed by Spring");
+	              + "be managed by Internal transaction");
 	    }
 	  }
 
@@ -96,7 +96,11 @@ public class ManagedTransaction implements Transaction {
 	   */
 	  @Override
 	  public void close() throws SQLException {
-		  DataSourceHelper.releaseConnection(this.connection, this.dataSource);
+		  if (this.connection != null && !this.isConnectionTransactional) {
+		      
+			  DataSourceHelper.releaseConnection(this.connection, this.dataSource);
+		    }
+		  
 	  }
 	    
 	

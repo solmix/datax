@@ -180,6 +180,12 @@ public class DataSourceTransactionManager extends AbstractTransactionManager imp
 	public Object getResourceFactory() {
 		return getDataSource();
 	}
+	
+	@Override
+	protected boolean isExistingTransaction(Object transaction) {
+		DataSourceTransaction txObject = (DataSourceTransaction) transaction;
+		return (txObject.getConnectionBinder() != null && txObject.getConnectionBinder().isTransactionActive());
+	}
 
 	public DataSource getDataSource() {
 		return dataSource;

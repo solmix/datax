@@ -337,13 +337,15 @@ public class DSResponseImpl implements DSResponse
                             DataUtils.setProperties((Map<?, ?>) one, _return, false);
                         }
                         if (size > 1) {
-                            LOG.warn("The data is more than one map or bean, used the first one and drop other " + (datas.size() - 1) + "(s)");
+                        	if(LOG.isWarnEnabled())
+                        		LOG.warn("The data is more than one map or bean, used the first one and drop other {}(s)" , (datas.size() - 1));
                         }
                         return _return;
 
                     } else {
                         if(!(type == Void.class)){
-                            LOG.warn("The data is List is empty ,return object is null ");    
+                        	if(LOG.isDebugEnabled())
+                        		LOG.debug("The response data is List but is empty ,which can't covert to type:{},return object is null ",type.getClass().getName());    
                         }
                         return null;
                     }

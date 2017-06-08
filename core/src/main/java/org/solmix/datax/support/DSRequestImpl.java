@@ -532,9 +532,10 @@ public class DSRequestImpl  implements DSRequest,Cloneable
         return null;
     }
 
-	@Override
-	public DataTypeMap getTypeValues() {
-		return new DataTypeMap(getValues());
-	}
+    @Override
+    public DataTypeMap getTypeValues() {
+        Map<String, Object> values = getValues();
+        return values instanceof DataTypeMap ? (DataTypeMap) values : new DataTypeMap(values);
+    }
 
 }

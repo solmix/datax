@@ -35,6 +35,7 @@ import org.solmix.datax.model.OperationInfo;
 import org.solmix.datax.model.TransformerInfo;
 import org.solmix.datax.model.ValidatorInfo;
 import org.solmix.datax.repository.builder.ReferenceResolver;
+import org.w3c.dom.Node;
 
 /**
  * 
@@ -177,7 +178,9 @@ public class DefaultRepository implements RepositoryService
 
     public XMLNode getIncludeXMLNode(String includeId) {
         
-        return fields.get(includeId);
+        XMLNode xmlNode= fields.get(includeId);
+        Node node = xmlNode.getNode().cloneNode(true);
+        return xmlNode.newXMLNode(node);
     }
 
 

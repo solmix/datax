@@ -106,6 +106,10 @@ public class DefaultDataServiceManagerTest
         assertNotNull(ai);
         BatchOperations bo = ai.getBatch();
         assertNotNull(bo);
+        
+        DataServiceInfo dsib = dsm.getRepositoryService().getDataService("com.example.ds.aab");  assertNotNull(dsi);
+        assertEquals(3, dsib.getFields().size());
+        
     }
     
 //    @Test(expected=BuilderException.class)

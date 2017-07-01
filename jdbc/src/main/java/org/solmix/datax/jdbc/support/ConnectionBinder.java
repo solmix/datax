@@ -4,6 +4,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
 
+import org.solmix.commons.util.Assert;
+import org.solmix.datax.jdbc.core.ConnectionHolder;
+import org.solmix.datax.jdbc.core.SimpleConnectionHolder;
 import org.solmix.runtime.transaction.support.AbstractResourceBinder;
 
 public class ConnectionBinder extends AbstractResourceBinder {
@@ -11,6 +14,8 @@ public class ConnectionBinder extends AbstractResourceBinder {
 
 
 	private Connection currentConnection;
+	
+	private ConnectionHolder connectionHolder;
 
 	private boolean transactionActive = false;
 
@@ -20,7 +25,7 @@ public class ConnectionBinder extends AbstractResourceBinder {
 
 
 	public ConnectionBinder(Connection connection) {
-		this.currentConnection = connection;
+	    this.connectionHolder = new SimpleConnectionHolder(connection);
 	}
 
 	
@@ -29,13 +34,16 @@ public class ConnectionBinder extends AbstractResourceBinder {
 		this.transactionActive = transactionActive;
 	}
 
+	public ConnectionHolder getConnectionHolder() {
+          return this.connectionHolder;
+    }
 
 
 	/**
 	 * Return whether this holder currently has a Connection.
 	 */
 	public boolean hasConnection() {
-		return (this.currentConnection != null);
+		return (this.connectionHolder != null);
 	}
 
 	/**
@@ -61,7 +69,16 @@ public class ConnectionBinder extends AbstractResourceBinder {
 	 * argument) and setting a fresh Connection on resume.
 	 */
 	public void setConnection(Connection connection) {
-		this.currentConnection =connection;
+	    if (this.currentConnection != null) {
+              this.connectionHolder.releaseConnection(this.currentConnection);
+              this.currentConnection = null;
+        }
+        if (connection != null) {
+              this.connectionHolder = new SimpleConnectionHolder(connection);
+        }
+        else {
+              this.connectionHolder = null;
+        }
 	}
 
 	/**
@@ -74,7 +91,11 @@ public class ConnectionBinder extends AbstractResourceBinder {
 	 */
 	public Connection getConnection() {
 	
-		return this.currentConnection;
+	    Assert.isNotNull(this.connectionHolder, "Active Connection is required");
+          if (this.currentConnection == null) {
+                this.currentConnection = this.connectionHolder.getConnection();
+          }
+          return this.currentConnection;
 	}
 
 	/**
@@ -112,8 +133,9 @@ public class ConnectionBinder extends AbstractResourceBinder {
 	public void released() {
 		super.released();
 		if (!isOpen() && this.currentConnection != null) {
-			this.currentConnection = null;
-		}
+                this.connectionHolder.releaseConnection(this.currentConnection);
+                this.currentConnection = null;
+          }
 	}
 
 

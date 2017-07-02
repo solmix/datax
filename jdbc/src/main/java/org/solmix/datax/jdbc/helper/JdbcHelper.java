@@ -43,6 +43,7 @@ import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.solmix.commons.timer.StopWatch;
 import org.solmix.commons.util.DataUtils;
 import org.solmix.commons.util.Reflection;
 import org.solmix.datax.DSCallException;
@@ -106,7 +107,7 @@ public class JdbcHelper
         }
     }
 
-    public static Object getResultSetValue(ResultSet rs, int index, Class requiredType) throws SQLException {
+    public static Object getResultSetValue(ResultSet rs, int index, Class<?> requiredType) throws SQLException {
         if (requiredType == null) {
             return getResultSetValue(rs, index);
         }
@@ -333,7 +334,7 @@ public class JdbcHelper
         /**
          * get bean class name from datasource.
          */
-        long _$ = System.currentTimeMillis();
+        StopWatch sw = new StopWatch();
         // If ResultSet is null.
         if (hasBrokenCursorAPIs) {
             if (!resultSet.next())
@@ -364,7 +365,9 @@ public class JdbcHelper
             i++;
 
         } while (true);
-        long $_ = System.currentTimeMillis();
+        if(LOG.isDebugEnabled()){
+            LOG.debug("toListOfMaps used {}",sw.toString());
+        }
         return __return;
 
     }

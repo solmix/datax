@@ -2,7 +2,8 @@ package org.solmix.datax.jdbc.core;
 
 import java.sql.Connection;
 
-import org.springframework.util.Assert;
+import org.solmix.commons.util.Assert;
+
 
 
 public class SimpleConnectionHolder implements ConnectionHolder
@@ -15,7 +16,7 @@ public class SimpleConnectionHolder implements ConnectionHolder
      * @param connection the JDBC Connection
      */
     public SimpleConnectionHolder(Connection connection) {
-          Assert.notNull(connection, "Connection must not be null");
+          Assert.isNotNull(connection, "Connection must not be null");
           this.connection = connection;
     }
 

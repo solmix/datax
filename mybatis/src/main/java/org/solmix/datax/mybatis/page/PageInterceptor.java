@@ -93,16 +93,16 @@ public class PageInterceptor implements Interceptor
             }
             p.page.setTotalSize(total);
 
-            int start =p.page.getPageFirstIndex();
+            int start = p.page.getPageFirstIndex();
             int batch = p.page.getPageSize();
-           SortAttr[] sorts= p.page.getSortAttribute();
-           String limitQuery;
-			if (sorts != null && sorts.length > 0) {
-				String orderClause = StringUtils.toString(sorts);
-				limitQuery = sqlDriver.limitQuery(originalSql, start, batch,null, orderClause);
-			} else {
-				limitQuery = sqlDriver.limitQuery(originalSql, start, batch,null);
-			}
+            SortAttr[] sorts = p.page.getSortAttribute();
+            String limitQuery;
+            if (sorts != null && sorts.length > 0) {
+                String orderClause = StringUtils.join(sorts, ",");
+                limitQuery = sqlDriver.limitQuery(originalSql, start, batch, null, orderClause);
+            } else {
+                limitQuery = sqlDriver.limitQuery(originalSql, start, batch, null);
+            }
             BoundSql newBoundSql = copyFromBoundSql(statement, boundSql, limitQuery.toString(), p.values);
             MappedStatement newMs = copyFromMappedStatement(statement, new BoundSqlSqlSource(newBoundSql));
             invocation.getArgs()[0] = newMs;

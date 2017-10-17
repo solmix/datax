@@ -286,7 +286,7 @@ public class TableInfo extends PropertyHolder
             xmlElement.addAttribute(new Attribute("enableSelectByPrimaryKey", "false")); //$NON-NLS-2$
         }
 
-        if (!selectByExampleStatementEnabled) {
+        if (selectByExampleStatementEnabled) {
             xmlElement.addAttribute(new Attribute("enableSelectByExample", "false")); //$NON-NLS-2$
         }
 
@@ -298,15 +298,15 @@ public class TableInfo extends PropertyHolder
             xmlElement.addAttribute(new Attribute("enableDeleteByPrimaryKey", "false")); //$NON-NLS-2$
         }
 
-        if (!deleteByExampleStatementEnabled) {
+        if (deleteByExampleStatementEnabled) {
             xmlElement.addAttribute(new Attribute("enableDeleteByExample", "false")); //$NON-NLS-2$
         }
 
-        if (!countByExampleStatementEnabled) {
+        if (countByExampleStatementEnabled) {
             xmlElement.addAttribute(new Attribute("enableCountByExample", "false")); //$NON-NLS-2$
         }
 
-        if (!updateByExampleStatementEnabled) {
+        if (updateByExampleStatementEnabled) {
             xmlElement.addAttribute(new Attribute("enableUpdateByExample", "false")); //$NON-NLS-2$
         }
 

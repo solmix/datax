@@ -271,6 +271,12 @@ public class DomainInfo extends PropertyHolder
         if (javaClientGeneratorInfo != null) {
             xmlElement.addElement(javaClientGeneratorInfo.toXmlElement());
         }
+        if (dataxGeneratorInfo != null) {
+            xmlElement.addElement(dataxGeneratorInfo.toXmlElement());
+        }
+        if (sqlGeneratorInfo != null) {
+            xmlElement.addElement(sqlGeneratorInfo.toXmlElement());
+        }
 
         for (TableInfo tableInfo : tableInfos) {
             xmlElement.addElement(tableInfo.toXmlElement());
@@ -491,6 +497,7 @@ public class DomainInfo extends PropertyHolder
                 warnings.add(getString("Warning.24", pluginInfo.getType(), id));
             }
         }
+        boolean generated=false;
 
         if (introspectedTables != null) {
             for (IntrospectedTable introspectedTable : introspectedTables) {
@@ -500,7 +507,11 @@ public class DomainInfo extends PropertyHolder
                 introspectedTable.calculateGenerators(warnings, callback);
                 generatedJavaFiles.addAll(introspectedTable.getGeneratedJavaFiles());
                 generatedXmlFiles.addAll(introspectedTable.getGeneratedXmlFiles());
-                generatedSqlFiles.addAll(introspectedTable.getGeneratedSqlFiles());
+                if(!generated){
+                    generatedSqlFiles.addAll(introspectedTable.getGeneratedSqlFiles());
+                    generated=true;
+                }
+               
                 
                 generatedJavaFiles.addAll(pluginAggregator.contextGenerateAdditionalJavaFiles(introspectedTable));
                 generatedXmlFiles.addAll(pluginAggregator.contextGenerateAdditionalXmlFiles(introspectedTable));

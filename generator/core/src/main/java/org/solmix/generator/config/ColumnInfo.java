@@ -171,7 +171,7 @@ public class ColumnInfo extends PropertyHolder
     }
 
     public XmlElement toXmlElement() {
-        XmlElement xmlElement = new XmlElement("columnOverride"); 
+        XmlElement xmlElement = new XmlElement("column"); 
         xmlElement.addAttribute(new Attribute("column", column)); 
         if (stringHasValue(property)) {
             xmlElement.addAttribute(new Attribute("property", property)); 
@@ -197,8 +197,17 @@ public class ColumnInfo extends PropertyHolder
         if (stringHasValue(defaultValue)) {
             xmlElement.addAttribute(new Attribute("defaultValue", defaultValue)); 
         }
-        if (nullable) {
-            xmlElement.addAttribute(new Attribute("nullable", "true")); 
+        if (!nullable) {
+            xmlElement.addAttribute(new Attribute("nullable", "false")); 
+        }
+        if(primaryKey){
+            xmlElement.addAttribute(new Attribute("primaryKey", "true")); 
+        }
+        if(ignore){
+            xmlElement.addAttribute(new Attribute("ignore", "true")); 
+        }
+        if(override){
+            xmlElement.addAttribute(new Attribute("override", "true")); 
         }
         if (columnSize!=0) {
             xmlElement.addAttribute(new Attribute("columnSize", String.valueOf(columnSize))); 

@@ -194,6 +194,7 @@ public class ConfigurationParser
 
         smgi.setTargetPackage(targetPackage);
         smgi.setTargetProject(targetProject);
+        smgi.setXmlPackage(node.getStringAttribute("xmlPackage"));
         parseProperties(smgi, ctx, node.evalNodes("property"));
         
     }

@@ -51,7 +51,7 @@ public class DataxGeneratorInfo extends PropertyHolder
     }
 
     public XmlElement toXmlElement() {
-        XmlElement answer = new XmlElement("javaModelGenerator"); 
+        XmlElement answer = new XmlElement("dataxGenerator"); 
 
         if (targetPackage != null) {
             answer.addAttribute(new Attribute("targetPackage", targetPackage)); 

@@ -304,6 +304,10 @@ public class XmlIntrospector
             if(jdbcType==null){
                 jdbcType=c.getNativeType();
             }
+            if(jdbcType==null){
+                warnings.add("jdbcType is null for column "+ c.getColumn() +" at table :"+tc.getTableName());
+                continue;
+            }
             introspectedColumn.setJdbcType(javaTypeResolver.calculateJdbcType(jdbcType));
             introspectedColumn.setLength(c.getColumnSize());
             introspectedColumn.setActualColumnName(c.getColumn());

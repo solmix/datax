@@ -286,7 +286,7 @@ public class IntrospectedTableDataxImpl extends IntrospectedTableMyBatis3Impl
             answer.add(createSql);
             SqlDropGenerator drop= new SqlDropGenerator();
             drop.setDomain(domain);
-            GeneratedSqlFile dropSql = create.generate();
+            GeneratedSqlFile dropSql = drop.generate();
             answer.add(dropSql);
         }
         return answer;

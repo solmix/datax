@@ -24,6 +24,7 @@ import java.util.List;
 import org.solmix.commons.util.DataUtils;
 import org.solmix.commons.xml.dom.Document;
 import org.solmix.generator.api.GeneratedJavaFile;
+import org.solmix.generator.api.GeneratedSqlFile;
 import org.solmix.generator.api.GeneratedXmlFile;
 import org.solmix.generator.api.ProgressCallback;
 import org.solmix.generator.api.java.CompilationUnit;
@@ -31,6 +32,8 @@ import org.solmix.generator.codegen.AbstractGenerator;
 import org.solmix.generator.codegen.AbstractJavaClientGenerator;
 import org.solmix.generator.codegen.AbstractJavaGenerator;
 import org.solmix.generator.codegen.AbstractXmlGenerator;
+import org.solmix.generator.codegen.datax.SqlCreateGenerator;
+import org.solmix.generator.codegen.datax.SqlDropGenerator;
 import org.solmix.generator.codegen.mybatis.javamapper.DataServiceGenerator;
 import org.solmix.generator.codegen.mybatis.xmlmapper.DataServiceXmlMapperGenerator;
 import org.solmix.generator.config.DataxGeneratorInfo;
@@ -65,7 +68,19 @@ public class IntrospectedTableDataxImpl extends IntrospectedTableMyBatis3Impl
 
         return sb.toString();
     }
-    
+    protected String calculateDataServiceXmlPackage() {
+        DataxGeneratorInfo config = domain.getDataxGeneratorInfo();
+        if (config == null) {
+            return null;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(config.getXmlPackage());
+
+        sb.append(fullyQualifiedTable.getSubPackageForClientOrSqlMap(isSubPackagesEnabled(config)));
+
+        return sb.toString();
+    }
     private boolean isSubPackagesEnabled(PropertyHolder propertyHolder) {
         return DataUtils.asBoolean(propertyHolder.getProperty(PropertyRegistry.ANY_ENABLE_SUB_PACKAGES));
     }
@@ -225,8 +240,8 @@ public class IntrospectedTableDataxImpl extends IntrospectedTableMyBatis3Impl
 
         if (serviceXmlMapperGenerator != null) {
             Document document = serviceXmlMapperGenerator.getDocument();
-            GeneratedXmlFile gxf = new GeneratedXmlFile(document, calculateDataServiceFileName(), getMyBatis3XmlMapperPackage(),
-                domain.getDataxGeneratorInfo().getTargetProject(), true, domain.getXmlFormatter());
+            GeneratedXmlFile gxf = new GeneratedXmlFile(document, calculateDataServiceFileName(), calculateDataServiceXmlPackage(),
+                domain.getDataxGeneratorInfo().getTargetProject(), false, domain.getXmlFormatter());
             if (domain.getPlugins().sqlMapGenerated(gxf, this)) {
                 answer.add(gxf);
             }
@@ -259,5 +274,21 @@ public class IntrospectedTableDataxImpl extends IntrospectedTableMyBatis3Impl
     public String getDataServiceNamespace() {
         String namespace = getMyBatis3XmlMapperPackage();
         return namespace;
+    }
+    
+    @Override
+    public List<GeneratedSqlFile> getGeneratedSqlFiles() {
+        List<GeneratedSqlFile> answer = super.getGeneratedSqlFiles();
+        if(domain.getSqlGeneratorInfo()!=null){
+            SqlCreateGenerator create= new SqlCreateGenerator();
+            create.setDomain(domain);
+            GeneratedSqlFile createSql = create.generate();
+            answer.add(createSql);
+            SqlDropGenerator drop= new SqlDropGenerator();
+            drop.setDomain(domain);
+            GeneratedSqlFile dropSql = create.generate();
+            answer.add(dropSql);
+        }
+        return answer;
     }
 }

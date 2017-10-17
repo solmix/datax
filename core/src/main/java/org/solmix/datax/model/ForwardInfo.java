@@ -18,6 +18,7 @@
  */
 
 package org.solmix.datax.model;
+import static org.solmix.commons.util.StringUtils.hasLength;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -25,6 +26,9 @@ import java.util.Map;
 
 import org.solmix.commons.annotation.Immutable;
 import org.solmix.commons.xml.XMLNode;
+import org.solmix.commons.xml.dom.Attribute;
+import org.solmix.commons.xml.dom.Element;
+import org.solmix.commons.xml.dom.XmlElement;
 import org.solmix.datax.repository.builder.XmlNodeParserProvider;
 import org.solmix.datax.repository.builder.XmlParserContext;
 import org.solmix.datax.repository.builder.xml.BaseXmlNodeParser;
@@ -107,6 +111,27 @@ public class ForwardInfo implements XMLSource
             return ti;
         }
         
+    }
+    public Element toElement() {
+        XmlElement e = new XmlElement("forward");
+        if(hasLength(name)){
+            e.addAttribute(new Attribute("name",name));
+        }
+        if(hasLength(path)){
+            e.addAttribute(new Attribute("path",path));
+        }
+        if(hasLength(script)){
+            e.addAttribute(new Attribute("script",script));
+        }
+        if(hasLength(contentType)){
+            e.addAttribute(new Attribute("content-type",contentType));
+        }
+        if(params!=null&&params.size()>0){
+            for(ParamInfo  param :params.values()){
+                e.addElement(param.toElement());
+            }
+        }
+        return e;
     }
     
 }

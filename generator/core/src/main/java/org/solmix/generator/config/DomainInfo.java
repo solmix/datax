@@ -17,6 +17,7 @@ import org.solmix.commons.xml.dom.XmlElement;
 import org.solmix.generator.api.CommentGenerator;
 import org.solmix.generator.api.ConnectionFactory;
 import org.solmix.generator.api.GeneratedJavaFile;
+import org.solmix.generator.api.GeneratedSqlFile;
 import org.solmix.generator.api.GeneratedXmlFile;
 import org.solmix.generator.api.IntrospectedTable;
 import org.solmix.generator.api.JavaFormatter;
@@ -72,6 +73,7 @@ public class DomainInfo extends PropertyHolder
     private JavaFormatter javaFormatter;
 
     private XmlFormatter xmlFormatter;
+    
 
     public DomainInfo(ModelType defaultModelType)
     {
@@ -187,6 +189,8 @@ public class DomainInfo extends PropertyHolder
         this.id = id;
     }
 
+   
+
     public void setJavaClientGeneratorInfo(JavaClientGeneratorInfo javaClientGeneratorInfo) {
         this.javaClientGeneratorInfo = javaClientGeneratorInfo;
     }
@@ -229,7 +233,7 @@ public class DomainInfo extends PropertyHolder
         if (stringHasValue(introspectedColumnImpl)) {
             xmlElement.addAttribute(new Attribute("introspectedColumnImpl", introspectedColumnImpl));
         }
-
+        
         if (stringHasValue(targetRuntime)) {
             xmlElement.addAttribute(new Attribute("targetRuntime", targetRuntime));
         }
@@ -366,6 +370,8 @@ public class DomainInfo extends PropertyHolder
 
     private DataxGeneratorInfo dataxGeneratorInfo;
 
+    private SqlGeneratorInfo sqlGeneratorInfo;
+
     public int getIntrospectionSteps() {
         int steps = 0;
 
@@ -474,7 +480,7 @@ public class DomainInfo extends PropertyHolder
     }
 
     public void generateFiles(ProgressCallback callback, List<GeneratedJavaFile> generatedJavaFiles, List<GeneratedXmlFile> generatedXmlFiles,
-        List<String> warnings) throws InterruptedException {
+        List<GeneratedSqlFile> generatedSqlFiles,List<String> warnings) throws InterruptedException {
 
         pluginAggregator = new PluginAggregator();
         for (PluginInfo pluginInfo : pluginInfos) {
@@ -494,7 +500,8 @@ public class DomainInfo extends PropertyHolder
                 introspectedTable.calculateGenerators(warnings, callback);
                 generatedJavaFiles.addAll(introspectedTable.getGeneratedJavaFiles());
                 generatedXmlFiles.addAll(introspectedTable.getGeneratedXmlFiles());
-
+                generatedSqlFiles.addAll(introspectedTable.getGeneratedSqlFiles());
+                
                 generatedJavaFiles.addAll(pluginAggregator.contextGenerateAdditionalJavaFiles(introspectedTable));
                 generatedXmlFiles.addAll(pluginAggregator.contextGenerateAdditionalXmlFiles(introspectedTable));
             }
@@ -548,6 +555,15 @@ public class DomainInfo extends PropertyHolder
     
     public DataxGeneratorInfo getDataxGeneratorInfo() {
         return dataxGeneratorInfo;
+    }
+
+    public SqlGeneratorInfo getSqlGeneratorInfo() {
+        return sqlGeneratorInfo;
+    }
+
+    
+    public void setSqlGeneratorInfo(SqlGeneratorInfo sqlGeneratorInfo) {
+        this.sqlGeneratorInfo = sqlGeneratorInfo;
     }
     
 

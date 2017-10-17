@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.solmix.commons.xml.dom.Document;
 import org.solmix.generator.api.GeneratedJavaFile;
+import org.solmix.generator.api.GeneratedSqlFile;
 import org.solmix.generator.api.GeneratedXmlFile;
 import org.solmix.generator.api.IntrospectedTable;
 import org.solmix.generator.api.ProgressCallback;
@@ -224,5 +225,11 @@ public class IntrospectedTableMyBatis3Impl extends IntrospectedTable
         } else {
             return javaClientGenerator.requiresXMLGenerator();
         }
+    }
+
+    @Override
+    public List<GeneratedSqlFile> getGeneratedSqlFiles() {
+        List<GeneratedSqlFile> answer = new ArrayList<GeneratedSqlFile>();
+        return answer;
     }
 }

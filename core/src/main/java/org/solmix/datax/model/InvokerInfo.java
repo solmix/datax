@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.solmix.commons.annotation.Immutable;
 import org.solmix.commons.xml.XMLNode;
+import org.solmix.commons.xml.dom.Element;
 import org.solmix.datax.repository.builder.BuilderException;
 import org.solmix.datax.repository.builder.XmlNodeParserProvider;
 import org.solmix.datax.repository.builder.XmlParserContext;
@@ -135,5 +136,10 @@ public class InvokerInfo implements XMLSource
             }
             return operations;
         }
+    }
+
+    public Element toElement() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

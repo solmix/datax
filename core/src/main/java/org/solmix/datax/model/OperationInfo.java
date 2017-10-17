@@ -18,13 +18,20 @@
  */
 package org.solmix.datax.model;
 
+import static org.solmix.commons.util.StringUtils.hasLength;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.solmix.commons.annotation.Immutable;
+import org.solmix.commons.util.StringUtils;
 import org.solmix.commons.xml.XMLNode;
+import org.solmix.commons.xml.dom.Attribute;
+import org.solmix.commons.xml.dom.Element;
+import org.solmix.commons.xml.dom.TextElement;
+import org.solmix.commons.xml.dom.XmlElement;
 import org.solmix.datax.DATAX;
 import org.solmix.datax.repository.builder.BuilderException;
 import org.solmix.datax.repository.builder.ReferenceNoFoundException;
@@ -431,6 +438,65 @@ public class OperationInfo
             return params;
         }
         
+    }
+    
+    public Element toElement() {
+        XmlElement e = new XmlElement(type.value());
+        e.addAttribute(new Attribute("id", localId));
+        if(autoJoinTransactions!=null){
+            e.addAttribute(new Attribute("autoJoinTransactions", autoJoinTransactions.toString()));
+        }
+        if(hasLength(refid)){
+            e.addAttribute(new Attribute("refid", refid));
+        }
+        if(validate!=null){
+            e.addAttribute(new Attribute("validate", validate.toString()));
+        }
+        if(usedValidatedValues!=null){
+            e.addAttribute(new Attribute("usedValidatedValues", usedValidatedValues.toString()));
+        }
+        if(oneway!=null){
+            e.addAttribute(new Attribute("oneway", oneway.toString()));
+        }
+        if(hasLength(redirect)){
+            e.addAttribute(new Attribute("redirect", redirect));
+        }
+        if(rest!=null){
+            e.addAttribute(new Attribute("rest", rest.toString()));
+        }
+        if(requires!=null){
+            e.addAttribute(new Attribute("requires", StringUtils.toString(requires)));
+        }
+        if(requireRoles!=null){
+            e.addAttribute(new Attribute("requireRoles",  StringUtils.toString(requireRoles)));
+        }
+        if(transformers!=null){
+            for(TransformerInfo ti :transformers){
+                e.addElement(ti.toElement());
+            }
+        }
+        if(params!=null&&params.size()>0){
+            XmlElement paramsList = new XmlElement("params");
+            for(ParamInfo pi :params.values()){
+                paramsList.addElement(pi.toElement());
+            }
+            e.addElement(paramsList);
+        }
+        if(invoker!=null){
+            e.addElement(invoker.toElement());
+        }
+        if(forwards!=null){
+            for(ForwardInfo fi :forwards){
+                e.addElement(fi.toElement());
+            }
+        }
+        if(description!=null){
+            e.addElement(new TextElement(description));
+        }
+        if(batch!=null){
+            e.addElement(batch.toElement());
+        }
+        return e;
     }
    
 }

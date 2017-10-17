@@ -19,10 +19,15 @@
 
 package org.solmix.datax.model;
 
+import static org.solmix.commons.util.StringUtils.hasLength;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.solmix.commons.annotation.Immutable;
 import org.solmix.commons.xml.XMLNode;
+import org.solmix.commons.xml.dom.Attribute;
+import org.solmix.commons.xml.dom.Element;
+import org.solmix.commons.xml.dom.XmlElement;
 import org.solmix.datax.repository.builder.BuilderException;
 import org.solmix.datax.repository.builder.ReferenceNoFoundException;
 import org.solmix.datax.repository.builder.ReferenceResolver;
@@ -199,5 +204,21 @@ public class TransformerInfo implements XMLSource
             return ti;
 
         }
+    }
+    public Element toElement() {
+        XmlElement e = new XmlElement("transformer");
+        if(clazz!=null){
+            e.addAttribute(new Attribute("class",clazz.getName()));
+        }
+        if(hasLength(id)){
+            e.addAttribute(new Attribute("id",id));
+        }
+        if(hasLength(name)){
+            e.addAttribute(new Attribute("name",name));
+        }
+        if(lookup!=null){
+            e.addAttribute(new Attribute("lookup",lookup.value()));
+        }
+        return e;
     }
 }

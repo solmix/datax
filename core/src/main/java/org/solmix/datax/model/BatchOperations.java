@@ -18,11 +18,13 @@
  */
 
 package org.solmix.datax.model;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import org.solmix.commons.xml.XMLNode;
+import org.solmix.commons.xml.dom.Attribute;
+import org.solmix.commons.xml.dom.Element;
+import org.solmix.commons.xml.dom.XmlElement;
 import org.solmix.datax.repository.builder.XmlNodeParserProvider;
 import org.solmix.datax.repository.builder.XmlParserContext;
 import org.solmix.datax.repository.builder.xml.BaseXmlNodeParser;
@@ -115,5 +117,21 @@ public class BatchOperations
             }
             return forwards;
         }
+    }
+    public Element toElement() {
+        XmlElement e = new XmlElement("batch");
+        if(transactionPolicy!=null){
+            e.addAttribute(new Attribute("transactionPolicy", transactionPolicy.value()));
+        }
+        if(mergedType!=null){
+            e.addAttribute(new Attribute("mergedType", mergedType.value()));
+        }
+        if(operations!=null&&operations.size()>0){
+            for(OperationInfo operation:operations){
+                e.addElement(operation.toElement());
+            }
+        }
+        
+        return e;
     }
 }

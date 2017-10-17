@@ -18,6 +18,7 @@
  */
 
 package org.solmix.datax.model;
+import static org.solmix.commons.util.StringUtils.hasLength;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,8 +28,11 @@ import java.util.Map;
 
 import org.solmix.commons.annotation.Immutable;
 import org.solmix.commons.util.Assert;
+import org.solmix.commons.util.StringUtils;
 import org.solmix.commons.xml.VariablesParser;
 import org.solmix.commons.xml.XMLNode;
+import org.solmix.commons.xml.dom.Attribute;
+import org.solmix.commons.xml.dom.XmlElement;
 import org.solmix.datax.DATAX;
 import org.solmix.datax.repository.builder.BuilderException;
 import org.solmix.datax.repository.builder.IncludeNoFoundException;
@@ -356,6 +360,47 @@ public class DataServiceInfo
      */
     public FieldInfo getField(String fieldName) {
         return fields.get(fieldName);
+    }
+
+    public XmlElement toElement() {
+        XmlElement xml = new XmlElement("service");
+        xml.addAttribute(new Attribute("id", id));
+        if(serviceClass!=null){
+            xml.addAttribute(new Attribute("serviceClass", serviceClass.getName()));
+        }
+        if(hasLength(serviceName)){
+            xml.addAttribute(new Attribute("serviceName", serviceName));
+        }
+        if(hasLength(scope)){
+            xml.addAttribute(new Attribute("scope", scope));
+        }
+        if(lookup!=null){
+            xml.addAttribute(new Attribute("lookup", lookup.value()));
+        }
+        if(rest!=null){
+            xml.addAttribute(new Attribute("rest", rest.toString()));
+        }
+        if(requires!=null){
+            xml.addAttribute(new Attribute("requires", StringUtils.toString(requires)));
+        }
+        if(requireRoles!=null){
+            xml.addAttribute(new Attribute("requireRoles",  StringUtils.toString(requireRoles)));
+        }
+        if(operations!=null&&operations.size()>0){
+            XmlElement operationList = new XmlElement("operations");
+            for(OperationInfo pi :operations.values()){
+                operationList.addElement(pi.toElement());
+            }
+            xml.addElement(operationList);
+        }
+        if(fields!=null&&fields.size()>0){
+            XmlElement fieldList = new XmlElement("fields");
+            for(FieldInfo pi :fields.values()){
+                fieldList.addElement(pi.toElement());
+            }
+            xml.addElement(fieldList);
+        }
+        return xml;
     }
 
 }

@@ -66,6 +66,9 @@ public class CodeGenerator
 
     /** The generated xml files. */
     private List<GeneratedXmlFile> generatedXmlFiles;
+    
+    /** The generated xml files. */
+    private List<GeneratedSqlFile> generatedSqlFiles;
 
     /** The warnings. */
     private List<String> warnings;
@@ -107,6 +110,7 @@ public class CodeGenerator
         }
         generatedJavaFiles = new ArrayList<GeneratedJavaFile>();
         generatedXmlFiles = new ArrayList<GeneratedXmlFile>();
+        generatedSqlFiles= new ArrayList<GeneratedSqlFile>();
         projects = new HashSet<String>();
 
         this.configuration.validate();
@@ -191,6 +195,7 @@ public class CodeGenerator
 
         generatedJavaFiles.clear();
         generatedXmlFiles.clear();
+        generatedSqlFiles.clear();
         ObjectFactory.reset();
         RootClassInfo.reset();
 
@@ -232,12 +237,12 @@ public class CodeGenerator
         callback.generationStarted(totalSteps);
 
         for (DomainInfo context : contextsToRun) {
-            context.generateFiles(callback, generatedJavaFiles, generatedXmlFiles, warnings);
+            context.generateFiles(callback, generatedJavaFiles, generatedXmlFiles,generatedSqlFiles, warnings);
         }
 
         // now save the files
         if (writeFiles) {
-            callback.saveStarted(generatedXmlFiles.size() + generatedJavaFiles.size());
+            callback.saveStarted(generatedXmlFiles.size() + generatedJavaFiles.size()+generatedSqlFiles.size());
 
             for (GeneratedXmlFile gxf : generatedXmlFiles) {
                 projects.add(gxf.getTargetProject());
@@ -248,13 +253,46 @@ public class CodeGenerator
                 projects.add(gjf.getTargetProject());
                 writeGeneratedJavaFile(gjf, callback);
             }
-
+            for (GeneratedSqlFile gjf : generatedSqlFiles) {
+                projects.add(gjf.getTargetProject());
+                writeGeneratedSqlFile(gjf, callback);
+            }
             for (String project : projects) {
                 shellCallback.refreshProject(project);
             }
         }
 
         callback.done();
+    }
+
+    private void writeGeneratedSqlFile(GeneratedSqlFile gjf, ProgressCallback callback) throws InterruptedException, IOException {
+        File targetFile;
+        String source;
+        try {
+            File directory = shellCallback.getDirectory(gjf.getTargetProject(), gjf.getTargetPackage());
+            targetFile = new File(directory, gjf.getFileName());
+            if (targetFile.exists()) {
+                if (shellCallback.isMergeSupported()) {
+                    source = shellCallback.mergeJavaFile(gjf.getFormattedContent(), targetFile, null,"UTF-8");
+                } else if (shellCallback.isOverwriteEnabled()) {
+                    source = gjf.getFormattedContent();
+                    warnings.add(getString("Warning.11", targetFile.getAbsolutePath()));
+                } else {
+                    source = gjf.getFormattedContent();
+                    targetFile = getUniqueFileName(directory, gjf.getFileName());
+                    warnings.add(getString("Warning.2", targetFile.getAbsolutePath()));
+                }
+            } else {
+                source = gjf.getFormattedContent();
+            }
+
+            callback.checkCancel();
+            callback.startTask(getString("Progress.15", targetFile.getName()));
+            writeFile(targetFile, source, "UTF-8");
+        } catch (ShellException e) {
+            warnings.add(e.getMessage());
+        }
+        
     }
 
     private void writeGeneratedJavaFile(GeneratedJavaFile gjf, ProgressCallback callback) throws InterruptedException, IOException {

@@ -28,6 +28,9 @@ import org.solmix.commons.util.Assert;
 import org.solmix.commons.util.StringUtils;
 import org.solmix.commons.xml.VariablesParser;
 import org.solmix.commons.xml.XMLNode;
+import org.solmix.commons.xml.dom.Attribute;
+import org.solmix.commons.xml.dom.Element;
+import org.solmix.commons.xml.dom.XmlElement;
 import org.solmix.datax.repository.builder.BuilderException;
 import org.solmix.datax.repository.builder.XmlParserContext;
 import org.solmix.datax.repository.builder.xml.BaseXmlNodeParser;
@@ -288,5 +291,12 @@ public class FieldInfo
     public Object getCustomSelectExpression() {
         // TODO Auto-generated method stub
         return null;
+    }
+
+
+    public Element toElement() {
+        XmlElement e = new XmlElement("field");
+        e.addAttribute(new Attribute("name", name));
+        return e ;
     }
 }

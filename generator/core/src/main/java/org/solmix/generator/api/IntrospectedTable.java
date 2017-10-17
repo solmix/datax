@@ -18,6 +18,7 @@ package org.solmix.generator.api;
 import static org.solmix.commons.util.StringUtils.stringHasValue;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -1220,6 +1221,8 @@ public abstract class IntrospectedTable {
     public void setTableType(String tableType) {
         this.tableType = tableType;
     }
+
+    public abstract Collection<GeneratedSqlFile> getGeneratedSqlFiles() ;
 
 
 }

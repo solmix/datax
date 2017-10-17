@@ -18,8 +18,13 @@
  */
 package org.solmix.datax.model;
 
+import static org.solmix.commons.util.StringUtils.hasLength;
+
 import org.solmix.commons.annotation.Immutable;
 import org.solmix.commons.xml.XMLNode;
+import org.solmix.commons.xml.dom.Attribute;
+import org.solmix.commons.xml.dom.Element;
+import org.solmix.commons.xml.dom.XmlElement;
 import org.solmix.datax.repository.builder.XmlParserContext;
 import org.solmix.datax.repository.builder.xml.BaseXmlNodeParser;
 
@@ -91,6 +96,23 @@ public class ParamInfo implements XMLSource
             return new ParamInfo(key,value,expression,isOverride,node);
         }
         
+    }
+
+    public Element toElement() {
+        XmlElement e = new XmlElement("param");
+        if(hasLength(key)){
+            e.addAttribute(new Attribute("key",key));
+        }
+        if(hasLength(value)){
+            e.addAttribute(new Attribute("value",value));
+        }
+        if(hasLength(expression)){
+            e.addAttribute(new Attribute("expression",expression));
+        }
+        if(isOverride!=null){
+            e.addAttribute(new Attribute("isOverride",isOverride.toString()));
+        }
+        return e;
     }
 
 }

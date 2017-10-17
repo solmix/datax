@@ -139,6 +139,7 @@ public class ConfigurationParser
         if (!StringUtils.isEmpty(targetRuntime)) {
             di.setTargetRuntime(targetRuntime);
         }
+        
 
         configuration.addDomain(di);
         List<XMLNode> nodeList = node.getChildren();
@@ -164,14 +165,28 @@ public class ConfigurationParser
             } else if ("javaClientGenerator".equals(name)) {
                 parseJavaClientGenerator(di, ctx, cnode);
             } else if ("dataxGenerator".equals(name)) {
-                parsedataxGenerator(di, ctx, cnode);
+                parseDataxGenerator(di, ctx, cnode);
+            } else if ("sqlGenerator".equals(name)) {
+                parseSqlGenerator(di, ctx, cnode);
             } else if ("table".equals(name)) {
                 parseTable(di, ctx, cnode);
             }
         }
     }
 
-    private void parsedataxGenerator(DomainInfo di, ConfigParserContext ctx, XMLNode node) {
+    private void parseSqlGenerator(DomainInfo di, ConfigParserContext ctx, XMLNode node) {
+        SqlGeneratorInfo smgi = new SqlGeneratorInfo();
+        di.setSqlGeneratorInfo(smgi);
+        String targetPackage = node.getStringAttribute("targetPackage"); 
+        String targetProject = node.getStringAttribute("targetProject"); 
+
+        smgi.setTargetPackage(targetPackage);
+        smgi.setTargetProject(targetProject);
+        parseProperties(smgi, ctx, node.evalNodes("property"));
+        
+    }
+
+    private void parseDataxGenerator(DomainInfo di, ConfigParserContext ctx, XMLNode node) {
         DataxGeneratorInfo smgi = new DataxGeneratorInfo();
         di.setDataxGeneratorInfo(smgi);
         String targetPackage = node.getStringAttribute("targetPackage"); 

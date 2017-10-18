@@ -61,10 +61,9 @@ public class SqlDropGenerator
             String remark = ti.getRemark();
             sb.append("/* Table :[" + tableName + "] ,Name:" + remark + "*/");
             newLine(sb);
-            sb.append("drop table ").append(tableName).append("\n");
-            sb.append("(\n");
+            sb.append("drop table if exists ").append(tableName).append(";\n");
         }
-        GeneratedSqlFile file = new GeneratedSqlFile(sgi.getTargetProject(), sgi.getTargetPackage(), fileName, sb);
+        GeneratedSqlFile file = new GeneratedSqlFile(sgi.getTargetProject(), sgi.getTargetPackage()+".drop", fileName, sb);
         return file;
         
     }

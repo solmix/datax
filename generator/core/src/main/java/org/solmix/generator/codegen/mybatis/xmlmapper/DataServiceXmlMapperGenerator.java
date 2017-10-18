@@ -49,15 +49,17 @@ public class DataServiceXmlMapperGenerator extends AbstractXmlGenerator
         String serviceId = introspectedTable.getFullyQualifiedTable().getDomainObjectName();
         DataServiceInfo dsi = new DataServiceInfo(serviceId, "mybatis");
         XmlElement dataServiceElement = dsi.toElement();
+        XmlElement operations = new XmlElement("operations");
+        dataServiceElement.addElement(operations);
         configuration.addElement(dataServiceElement);
-        addInsertElement(dataServiceElement);
-        addInsertSelectiveElement(dataServiceElement);
-        addSelectByPrimaryKeyElement(dataServiceElement);
-        addSelectAllElement(dataServiceElement);
-        addDeleteByPrimaryKeyElement(dataServiceElement);
-        addUpdateByPrimaryKeySelectiveElement(dataServiceElement);
-        addUpdateByPrimaryKeyWithBLOBsElement(dataServiceElement);
-        addUpdateByPrimaryKeyWithoutBLOBsElement(dataServiceElement);
+        addInsertElement(operations);
+        addInsertSelectiveElement(operations);
+        addSelectByPrimaryKeyElement(operations);
+        addSelectAllElement(operations);
+        addDeleteByPrimaryKeyElement(operations);
+        addUpdateByPrimaryKeySelectiveElement(operations);
+        addUpdateByPrimaryKeyWithBLOBsElement(operations);
+        addUpdateByPrimaryKeyWithoutBLOBsElement(operations);
         return answer;
     }
     protected void addUpdateByPrimaryKeySelectiveElement(

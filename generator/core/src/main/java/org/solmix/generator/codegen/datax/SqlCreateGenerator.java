@@ -70,7 +70,7 @@ public class SqlCreateGenerator
             newLine(sb);
             sb.append("create table ").append(tableName).append("\n");
             sb.append("(\n");
-            int maxNameLength = 10;
+            int maxNameLength = 30;
             List<ColumnInfo> columns = ti.getColumns();
             List<String> pks = new ArrayList<String>();
             for (int cc = 0; cc < columns.size(); cc++) {
@@ -96,25 +96,31 @@ public class SqlCreateGenerator
                     sb.append(" COMMENT '");
                     sb.append(c.getRemark()).append("'");
                 }
+                if(cc<columns.size()-1)
+                    sb.append(",\n");
+            }
+            if(pks.size()>0){
                 sb.append(",\n");
-            }
-            sb.append("  primary key (");
-            for (int p = 0; p < pks.size(); p++) {
-                if (p > 0) {
-                    sb.append(",");
+                sb.append("  primary key (");
+                for (int p = 0; p < pks.size(); p++) {
+                    if (p > 0) {
+                        sb.append(",");
+                    }
+                    sb.append(pks.get(p));
                 }
-                sb.append(pks.get(p));
+                sb.append(")\n");
+            }else{
+                sb.append("\n");
             }
-            sb.append(")\n");
             sb.append(") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE utf8_bin;\n");
         }
-        GeneratedSqlFile file = new GeneratedSqlFile(sgi.getTargetProject(), sgi.getTargetPackage(), fileName, sb);
+        GeneratedSqlFile file = new GeneratedSqlFile(sgi.getTargetProject(), sgi.getTargetPackage()+".create", fileName, sb);
         return file;
 
     }
 
     private static String getSpace(int spaces) {
-        if (spaces < 0) {
+        if (spaces <= 0) {
             spaces = 10;
         }
         StringBuilder sb = new StringBuilder();

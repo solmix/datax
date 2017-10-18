@@ -68,6 +68,8 @@ public class IntrospectedTableDataxImpl extends IntrospectedTableMyBatis3Impl
 
         return sb.toString();
     }
+    
+
     protected String calculateDataServiceXmlPackage() {
         DataxGeneratorInfo config = domain.getDataxGeneratorInfo();
         if (config == null) {
@@ -102,10 +104,17 @@ public class IntrospectedTableDataxImpl extends IntrospectedTableMyBatis3Impl
         
         
         sb.setLength(0);
-        sb.append(calculateDataServicePackage());
+        sb.append(calculateDataServiceXmlPackage());
         sb.append('.');
         sb.append(fullyQualifiedTable.getDomainObjectName());
         setDataServiceType(sb.toString());
+        
+
+        sb.setLength(0);
+        sb.append(calculateDataServiceXmlPackage());
+        sb.append('.');
+        sb.append(fullyQualifiedTable.getDomainObjectName());
+        setMyBatis3JavaMapperType(sb.toString());
     }
     
     @Override
@@ -132,7 +141,7 @@ public class IntrospectedTableDataxImpl extends IntrospectedTableMyBatis3Impl
         setUpdateByExampleSelectiveStatementId("updateByExampleSelective"); 
         setUpdateByExampleWithBLOBsStatementId("updateByExampleWithBLOBs"); 
         setUpdateByPrimaryKeyStatementId("updateByPrimaryKey"); 
-        setUpdateByPrimaryKeySelectiveStatementId("updateByPrimaryKey"); 
+        setUpdateByPrimaryKeySelectiveStatementId("updateByPrimaryKeySelective"); 
         setUpdateByPrimaryKeyWithBLOBsStatementId("updateByPrimaryKeyWithBLOBs"); 
         setBaseResultMapId("BaseResultMap"); 
         setResultMapWithBLOBsId("ResultMapWithBLOBs"); 
@@ -241,7 +250,7 @@ public class IntrospectedTableDataxImpl extends IntrospectedTableMyBatis3Impl
         if (serviceXmlMapperGenerator != null) {
             Document document = serviceXmlMapperGenerator.getDocument();
             GeneratedXmlFile gxf = new GeneratedXmlFile(document, calculateDataServiceFileName(), calculateDataServiceXmlPackage(),
-                domain.getDataxGeneratorInfo().getTargetProject(), false, domain.getXmlFormatter());
+                domain.getDataxGeneratorInfo().getXmlProject(), false, domain.getXmlFormatter());
             if (domain.getPlugins().sqlMapGenerated(gxf, this)) {
                 answer.add(gxf);
             }

@@ -14,11 +14,11 @@ import org.solmix.generator.api.java.Interface;
 import org.solmix.generator.api.java.JavaVisibility;
 import org.solmix.generator.codegen.AbstractJavaGenerator;
 import org.solmix.generator.codegen.mybatis.javamapper.elements.AbstractJavaMapperMethodGenerator;
-import org.solmix.generator.codegen.mybatis.javamapper.elements.DeleteByPrimaryKeyMethodGenerator;
+import org.solmix.generator.codegen.mybatis.javamapper.elements.DeleteByPrimaryKeyArgGenerator;
 import org.solmix.generator.codegen.mybatis.javamapper.elements.InsertMethodGenerator;
 import org.solmix.generator.codegen.mybatis.javamapper.elements.InsertSelectiveMethodGenerator;
 import org.solmix.generator.codegen.mybatis.javamapper.elements.SelectAllMethodGenerator;
-import org.solmix.generator.codegen.mybatis.javamapper.elements.SelectByPrimaryKeyMethodGenerator;
+import org.solmix.generator.codegen.mybatis.javamapper.elements.SelectByPrimaryKeyArgGenerator;
 import org.solmix.generator.codegen.mybatis.javamapper.elements.UpdateByPrimaryKeySelectiveMethodGenerator;
 import org.solmix.generator.codegen.mybatis.javamapper.elements.UpdateByPrimaryKeyWithBLOBsMethodGenerator;
 import org.solmix.generator.codegen.mybatis.javamapper.elements.UpdateByPrimaryKeyWithoutBLOBsMethodGenerator;
@@ -99,8 +99,7 @@ public class DataServiceGenerator extends AbstractJavaGenerator
     }
 
     protected void addUpdateByPrimaryKeyWithoutBLOBsMethod(Interface interfaze) {
-        if (introspectedTable.getRules()
-                .generateUpdateByPrimaryKeyWithoutBLOBs()) {
+        if (introspectedTable.getRules().generateUpdateByPrimaryKeyWithoutBLOBs()) {
             AbstractJavaMapperMethodGenerator methodGenerator = new UpdateByPrimaryKeyWithoutBLOBsMethodGenerator();
             initializeAndExecuteGenerator(methodGenerator, interfaze);
         }
@@ -113,13 +112,13 @@ public class DataServiceGenerator extends AbstractJavaGenerator
     }
     protected void addSelectByPrimaryKeyMethod(Interface interfaze) {
         if (introspectedTable.getRules().generateSelectByPrimaryKey()) {
-            AbstractJavaMapperMethodGenerator methodGenerator = new SelectByPrimaryKeyMethodGenerator(true);
+            AbstractJavaMapperMethodGenerator methodGenerator = new SelectByPrimaryKeyArgGenerator(true);
             initializeAndExecuteGenerator(methodGenerator, interfaze);
         }
     }
     protected void addDeleteByPrimaryKeyMethod(Interface interfaze) {
         if (introspectedTable.getRules().generateDeleteByPrimaryKey()) {
-            AbstractJavaMapperMethodGenerator methodGenerator = new DeleteByPrimaryKeyMethodGenerator(false);
+            AbstractJavaMapperMethodGenerator methodGenerator = new DeleteByPrimaryKeyArgGenerator(false);
             initializeAndExecuteGenerator(methodGenerator, interfaze);
         }
     }

@@ -122,8 +122,7 @@ public abstract class BaseRules implements Rules {
 
         boolean rc = tableConfiguration.isUpdateByPrimaryKeyStatementEnabled()
                 && introspectedTable.hasPrimaryKeyColumns()
-                && introspectedTable.hasBaseColumns()
-                && introspectedTable.hasBLOBColumns();
+                && introspectedTable.hasBaseColumns();
 
         return rc;
     }

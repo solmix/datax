@@ -15,7 +15,7 @@ public class DataxGeneratorInfo extends PropertyHolder
     private String targetProject;
     
     private String xmlPackage;
-
+    private String xmlProject;
     /**
      * 
      */
@@ -50,19 +50,32 @@ public class DataxGeneratorInfo extends PropertyHolder
         this.xmlPackage = xmlPackage;
     }
 
+    
+    public String getXmlProject() {
+        return xmlProject;
+    }
+
+    
+    public void setXmlProject(String xmlProject) {
+        this.xmlProject = xmlProject;
+    }
+
     public XmlElement toXmlElement() {
         XmlElement answer = new XmlElement("dataxGenerator"); 
 
         if (targetPackage != null) {
             answer.addAttribute(new Attribute("targetPackage", targetPackage)); 
         }
-        if (xmlPackage != null) {
-            answer.addAttribute(new Attribute("xmlPackage", xmlPackage)); 
-        }
+       
         if (targetProject != null) {
             answer.addAttribute(new Attribute("targetProject", targetProject)); 
         }
-
+        if (xmlPackage != null) {
+            answer.addAttribute(new Attribute("xmlPackage", xmlPackage)); 
+        }
+        if (xmlProject != null) {
+            answer.addAttribute(new Attribute("xmlProject", xmlProject)); 
+        }
         addPropertyXmlElements(answer);
 
         return answer;

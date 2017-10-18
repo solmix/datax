@@ -839,7 +839,7 @@ public abstract class IntrospectedTable {
                 sb.append('.');
             }
             sb.append(fullyQualifiedTable.getDomainObjectName());
-            sb.append("Mapper"); 
+//            sb.append("Mapper"); 
         }
         setMyBatis3JavaMapperType(sb.toString());
 
@@ -961,7 +961,7 @@ public abstract class IntrospectedTable {
             sb.append(tableInfo.getMapperName());
         } else {
             sb.append(fullyQualifiedTable.getDomainObjectName());
-            sb.append("Mapper"); 
+//            sb.append("Mapper"); 
         }
         return sb.toString();
     }

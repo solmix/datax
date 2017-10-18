@@ -11,15 +11,15 @@
 		<javaModelGenerator targetPackage="com.foo.auth"
 			targetProject="target/generated-sources/datax">
 		</javaModelGenerator>
-		<sqlMapGenerator targetPackage="com.foo.auth"
+		<sqlMapGenerator targetPackage="db.dao"
 			targetProject="target/generated-sources/datax">
 			<property name="enableSubPackages" value="true" />
 		</sqlMapGenerator>
 		<javaClientGenerator type="XMLMAPPER"
 			targetPackage="com.foo.auth.client" targetProject="target/generated-sources/datax">
 		</javaClientGenerator> 
-		<dataxGenerator xmlPackage="com.foo.auth.db" targetPackage="com.foo.auth.client" targetProject="target/generated-sources/datax"/>
-		<sqlGenerator targetPackage="com.foo.auth.db" targetProject="target/generated-sources/datax"/>
+		<dataxGenerator xmlPackage="db.dao" targetPackage="com.foo.auth.dao" targetProject="target/generated-sources/datax" xmlProject="target/generated-sources/datax"/>
+		<sqlGenerator targetPackage="db" targetProject="target/generated-sources/datax"/>
 		
 		<table tableName="AUTH_SUBJECT" remark="用户"
 		

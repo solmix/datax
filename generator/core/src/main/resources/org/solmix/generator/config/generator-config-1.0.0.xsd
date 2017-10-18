@@ -119,8 +119,9 @@
 
     <complexType name="dataxGeneratorType">
     	<attribute name="targetPackage" type="string"></attribute>
-    	<attribute name="xmlPackage" type="string"></attribute>
     	<attribute name="targetProject" type="string"></attribute>
+        <attribute name="xmlProject" type="string"></attribute>
+        <attribute name="xmlPackage" type="string"></attribute>
     </complexType>
 
     <complexType name="tableType">

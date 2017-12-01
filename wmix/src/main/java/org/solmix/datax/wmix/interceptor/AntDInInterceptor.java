@@ -52,7 +52,7 @@ public class AntDInInterceptor extends AbstractInInterceptor
 {
 
 	public static final String ACTION="action",VALUES="values",APP_ID="appID",
-			PAGE_SIZE="pageSize",PAGE="page",OLD_VALUES="oldValues",EXPORT_RESULTS="exportResults";
+			PAGE_SIZE="pageSize",PAGE="page",OLD_VALUES="oldValues",EXPORT_RESULTS="exportResults",TOTAL="total";
     
     private MapperService mapperService;
 
@@ -99,8 +99,13 @@ public class AntDInInterceptor extends AbstractInInterceptor
 
         Integer pageSize = operation.getInteger(PAGE_SIZE);
         Integer page = operation.getInteger(PAGE);
+        
         if (pageSize != null &&page != null) {
         	PageControl pc = new PageControl(page, pageSize);
+        	Integer total = operation.getInteger(TOTAL);
+        	if(total!=null){
+        	  pc.setTotalSize(total);
+        	}
             request.addAttachment(PageControl.class, pc);
         }
         Object oldValues = operation.get(OLD_VALUES);

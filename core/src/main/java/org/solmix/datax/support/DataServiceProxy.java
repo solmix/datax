@@ -105,13 +105,15 @@ public class DataServiceProxy<T> implements InvocationHandler
         if (Reflection.isHashCodeMethod(method)) {
             return hashCode();
         }
+        
        String operationId = methodToOp.get(method);
        DSRequest request=session.getDataServiceManager().createDSRequest();
        request.setOperationId(operationId);
+       Class<?>[] types= method.getParameterTypes();
        if(!ArrayUtils.isEmptyArray(args)){
     	   int pindex=-1;
-    	   for(int j=0;j<args.length;j++){
-    		   if(args[j]instanceof PageControl){
+    	   for(int j=0;j<types.length;j++){
+    		   if(PageControl.class.isAssignableFrom(types[j]) ){
     			   pindex=j;
     			   break;
     		   }

@@ -64,12 +64,12 @@ public class AbstractOutInterceptor extends PhaseInterceptorSupport<Message>
         Object content_type =exchange.get(Message.ACCEPT_CONTENT_TYPE);
         Object encoding = exchange.get(Message.ENCODING);
         final HttpServletResponse response= (HttpServletResponse)message.get(WmixMessage.HTTP_RESPONSE);
-//        if(content_type!=null){
-//            response.setContentType(content_type.toString());
-//        }
-//        if(encoding!=null){
-//            response.setCharacterEncoding(encoding.toString());
-//        }
+        if(content_type!=null){
+            response.setContentType(content_type.toString());
+        }
+        if(encoding!=null){
+            response.setCharacterEncoding(encoding.toString());
+        }
         
         OutputStream out= message.getContent(OutputStream.class);
         Object result = message.getContent(List.class);

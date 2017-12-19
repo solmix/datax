@@ -122,6 +122,8 @@ public interface DSRequest
     Map<String, Object> getValues();
     
     DataTypeMap getTypeValues();
+    
+    <T> T getTypeValues(Class<T> t);
 
     List<?> getValueSets();
 

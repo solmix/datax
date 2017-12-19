@@ -26,6 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.solmix.commons.collections.DataTypeMap;
 import org.solmix.commons.util.DataUtils;
+import org.solmix.commons.util.TransformException;
+import org.solmix.commons.util.TransformUtils;
 import org.solmix.datax.DSCallException;
 import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
@@ -536,6 +538,11 @@ public class DSRequestImpl  implements DSRequest,Cloneable
     public DataTypeMap getTypeValues() {
         Map<String, Object> values = getValues();
         return values instanceof DataTypeMap ? (DataTypeMap) values : new DataTypeMap(values);
+    }
+
+    @Override
+    public <T> T getTypeValues(Class<T> t) throws TransformException {
+       return TransformUtils.transformType(t, getRawValues());
     }
 
 }

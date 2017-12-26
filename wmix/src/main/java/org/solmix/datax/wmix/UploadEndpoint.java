@@ -1,6 +1,7 @@
 package org.solmix.datax.wmix;
 
 import org.solmix.datax.wmix.interceptor.UploadInterceptor;
+import org.solmix.wmix.mapper.MapperService;
 
 public class UploadEndpoint extends DataxEndpoint
 {
@@ -9,7 +10,10 @@ public class UploadEndpoint extends DataxEndpoint
     
     @Override
     protected void prepareInInterceptors(){
-        getInInterceptors().add(new UploadInterceptor());
+        UploadInterceptor in = new UploadInterceptor();
+        MapperService mapperService=container.getExtension(MapperService.class);
+        in.setMapperService(mapperService);
+        getInInterceptors().add(in);
     }
     
 }

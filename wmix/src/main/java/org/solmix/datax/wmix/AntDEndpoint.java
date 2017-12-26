@@ -9,8 +9,6 @@ import org.solmix.datax.DataServiceManager;
 import org.solmix.datax.wmix.interceptor.AntDInInterceptor;
 import org.solmix.datax.wmix.interceptor.AntDOutInterceptor;
 import org.solmix.datax.wmix.interceptor.OutFaultInterceptor;
-import org.solmix.datax.wmix.interceptor.SgtInInterceptor;
-import org.solmix.datax.wmix.interceptor.SgtOutInterceptor;
 import org.solmix.exchange.Endpoint;
 import org.solmix.exchange.Service;
 import org.solmix.exchange.Transporter;

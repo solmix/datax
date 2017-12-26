@@ -16,10 +16,11 @@ import org.solmix.exchange.interceptor.phase.PhaseInterceptorSupport;
 import org.solmix.wmix.exchange.WmixMessage;
 import org.solmix.wmix.mapper.MapperService;
 
-public class UploadInterceptor extends PhaseInterceptorSupport<WmixMessage>
+
+public class ImageInInterceptor extends PhaseInterceptorSupport<WmixMessage>
 {
     private MapperService mapperService;
-    public UploadInterceptor()
+    public ImageInInterceptor()
     {
         super(Phase.UNMARSHAL);
     }
@@ -27,6 +28,7 @@ public class UploadInterceptor extends PhaseInterceptorSupport<WmixMessage>
     @Override
     public void handleMessage(WmixMessage message) throws Fault {
         final Exchange exchange = message.getExchange();
+        
         final DataServiceManager manager = exchange.get(DataServiceManager.class);
         DSRequest dsr = manager.createDSRequest();
      
@@ -40,8 +42,8 @@ public class UploadInterceptor extends PhaseInterceptorSupport<WmixMessage>
         }
         
         String action = reqPath.substring(reqPath.lastIndexOf("/") + 1);
-        if (action.indexOf(".up") != -1) {
-            action = action.substring(0, action.indexOf(".up"));
+        if (action.lastIndexOf(".") != -1) {
+            action = action.substring(0, action.lastIndexOf(".") );
         }
         Assert.assertNotNull(action, "operation action must be not null");
         if(mapperService!=null){
@@ -57,6 +59,8 @@ public class UploadInterceptor extends PhaseInterceptorSupport<WmixMessage>
         return new ExchangeRequestContext(exchange);
     }
 
+       
+
     
     public MapperService getMapperService() {
         return mapperService;
@@ -66,5 +70,5 @@ public class UploadInterceptor extends PhaseInterceptorSupport<WmixMessage>
     public void setMapperService(MapperService mapperService) {
         this.mapperService = mapperService;
     }
-    
+
 }

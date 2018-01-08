@@ -38,5 +38,6 @@
 		<module>jdbc</module>
 		<module>mybatis</module>
 		<module>wmix</module>
+		<module>features</module>
 	</modules>
 </project>

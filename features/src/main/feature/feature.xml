@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<features name="datax-features-${project.version}" xmlns="http://karaf.apache.org/xmlns/features/v1.4.0">
+	<repository>mvn:org.solmix.karaf.features/solmix-services-features/${solmix.version}/xml/features</repository>
+	<repository>mvn:org.solmix.karaf.features/wmix-features/${wmix.version}/xml/features</repository>
+	<feature name="datax-core" description="Datax Core" version="${project.version}">
+		<feature version="${solmix.version}">solmix-common-runtime</feature>
+		<feature version="${solmix.version}">solmix-service-velocity</feature>
+		<bundle start-level="40">mvn:org.solmix.datax/datax-core/${project.version}</bundle>
+	</feature>
+	<feature name="datax-jdbc" description="Datax Jdbc" version="${project.version}">
+		<feature version="${project.version}">datax-core</feature>
+		<bundle start-level="40">mvn:org.solmix.datax/datax-jdbc/${project.version}</bundle>
+	</feature>
+	<feature name="datax-mybatis" description="Datax Mybatis" version="${project.version}">
+		<feature version="${project.version}">datax-jdbc</feature>
+		<bundle start-level="35">mvn:org.mybatis/mybatis/${mybatis.version}</bundle>
+		<bundle start-level="40">mvn:org.solmix.datax/datax-mybatis/${project.version}</bundle>
+	</feature>
+	<feature name="datax-wmix" description="Datax Wmix Integration" version="${project.version}">
+		<feature version="${wmix.version}">wmix-core</feature>
+		<feature version="${project.version}">datax-core</feature>
+		<feature version="${solmix.version}">solmix-service-jackson</feature>
+		<bundle start-level="40">mvn:org.solmix.datax/datax-wmix/${project.version}</bundle>
+	</feature>
+</features>

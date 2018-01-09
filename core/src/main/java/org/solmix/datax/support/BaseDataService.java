@@ -280,7 +280,7 @@ public class BaseDataService implements DataService
         if(trans!=null){
             transformers= new ArrayList<Transformer>();
             for(TransformerInfo tran:trans){
-                Transformer transformer=null;
+               Transformer transformer=null;
                LookupType type= tran.getLookup();
                String serviceName=tran.getName();
                Class<? extends Transformer> serviceClass= tran.getClazz();
@@ -295,8 +295,8 @@ public class BaseDataService implements DataService
                        
                    }else{
                        ConfiguredBeanProvider provider = container.getExtension(ConfiguredBeanProvider.class);
-                       if(provider!=null){
-                           transformer= provider.getBeanOfType(serviceName, serviceClass==null?Transformer.class:serviceClass);
+                       if(provider!=null&&serviceClass!=null){
+                           transformer= provider.getBeanOfType(serviceName, serviceClass);
                        }
                    }
                } else if(serviceClass!=null&&type==LookupType.NEW){

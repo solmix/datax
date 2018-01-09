@@ -174,8 +174,8 @@ public class DefaultValidatorService implements ValidatorService
                       
                   }else{
                       ConfiguredBeanProvider provider = container.getExtension(ConfiguredBeanProvider.class);
-                      if(provider!=null){
-                          validator= provider.getBeanOfType(serviceName, serviceClass==null?Validator.class:serviceClass);
+                      if(provider!=null&&serviceClass!=null){
+                          validator= provider.getBeanOfType(serviceName, serviceClass);
                       }
                   }
               } else if(serviceClass!=null&&validatorInfo.getLookup()==LookupType.NEW){

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <features name="datax-features-${project.version}" xmlns="http://karaf.apache.org/xmlns/features/v1.4.0">
-	<repository>mvn:org.solmix.karaf.features/solmix-services-features/${solmix.version}/xml/features</repository>
+	<repository>mvn:org.solmix.karaf.features/solmix-service-features/${solmix.version}/xml/features</repository>
 	<repository>mvn:org.solmix.karaf.features/wmix-features/${wmix.version}/xml/features</repository>
 	<feature name="datax-core" description="Datax Core" version="${project.version}">
 		<feature version="${solmix.version}">solmix-common-runtime</feature>

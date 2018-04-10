@@ -208,4 +208,13 @@ public abstract class SQLDialect
 	public boolean supportsPLSQL(){
 		return false;
 	}
+	 /**
+	     * Returns the table optimize statement for
+	     * a particular database
+	     *
+	     * @param table - name of table
+	     * @param cost - based on the database,
+	     *               may be table percentage or random number
+	     */
+	    public abstract String getOptimizeStmt(String table, int cost);
 }

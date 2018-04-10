@@ -111,4 +111,9 @@ public class MysqlDialect extends SQLDialect
     public String formatValue(Object value) {
         return value.toString();
     }
+
+    @Override
+    public String getOptimizeStmt(String table, int cost) {
+        return "ANALYZE TABLE "+table.toUpperCase();
+    }
 }

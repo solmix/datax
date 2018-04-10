@@ -182,4 +182,12 @@ public class OracleDialect extends SQLDialect
         }
         return escaped;
     }
+
+    @Override
+    public String getOptimizeStmt(String table, int tablePercent) {
+        return "ANALYZE TABLE "+table+
+            ((tablePercent <= 0 || tablePercent > 100) ? 
+                " COMPUTE STATISTICS" :
+                " ESTIMATE STATISTICS SAMPLE "+tablePercent+" PERCENT");
+    }
 }

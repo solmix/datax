@@ -96,4 +96,9 @@ public class PostgresDialect extends SQLDialect
         return value.toString();
     }
 
+    @Override
+    public String getOptimizeStmt(String table, int cost) {
+        return "ANALYZE "+table;
+    }
+
 }

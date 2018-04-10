@@ -135,4 +135,9 @@ public class H2DBDialect extends SQLDialect
         return value.toString();
     }
 
+    @Override
+    public String getOptimizeStmt(String table, int cost) {
+        return null;
+    }
+
 }

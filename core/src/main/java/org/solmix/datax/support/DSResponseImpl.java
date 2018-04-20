@@ -330,11 +330,13 @@ public class DSResponseImpl implements DSResponse
                     if (size > 0) {
                         Object one = datas.get(0);
                         T _return = null;
-                        if (type.isAssignableFrom(one.getClass())) {
-                            _return = type.cast(one);
-                        } else if (Map.class.isAssignableFrom(one.getClass())) {
-                            _return = type.newInstance();
-                            DataUtils.setProperties((Map<?, ?>) one, _return, false);
+                        if(one!=null){
+                            if (type.isAssignableFrom(one.getClass())) {
+                                _return = type.cast(one);
+                            } else if (Map.class.isAssignableFrom(one.getClass())) {
+                                _return = type.newInstance();
+                                DataUtils.setProperties((Map<?, ?>) one, _return, false);
+                            }
                         }
                         if (size > 1) {
                         	if(LOG.isWarnEnabled())

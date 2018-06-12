@@ -97,7 +97,7 @@ public class OutFaultInterceptor extends PhaseInterceptorSupport<Message>
 	private String handleException(Exception e) {
 		if(e!=null){
 			if(e instanceof Fault){
-				if(e.getCause() instanceof InvokerException){
+				if(e.getCause() instanceof InvokerException &&e.getCause().getCause()!=null){
 					return StringUtils.toString(e.getCause().getCause());
 				}else{
 					return StringUtils.toString(e.getCause());

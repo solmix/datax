@@ -139,12 +139,16 @@ public abstract class AbstractInInterceptor extends PhaseInterceptorSupport<Wmix
             
             message.removeContent(InputStream.class);
         }
-        postToSchema(new DataTypeMap(inputData), dataServiceManager, message,exchange,parameterParser);
+        try {
+			postToSchema(new DataTypeMap(inputData), dataServiceManager, message,exchange,parameterParser);
+		} catch (Exception e) {
+			throw new Fault(e);
+		}
     }
     
     protected   RequestContext wrappedRequestcontext(Exchange exchange){
         return new ExchangeRequestContext(exchange);
     }
     
-    protected abstract void postToSchema(DataTypeMap mapdata,DataServiceManager manager, WmixMessage message,Exchange exchange, ParameterParser parameterParser) ;
+    protected abstract void postToSchema(DataTypeMap mapdata,DataServiceManager manager, WmixMessage message,Exchange exchange, ParameterParser parameterParser) throws Exception ;
 }

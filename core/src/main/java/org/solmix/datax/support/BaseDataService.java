@@ -966,24 +966,25 @@ public class BaseDataService implements DataService
         Set<String> outProperties = new HashSet<String>();
         if (popToKeep != null)
             outProperties.addAll(popToKeep);
-        List<String> prop = new ArrayList<String>();
+        List<String> prop = null;
         //Map<String, String> xpaths = null;--XPATH
         List<FieldInfo> fields =info.getFields();
-        if (fields == null)
-            return Collections.emptyMap();
-        for (FieldInfo field : fields) {
-          
-            if (dropExtraFields && field.getType() == FieldType.UNKNOWN)
-                continue;
-            prop.add(field.getName());
-            /*if (field.getValueXPath() != null) {
-                if (xpaths == null)
-                    xpaths = new HashMap<String, String>();
-                xpaths.put(field.getName(), field.getValueXPath());
-            }--XPATH*/
+        if (fields != null) {
+        	prop = new ArrayList<String>();
+        	for (FieldInfo field : fields) {
+                
+                if (dropExtraFields && field.getType() == FieldType.UNKNOWN)
+                    continue;
+                prop.add(field.getName());
+                /*if (field.getValueXPath() != null) {
+                    if (xpaths == null)
+                        xpaths = new HashMap<String, String>();
+                    xpaths.put(field.getName(), field.getValueXPath());
+                }--XPATH*/
+            }
+            if (prop != null)
+                outProperties.addAll(prop);
         }
-        if (prop != null)
-            outProperties.addAll(prop);
         if (data instanceof Map<?, ?>) {
             source = (Map<Object, Object>) data;
             for (Object key : source.keySet()) {
@@ -993,7 +994,8 @@ public class BaseDataService implements DataService
             }
         } else {
             try {
-                result = DataUtils.getProperties(data, outProperties);
+            	//if not set output property ,get all of it by default.
+                result = DataUtils.getProperties(data, outProperties.isEmpty()?null:outProperties);
             } catch (Exception e) {
                 result = null;
                 LOG.warn("transform bean object to map failed .caused by" + e.getMessage());

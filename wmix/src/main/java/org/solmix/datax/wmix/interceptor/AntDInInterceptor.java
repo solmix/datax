@@ -35,6 +35,7 @@ import org.solmix.datax.RequestContext;
 import org.solmix.datax.attachment.OldValues;
 import org.solmix.datax.attachment.OldValuesBean;
 import org.solmix.datax.export.ExportConfig;
+import org.solmix.datax.export.ExportField;
 import org.solmix.datax.wmix.Constants;
 import org.solmix.exchange.Exchange;
 import org.solmix.wmix.exchange.WmixMessage;
@@ -58,7 +59,7 @@ public class AntDInInterceptor extends AbstractInInterceptor
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    protected void postToSchema(DataTypeMap data, DataServiceManager manager, WmixMessage message, Exchange exchange, ParameterParser parameterParser) {
+    protected void postToSchema(DataTypeMap data, DataServiceManager manager, WmixMessage message, Exchange exchange, ParameterParser parameterParser) throws Exception {
         List<?> operations = data.getList("operations");
         RequestContext requestContext = wrappedRequestcontext(exchange);
         if (operations != null) {
@@ -86,7 +87,7 @@ public class AntDInInterceptor extends AbstractInInterceptor
         }
     }
 
-    private void prepareRequest(DSRequest request, DataTypeMap operation, boolean joinTransaction) {
+    private void prepareRequest(DSRequest request, DataTypeMap operation, boolean joinTransaction) throws Exception {
         request.setCanJoinTransaction(joinTransaction);
         String action = operation.getString(ACTION);
         Assert.assertNotNull(action, "operation action must be not null");
@@ -119,16 +120,22 @@ public class AntDInInterceptor extends AbstractInInterceptor
 
     }
 
-    private void prepareExport(DSRequest request, DataTypeMap operation) {
+    private void prepareExport(DSRequest request, DataTypeMap operation) throws Exception {
         ExportConfig export = new ExportConfig();
         export.setExportAs(operation.getString("exportAs"));
         export.setExportDatesAsFormattedString(operation.getBoolean("exportDatesAsFormattedString"));
         export.setExportDelimiter(operation.getString("exportDelimiter"));
         export.setExportDisplay(operation.getString("exportDisplay"));
         export.setExportFilename(operation.getString("exportFilename"));
-        String exportFields = operation.getString("exportFields");
-        if (exportFields != null) {
-            export.setExportFields(Arrays.asList(exportFields.split(",")));
+        List<?> exportFields = operation.getList("exportFields");
+        if(exportFields!=null) {
+            List<ExportField> fields = new ArrayList<>(exportFields.size());
+	        for(Object field:exportFields) {
+	        	ExportField f = new ExportField();
+	        	DataUtils.setProperties((Map)field, f);
+	        	fields.add(f);
+	        }
+	        export.setExportFields(fields);
         }
         export.setExportFooter(operation.getString("exportFooter"));
         export.setExportHeader(operation.getString("exportHeader"));
@@ -169,7 +176,15 @@ public class AntDInInterceptor extends AbstractInInterceptor
                     export.setExportFilename(parameterParser.getString("_exportFilename"));
                     String exportFields = parameterParser.getString("_exportFields");
                     if (exportFields != null) {
-                        export.setExportFields(Arrays.asList(exportFields.split(",")));
+                    	List<String> strings=Arrays.asList(exportFields.split(","));
+                    	 List<ExportField> fields = new ArrayList<>(strings.size());
+             	        for(String field:strings) {
+             	        	ExportField f = new ExportField();
+             	        	f.setName(field);
+             	        	f.setTitle(field);
+             	        	fields.add(f);
+             	        }
+             	        export.setExportFields(fields);
                     }
                     export.setExportFooter(parameterParser.getString("_exportFooter"));
                     export.setExportHeader(parameterParser.getString("_exportHeader"));
@@ -178,7 +193,11 @@ public class AntDInInterceptor extends AbstractInInterceptor
                     dsr.addAttachment(ExportConfig.class, export);
                 }
             }else if("_action".equals(key)){
-                dsr.setOperationId(parameterParser.getString("_action"));
+            	String action = parameterParser.getString(key);
+            	if(mapperService!=null){
+                	action = mapperService.map("action",action);
+                }
+                dsr.setOperationId(action);
             }else if(key.startsWith("_")){
                 dsr.setAttribute(key, parameterParser.getString(key));
             }else{

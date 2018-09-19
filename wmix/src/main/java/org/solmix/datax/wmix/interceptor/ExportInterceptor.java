@@ -38,6 +38,7 @@ import org.solmix.datax.DSRequest;
 import org.solmix.datax.DSResponse;
 import org.solmix.datax.DataService;
 import org.solmix.datax.export.ExportConfig;
+import org.solmix.datax.export.ExportField;
 import org.solmix.datax.model.DataServiceInfo;
 import org.solmix.datax.model.FieldInfo;
 import org.solmix.exchange.Exchange;
@@ -86,39 +87,44 @@ public class ExportInterceptor extends PhaseInterceptorSupport<Message>
         DataService ds = response.getDataService() == null ? request.getDataService() : response.getDataService();
         DataServiceInfo info = ds.getDataServiceInfo();
         Map<String, String> fieldMap = new HashMap<String, String>();
-        List<String> fieldNames = export.getExportFields();
+        List<ExportField> fieldNames = export.getExportFields();
+        //not set in request used data service fields configuration
         if (DataUtils.isNullOrEmpty(fieldNames)) {
             List<FieldInfo> fields = info.getFields();
-            fieldNames = new ArrayList<String>();
+            fieldNames = new ArrayList<ExportField>();
             for (FieldInfo field : fields) {
-                fieldNames.add(field.getName());
+            	ExportField f = new ExportField();
+            	f.setName(field.getName());
+            	f.setTitle(field.getTitle());
+                fieldNames.add(f);
             }
         }
-        List<String> efields = export.getExportFields();
         List<String> finalFields = new ArrayList<String>();
 
         ExportAs exportAs = ExportAs.fromValue(export.getExportAs());
         String separatorChar = export.getExportTitleSeparatorChar();
         for (int i = 0; i < fieldNames.size(); i++) {
-            String fieldName = fieldNames.get(i);
-            String fieldTitle = null;
-            FieldInfo field = info.getField(fieldName);
-            if (field != null && !asBoolean(field.getHidden()) && (field.getCanExport()==null|| asBoolean(field.getCanExport()))) {
-                fieldTitle = field.getTitle();
-                if (fieldTitle == null) {
-                    fieldTitle = fieldName;
-                }
-                if (exportAs == ExportAs.XML) {
-                    if (separatorChar == null)
-                        separatorChar = "";
-                    fieldTitle = fieldTitle.replaceAll("[$&<>() ]", separatorChar);
-                }
-                fieldMap.put(fieldName, fieldTitle);
-                finalFields.add(fieldName);
+        	ExportField fieldName = fieldNames.get(i);
+            FieldInfo field = info.getField(fieldName.getName());
+            if (field != null) {
+                String fieldTitle = null;
+            	if( !asBoolean(field.getHidden()) && (field.getCanExport()==null|| asBoolean(field.getCanExport()))) {
+	                fieldTitle = field.getTitle();
+	                if (fieldTitle == null) {
+	                    fieldTitle = fieldName.getTitle();
+	                }
+	                if (exportAs == ExportAs.XML) {
+	                    if (separatorChar == null)
+	                        separatorChar = "";
+	                    fieldTitle = fieldTitle.replaceAll("[$&<>() ]", separatorChar);
+	                }
+	                fieldMap.put(fieldName.getName(), fieldTitle);
+	                finalFields.add(fieldName.getName());
+            	}
+            }else {
+            	fieldMap.put(fieldName.getName(), fieldName.getTitle());
+                finalFields.add(fieldName.getName());
             }
-        }
-        if(DataUtils.isNullOrEmpty(efields)){
-            efields=finalFields;
         }
 
         int lineBreakStyleId = 4;
@@ -135,7 +141,7 @@ public class ExportInterceptor extends PhaseInterceptorSupport<Message>
         MappedExportContext conf = new MappedExportContext();
         conf.put(ExportService.LINE_BREAK_STYLE, lineBreakStyleId);
         conf.put(ExportService.EXPORT_DELIMITER, delimiter);
-        conf.put(ExportService.ORDER, efields);
+        conf.put(ExportService.ORDER, finalFields);
 
         String exportHeader = export.getExportHeader();
         if (exportHeader != null) {

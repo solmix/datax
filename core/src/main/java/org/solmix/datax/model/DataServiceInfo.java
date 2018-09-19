@@ -359,7 +359,7 @@ public class DataServiceInfo
      * @return
      */
     public FieldInfo getField(String fieldName) {
-        return fields.get(fieldName);
+        return fields==null?null: fields.get(fieldName);
     }
 
     public XmlElement toElement() {

@@ -30,6 +30,12 @@ import java.util.List;
 public class ExportConfig
 {
 
+	/**<li> download*/
+    private String exportDisplay;
+    
+    /**@see ExportAs*/
+    private String exportAs;
+    
     private String exportHeader;
 
     private String exportFooter;
@@ -38,13 +44,10 @@ public class ExportConfig
 
     private String exportFilename;
 
+    /** print line delimiter char**/
     private String exportDelimiter;
 
-    private String exportDisplay;
-
-    private List<String> exportFields;
-
-    private String exportAs;
+    private List<ExportField> exportFields;
 
     private Boolean exportDatesAsFormattedString;
     
@@ -169,14 +172,14 @@ public class ExportConfig
     /**
      * @return the exportFields
      */
-    public List<String> getExportFields() {
+    public List<ExportField> getExportFields() {
         return exportFields;
     }
 
     /**
      * @param exportFields the exportFields to set
      */
-    public void setExportFields(List<String> exportFields) {
+    public void setExportFields(List<ExportField> exportFields) {
         this.exportFields = exportFields;
     }
 

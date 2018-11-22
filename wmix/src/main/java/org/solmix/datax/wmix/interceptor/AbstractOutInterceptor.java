@@ -21,10 +21,12 @@ package org.solmix.datax.wmix.interceptor;
 
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Locale;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.solmix.commons.io.LocaleOutputStream;
 import org.solmix.datax.wmix.serializer.ResultObject;
 import org.solmix.exchange.Endpoint;
 import org.solmix.exchange.Exchange;
@@ -72,16 +74,23 @@ public class AbstractOutInterceptor extends PhaseInterceptorSupport<Message>
         }
         
         OutputStream out= message.getContent(OutputStream.class);
+        
+        Object language =exchange.get(Message.ACCEPT_LANGUAGE);
+        //no set used default
+        if(language==null) {
+        	language=Locale.getDefault().toLanguageTag();
+        }
+        LocaleOutputStream lout= new LocaleOutputStream(out, language.toString());
         Object result = message.getContent(List.class);
         if (result == null) {
             result= message.getContent(Object.class);
         }
         try {
             ObjectWriter<OutputStream> writer= dataProcessor.createWriter(OutputStream.class);
-            writer.write(new ResultObject(result), out);
+            writer.write(new ResultObject(result), lout);
         } finally{
-            if(out!=null){
-                IOUtils.closeQuietly(out);
+            if(lout!=null){
+                IOUtils.closeQuietly(lout);
             }
         }
 

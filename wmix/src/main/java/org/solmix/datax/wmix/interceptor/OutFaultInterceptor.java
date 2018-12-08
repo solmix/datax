@@ -40,6 +40,9 @@ import org.solmix.exchange.interceptor.phase.Phase;
 import org.solmix.exchange.interceptor.phase.PhaseInterceptorSupport;
 import org.solmix.runtime.exception.InvokerException;
 import org.solmix.wmix.exchange.WmixMessage;
+import org.solmix.wmix.mapper.MapperException;
+import org.solmix.wmix.mapper.MapperService;
+import org.solmix.wmix.mapper.MapperTypeNotFoundException;
 
 /**
  * 
@@ -50,14 +53,19 @@ import org.solmix.wmix.exchange.WmixMessage;
 public class OutFaultInterceptor extends PhaseInterceptorSupport<Message>
 {
 
-    /**
-     * @param phase
-     */
+    private MapperService mapperService;
+
     public OutFaultInterceptor()
     {
         super(Phase.MARSHAL);
     }
+    public MapperService getMapperService() {
+ 		return mapperService;
+ 	}
 
+ 	public void setMapperService(MapperService mapperService) {
+ 		this.mapperService = mapperService;
+ 	}
     @Override
     public void handleMessage(Message message) throws Fault {
         final Exchange exchange = message.getExchange();
@@ -95,16 +103,32 @@ public class OutFaultInterceptor extends PhaseInterceptorSupport<Message>
     }
 
 	private String handleException(Exception e) {
-		if(e!=null){
+		if(e==null) {
+			return "";
+		}else {
 			if(e instanceof Fault){
 				if(e.getCause() instanceof InvokerException &&e.getCause().getCause()!=null){
-					return StringUtils.toString(e.getCause().getCause());
+					return mapperString(e.getCause().getCause());
 				}else{
-					return StringUtils.toString(e.getCause());
+					return mapperString(e.getCause());
 				}
 			}
 		}
 		return StringUtils.toString(e);
+	}
+	private String mapperString(java.lang.Throwable e) {
+		if(mapperService!=null) {
+			String exception = e.getClass().getName();
+			try {
+				return mapperService.map("exception", exception);
+			} catch (MapperTypeNotFoundException e1) {
+				return StringUtils.toString(e);
+			} catch (MapperException e1) {
+				return StringUtils.toString(e);
+			}
+		}else {
+			return StringUtils.toString(e);
+		}
 	}
 
 }

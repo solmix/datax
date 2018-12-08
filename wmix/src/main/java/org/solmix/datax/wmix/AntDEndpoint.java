@@ -50,7 +50,10 @@ public class AntDEndpoint extends AbstractWmixEndpoint implements Endpoint{
     }
     
     protected void prepareOutFaultInterceptors(){
-        getOutFaultInterceptors().add(new OutFaultInterceptor());
+    	OutFaultInterceptor out = new OutFaultInterceptor();
+    	MapperService mapperService=container.getExtension(MapperService.class);
+    	out.setMapperService(mapperService);
+        getOutFaultInterceptors().add(out);
     }
     protected void prepareOutInterceptors(){
         getOutInterceptors().add(new AntDOutInterceptor());

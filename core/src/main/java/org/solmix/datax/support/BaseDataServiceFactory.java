@@ -53,6 +53,8 @@ public class BaseDataServiceFactory implements DataServiceFactory,ContainerAware
     private EventService eventService;
 
     private Container container;
+    
+    private boolean eventEnable = false;
 
     public BaseDataServiceFactory()
     {
@@ -67,7 +69,9 @@ public class BaseDataServiceFactory implements DataServiceFactory,ContainerAware
     public DataService instance(DataServiceInfo info, Map<String, Object> properties) {
         DataTypeMap prop = new DataTypeMap(Collections.unmodifiableMap(properties));
         BaseDataService bds = instanceBaseDataService(info, container, prop);
-        bds.setEventService(getEventService());
+        if(isEventEnable()) {
+        	bds.setEventService(getEventService());
+        }
         return bds;
     }
     
@@ -99,5 +103,15 @@ public class BaseDataServiceFactory implements DataServiceFactory,ContainerAware
         this.container=container;
         provider = new BaseXmlNodeParserProvider(container);
     }
+
+	public boolean isEventEnable() {
+		return eventEnable;
+	}
+
+	public void setEventEnable(boolean eventEnable) {
+		this.eventEnable = eventEnable;
+	}
+    
+    
 
 }

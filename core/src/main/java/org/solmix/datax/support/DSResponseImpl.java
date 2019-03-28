@@ -295,23 +295,27 @@ public class DSResponseImpl implements DSResponse
         }
         // First, assume that the type is Map.
         if (Map.class.isAssignableFrom(type)) {
-            if (data instanceof List<?>) {
-                if (((List<?>) data).size() == 0) {
+            if (data instanceof Collection<?>) {
+                if (((Collection<?>) data).size() == 0) {
                     return null;
-                } else if (((List<?>) data).get(0) instanceof Map<?, ?>) {
-                    if(type == DataTypeMap.class){
-                        return (T)new DataTypeMap((Map) ((List<?>) data).get(0));
-                    }else{
-                        return (T) ((List<?>) data).get(0);
-                    }
-                    
-                }
+                } else {
+                	Object one = ((Collection<?>) data).iterator().next();
+                	if(one!=null) {
+                		 if(type == DataTypeMap.class){
+                             return (T)new DataTypeMap((Map)one);
+                         }else{
+                             return (T)one;
+                         }
+                	}else {
+                		return null;
+                	}
+                } 
             } else if (data instanceof Map<?, ?>) {
                 return (T) data;
             }
             // Then,assume that the type is List.
         } else if (List.class.isAssignableFrom(type)) {
-            if (data instanceof List<?>) {
+            if (data instanceof Collection<?>) {
                 return (T) data;
             } else {
                 List<Object> re = new ArrayList<Object>();
@@ -324,11 +328,11 @@ public class DSResponseImpl implements DSResponse
                     Object instance = type.newInstance();
                     DataUtils.setProperties(Map.class.cast(data), instance, false);
                     return (T) instance;
-                } else if (List.class.isAssignableFrom(data.getClass())) {
-                    List<Object> datas = List.class.cast(data);
+                } else if (Collection.class.isAssignableFrom(data.getClass())) {
+                	Collection<Object> datas = Collection.class.cast(data);
                     int size = datas.size();
                     if (size > 0) {
-                        Object one = datas.get(0);
+                        Object one = datas.iterator().next();
                         T _return = null;
                         if(one!=null){
                             if (type.isAssignableFrom(one.getClass())) {
@@ -337,6 +341,8 @@ public class DSResponseImpl implements DSResponse
                                 _return = type.newInstance();
                                 DataUtils.setProperties((Map<?, ?>) one, _return, false);
                             }
+                        }else {
+                        	return null;
                         }
                         if (size > 1) {
                         	if(LOG.isWarnEnabled())

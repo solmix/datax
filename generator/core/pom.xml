@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.solmix.datax</groupId>
 		<artifactId>datax-generator</artifactId>
-		<version>0.7.1</version>
+		<version>0.7.2-SNAPSHOT</version>
 	</parent>
 	<artifactId>datax-generator-core</artifactId>
 	<name>Generator :: Core</name>

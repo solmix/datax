@@ -90,7 +90,7 @@ public abstract class AbstractWmixTests
      */
     protected static void prepareServlet(String app) throws Exception {
         // Servlet container
-        File xml = new File(TestUtils.srcdir, "WEB-INF/web.xml");
+        File xml = new File(TestUtils.srcdir(), "WEB-INF/web.xml");
         ServletRunner servletRunner = new PatchedServletRunner(xml, "");
 
         // Servlet client

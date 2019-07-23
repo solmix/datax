@@ -56,7 +56,7 @@
 	<properties>
 		<solmix.osgi.export.pkg>org.solmix.datax*</solmix.osgi.export.pkg>
 		<solmix.osgi.import.pkg>
-		javax.annotation,
+		javax.annotation;version="[1.0,1.1)",
 		org.apache.commons.jxpath;resolution:=optional,
 		*
 		</solmix.osgi.import.pkg>

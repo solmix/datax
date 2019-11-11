@@ -35,43 +35,7 @@ public class DataxInvoker implements Invoker
     public Object invoke(Exchange exchange, Object o) {
         DataServiceManager manager = exchange.get(DataServiceManager.class);
         try {
-            if (o instanceof List<?>) {
-                @SuppressWarnings("unchecked")
-                List<DSRequest> requests = (List<DSRequest>) o;
-                //如果没有传入事务策略不使用事务
-                TransactionPolicy policy = exchange.get(TransactionPolicy.class);
-                MergedType merged = exchange.get(MergedType.class);
-                if (merged == null) {
-                    merged = MergedType.SIMPLE;
-                }
-                exchange.getContainer();
-//                DSCall dsc = factory.createDSCall(policy);
-//                dsc.setExceptionBroken(false);
-                switch (merged) {
-                    case SIMPLE:
-                    case WRAPPED:
-                    	if(policy!=null){
-                    		return excuteRequestsInTransaction(exchange,manager, requests, merged);
-                    	}else{
-                    		return excuteRequests(manager, requests, merged);
-                    	}
-                    	
-                       
-                    case ARRAY:
-                    	if(policy!=null){
-                    		return excuteArraysInTransaction(exchange,manager, requests, merged);
-                    	}else{
-                    		return excuteArrays(manager, requests, merged);
-                    	}
-                    case MAPED:
-                    	if(policy!=null){
-                    		return excuteMapedInTransaction(exchange,manager, requests, merged);
-                    	}else{
-                    		return excuteMaped(manager, requests, merged);
-                    	}
-                }
-
-            } else if (o instanceof DSRequest) {
+            if (o instanceof DSRequest) {
                 DSRequest req = ((DSRequest)o);
                 DSResponse response= req.execute();
                 //删除时只返回失败或者成功的结果
@@ -79,6 +43,40 @@ public class DataxInvoker implements Invoker
                     response.setRawData(null);
                 }
                 return response;
+            }else if (o instanceof List<?>) {
+            	 @SuppressWarnings("unchecked")
+                 List<DSRequest> requests = (List<DSRequest>) o;
+                 //如果没有传入事务策略不使用事务
+                 TransactionPolicy policy = exchange.get(TransactionPolicy.class);
+                 MergedType merged = exchange.get(MergedType.class);
+                 if (merged == null) {
+                     merged = MergedType.SIMPLE;
+                 }
+                 exchange.getContainer();
+                 switch (merged) {
+                     case SIMPLE:
+                     case WRAPPED:
+                     	if(policy!=null){
+                     		return excuteRequestsInTransaction(exchange,manager, requests, merged);
+                     	}else{
+                     		return excuteRequests(manager, requests, merged);
+                     	}
+                     	
+                        
+                     case ARRAY:
+                     	if(policy!=null){
+                     		return excuteArraysInTransaction(exchange,manager, requests, merged);
+                     	}else{
+                     		return excuteArrays(manager, requests, merged);
+                     	}
+                     case MAPED:
+                     	if(policy!=null){
+                     		return excuteMapedInTransaction(exchange,manager, requests, merged);
+                     	}else{
+                     		return excuteMaped(manager, requests, merged);
+                     	}
+                 }
+
             } else if (o != null) {
                 throw new IllegalArgumentException("Illegal message type:" + o.getClass().getName());
             }

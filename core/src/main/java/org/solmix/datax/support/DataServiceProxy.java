@@ -173,7 +173,27 @@ public class DataServiceProxy<T> implements InvocationHandler
            PageList page  = new PageList(list,total);
            return page;
        }else{
-           return response.getSingleResult(returnType);
+		   Object result = response.getSingleResult(returnType);
+		   if(returnType.isPrimitive()){
+			if(returnType==Boolean.TYPE){
+				return false;
+			}else if(returnType == Integer.TYPE){
+				return 0;
+			}else if(returnType == Long.TYPE){
+				return 0l;
+			}else if(returnType == Float.TYPE){
+				return 0f;
+			}else if(returnType == Double.TYPE){
+				return 0d;
+			}else if(returnType == Byte.TYPE){
+				return 0;
+			}else{
+				throw new IllegalArgumentException("Not support type"+returnType);
+			}
+		   }else{
+			   return result;
+		   }
+		   
        }
     }
 

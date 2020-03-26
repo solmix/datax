@@ -228,33 +228,35 @@ public class DSResponseImpl implements DSResponse
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public <T> T getSingleResult(Class<T> type) {
-        if(rawData==null){
-            return null;
-        }
-        if(Object.class == type){
-            if(Collection.class.isAssignableFrom(rawData.getClass())){
-                Collection<Object> coll = (Collection<Object>)rawData;
-                if(coll.size()==0){
-                	return null;
-                }else if(coll.size()==1){
-                    return getResultInternal(type,coll.iterator().next());
+        T result=null;
+        if(rawData!=null){
+            if(type.isPrimitive()||Object.class == type){
+                if(Collection.class.isAssignableFrom(rawData.getClass())){
+                    Collection<Object> coll = (Collection<Object>)rawData;
+                    if(coll.size()==0){
+                        result= null;
+                    }else if(coll.size()==1){
+                        result= getResultInternal(type,coll.iterator().next());
+                    }else{
+                        throw new IllegalArgumentException("To Many result");
+                    }
+                }else if(Map.class.isAssignableFrom(rawData.getClass())){
+                    Map coll = (Map)rawData;
+                    if(coll.size()==1){
+                        Object firstKey = coll.keySet().iterator().next();
+                        result= getResultInternal(type,coll.get(firstKey));
+                    }else{
+                        throw new IllegalArgumentException("To Many result");
+                    }
                 }else{
-                    throw new IllegalArgumentException("To Many result");
-                }
-            }else if(Map.class.isAssignableFrom(rawData.getClass())){
-                Map coll = (Map)rawData;
-                if(coll.size()==1){
-                    Object firstKey = coll.keySet().iterator().next();
-                    return getResultInternal(type,coll.get(firstKey));
-                }else{
-                    throw new IllegalArgumentException("To Many result");
+                    return (T) rawData;
                 }
             }else{
-                return (T) rawData;
+                result= getResultInternal(type, rawData);
             }
-        }else{
-            return getResultInternal(type, rawData);
-        }
+        } 
+       
+        return result;
        
     }
 

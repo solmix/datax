@@ -212,7 +212,62 @@ public class ValidatorInfo implements XMLSource
         return count;
     }
 
-    public static class ValidatorInfoResolver extends ValidatorInfo implements ReferenceResolver{
+    public void setId(String id) {
+		this.id = id;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public void setType(String type) {
+		this.type = type;
+	}
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
+	}
+	public void setServerOnly(Boolean serverOnly) {
+		this.serverOnly = serverOnly;
+	}
+	public void setClientOnly(Boolean clientOnly) {
+		this.clientOnly = clientOnly;
+	}
+	public void setValidateOnChange(Boolean validateOnChange) {
+		this.validateOnChange = validateOnChange;
+	}
+	public void setExclusive(Boolean exclusive) {
+		this.exclusive = exclusive;
+	}
+	public void setMax(Double max) {
+		this.max = max;
+	}
+	public void setMin(Double min) {
+		this.min = min;
+	}
+	public void setPrecision(Double precision) {
+		this.precision = precision;
+	}
+	public void setMask(String mask) {
+		this.mask = mask;
+	}
+	public void setExpression(String expression) {
+		this.expression = expression;
+	}
+	public void setSubstring(String substring) {
+		this.substring = substring;
+	}
+	public void setOperator(String operator) {
+		this.operator = operator;
+	}
+	public void setCount(Long count) {
+		this.count = count;
+	}
+	public void setLookup(LookupType lookup) {
+		this.lookup = lookup;
+	}
+	public void setProperties(Map<String, Object> properties) {
+		this.properties = properties;
+	}
+
+	public static class ValidatorInfoResolver extends ValidatorInfo implements ReferenceResolver{
 
         private final String refid;
         private XmlParserContext context;

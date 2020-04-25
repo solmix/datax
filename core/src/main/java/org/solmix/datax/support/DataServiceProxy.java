@@ -174,7 +174,7 @@ public class DataServiceProxy<T> implements InvocationHandler
            return page;
        }else{
 		   Object result = response.getSingleResult(returnType);
-		   if(returnType.isPrimitive()){
+		   if(result == null && returnType.isPrimitive()  ){
 			if(returnType==Boolean.TYPE){
 				return false;
 			}else if(returnType == Integer.TYPE){
